@@ -1,0 +1,19 @@
+{
+  "name": "ebookworkshop",
+  "version": "1.0.0",
+  "description": "电子书工具",
+  "main": "start.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ebook"
+  ],
+  "author": "c0618c",
+  "license": "MIT",
+  "dependencies": {
+    "async_hooks": "^1.0.0",
+    "puppeteer": "^16.1.0",
+    "sqlite": "^4.1.2"
+  }
+}
