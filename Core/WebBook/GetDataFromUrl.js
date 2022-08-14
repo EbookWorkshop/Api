@@ -1,11 +1,11 @@
 // 引入 Puppeteer 模块
 let puppeteer = require('puppeteer')
-
+const DEBUG = false;    //用于跟踪问题，跟踪站点
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
- * @param {*} url 目标地址
- * @param {Object} setting 爬取的站点配置
+ * @param {string} url 目标地址
+ * @param {{RuleList}} setting 爬取的站点配置
  */
 async function GetDataFromUrl(url, setting) {
     //无界面浏览器性能更高更快，有界面一般用于调试开发
@@ -15,7 +15,7 @@ async function GetDataFromUrl(url, setting) {
             width: 1400,
             height: 800
         },
-        //headless: false,        //设置为有界面，如果为true，即为无界面
+        headless: !DEBUG,        //设置为有界面，如果为true，即为无界面
         slowMo: 250        //设置放慢每个步骤的毫秒数
     }
     let browser = await puppeteer.launch(options);
@@ -24,15 +24,22 @@ async function GetDataFromUrl(url, setting) {
     // 配置需要访问网址
     await page.goto(url);
     //接管console
-    page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
+    if (DEBUG) page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
 
-    //await page.exposeFunction('ActionHandle',DoAction); //注册函数
+    //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
 
     let result = new Map();
     for (let rule of setting.RuleList) {
         if (rule.Selector === "") continue;
 
+        //先尝试删除干扰元素
+        for (let sR of rule.RemoveSelector)
+            await page.$$eval(sR, (node, option) => {
+                for (let nO of node) nO.parentNode.removeChild(nO)
+            });
+
+        //执行规则
         result.set(rule.RuleName, await ExecRule(page, rule));
     }
 
@@ -51,6 +58,8 @@ async function GetDataFromUrl(url, setting) {
 async function ExecRule(page, rule) {
     let querySelector = page.$eval;
     if (rule.Type === "List") querySelector = page.$$eval;
+
+    if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
 
     let rsl = await querySelector.call(page, rule.Selector, (node, option) => {
         //动作表达式解释处理器 只能定义在浏览器端，对象不能序列化在服务器执行会失效

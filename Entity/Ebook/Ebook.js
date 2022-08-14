@@ -3,15 +3,21 @@
  */
 class Ebook {
     constructor() {
-        //章节
-        this.Chapters = [];
-        //目录
+        /**
+         * 章节 Map (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
+         */
+        this.Chapters = new Map();
+        /**
+         * 目录
+         */
         this.Index = [];
         /**
          * 书Id
          */
         this.BookId = "";
-        //书名
+        /**
+         * 书名-用于显示的名称
+         */
         this.BookName = "";
         //作者
         this.Author = "";

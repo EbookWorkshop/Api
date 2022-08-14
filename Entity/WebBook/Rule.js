@@ -30,6 +30,17 @@ class Rule {
          * 爬取的结果集格式，Object-单个对象；List-列表结果
          */
         this.Type = type;
+
+        /**
+         * 需要删除的元素列表（去广告、去干扰等）
+         */
+        this.RemoveSelector = [];
+
+        /**
+         * 当前规则用于进一步校验的配置
+         * （比如部分网站，【下一页】和【下一章】由相同的选择器命中，这就需要进一步的确认是否正确）
+         */
+        this.CheckSetting = null;
     }
 }
 

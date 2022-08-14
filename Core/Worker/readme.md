@@ -15,3 +15,6 @@ pool.RunTask({
 ```js
 exports.RunTask = function(param){}
 ```
+
+## AsyncResource
+使用 AsyncResource 主要是让回调函数可以跟踪调用堆栈。
