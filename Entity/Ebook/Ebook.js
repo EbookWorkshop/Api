@@ -2,7 +2,7 @@
  * 电子书
  */
 class Ebook {
-    constructor() {
+    constructor({ id, BookId, BookName, Author, FontFamily, FontSize, CaverImg }) {
         /**
          * 章节 Map (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
          */
@@ -14,21 +14,21 @@ class Ebook {
         /**
          * 书Id
          */
-        this.BookId = "";
+        this.BookId = BookId || id;
         /**
          * 书名-用于显示的名称
          */
-        this.BookName = "";
+        this.BookName = BookName;
         //作者
-        this.Author = "";
+        this.Author = Author;
 
         //字体
-        this.FontFamily = "微软雅黑";
+        this.FontFamily = FontFamily || "微软雅黑";
 
         //字号
-        this.FontSize = "22";   //pt
+        this.FontSize = FontSize || 22;   //pt
         //封面图片
-        this.CaverImg = null;
+        this.CaverImg = CaverImg;
     }
 }
 

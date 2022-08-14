@@ -1,10 +1,10 @@
 
 class Index {
-    constructor({ title }) {
+    constructor({ Title }) {
         /**
          * 章节标题
          */
-        this.Title = title;
+        this.Title = Title;
     }
 }
 
