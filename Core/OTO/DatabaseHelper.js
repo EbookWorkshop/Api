@@ -52,7 +52,7 @@ class DB {
 
     /**
      * 根据书名找到对应的电子书配置
-     * @param {*} bookName 书名/网文的唯一书名
+     * @param {string} bookName 书名/网文的唯一书名
      * @returns WebBook
      */
     async GetOrCreateWebBookByName(bookName) {

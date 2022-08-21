@@ -54,7 +54,7 @@ class WebBookMaker {
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
                 this.myWebBook = await db.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
-                this.myWebBook.AddIndexUrl(url);
+                this.myWebBook.AddIndexUrl(curUrl);
             }
 
 
