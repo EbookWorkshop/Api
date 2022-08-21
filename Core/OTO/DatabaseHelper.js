@@ -76,7 +76,20 @@ class DB {
         return await DO.ModelToWebBook(book);
     }
 
-    
+    /**
+     * 根据ID获得对应的WebBook对象
+     * @param {int} bookId 书的ID
+     */
+    async GetWebBookById(bookId) {
+        let book = await myModels.WebBook.findOne({
+            where: { BookId: bookId }
+        });
+
+        if (book == null) return null;
+
+        return await DO.ModelToWebBook(book);
+    }
+
 }
 
 

@@ -18,7 +18,7 @@ class IndexOptions {
         /**
          * 爬下一页目录的规则
          */
-        this.NextPageRule = new Rule("NextPage");
+        this.NextPageRule = new Rule("IndexNextPage");
 
         /**
          * 爬简介的规则

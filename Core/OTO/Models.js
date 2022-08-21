@@ -13,7 +13,6 @@ class Models {
          * EBook表对象
          */
         this.Ebook;
-
         /**
          * 电子书的目录
          */
@@ -87,6 +86,21 @@ class Models {
         m.WebBookIndex.hasMany(m.WebBookIndexURL, { foreignKey: "WebBookIndexId", sourceKey: "id" });
         m.WebBookIndexURL.belongsTo(m.WebBookIndex, { foreignKey: 'WebBookIndexId', targetKey: "id" });
 
+
+        //网站规则部分
+        this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
+            RuleName: { type: Sequelize.STRING(20), allowNull: false },
+            Selector: { type: Sequelize.STRING(100), allowNull: false },
+            RemoveSelector: { type: Sequelize.STRING(200), allowNull: true },
+            GetContentAction: { type: Sequelize.STRING(100), allowNull: false },
+            GetUrlAction: { type: Sequelize.STRING(100), allowNull: true },
+            Type: { type: Sequelize.STRING(100), allowNull: false, defaultValue: "Object" },
+            CheckSetting: { type: Sequelize.STRING(100), allowNull: true },
+            Host: { type: Sequelize.STRING(100), allowNull: true },
+        });
+
+        // this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
+        // });
 
 
         await sequelize.sync();     //同步所有模型

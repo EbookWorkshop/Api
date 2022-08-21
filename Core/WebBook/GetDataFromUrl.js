@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer')
 const EventManager = require("./../EventManager.js");
 
-const DEBUG = true;    //用于跟踪问题，跟踪站点
+const DEBUG = false;    //用于跟踪问题，跟踪站点
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -15,10 +15,10 @@ async function GetDataFromUrl(url, setting) {
         //设置视窗的宽高
         defaultViewport: {
             width: 1400,
-            height: 800
+            height: 900
         },
         headless: !DEBUG,        //设置为有界面，如果为true，即为无界面
-        slowMo: 250        //设置放慢每个步骤的毫秒数
+        slowMo: 50        //设置放慢每个步骤的毫秒数
     }
     let browser = await puppeteer.launch(options);
     // 打来新页面

@@ -45,7 +45,7 @@ class DO {
             }
         }
 
-        //从数据库加载章节信息
+        //从数据库加载所有目录信息 初始化Index数组
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: webBook.BookId }, order: ["OrderNum"] });
@@ -61,18 +61,51 @@ class DO {
         }
         /**
          * 从数据库加载指定章节
-         * @param {*} index 章节序号
+         * @param {*} cId 章节ID
          */
-        webBook.ReloadChapter = async (index) => {
-            const indexInfo = webBook.Index[index];
-            if (!indexInfo) return;
-
-            let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: indexInfo.IndexId } });
+        webBook.ReloadChapter = async (cId) => {
+            let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: webBook.BookId } });
             if (ebookIndex == null) return;
             let wbookIndex = await ebookIndex.getWebBookIndex();
             let cp = new WebChapter({ ...wbookIndex.dataValues, ...ebookIndex.dataValues });
             if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);
         }
+
+        /**
+         * 
+         * @param {*} cId 
+         * @returns WebIndex
+         */
+        webBook.GetIndex = (cId) => {
+            let tempIdx = null;
+            for (let c of webBook.Index) {
+                if (c.IndexId == cId) {
+                    tempIdx = c;
+                    break;
+                }
+            }
+            if (tempIdx == null) return null;
+
+            return new WebIndex({ ...tempIdx });
+        }
+
+        /**
+         * 根据目录ID找到对应章节
+         * @param {*} cId 目录ID
+         * @returns WebChapter
+         */
+        webBook.GetChapter = (cId) => {
+            let tempIdx = webBook.GetIndex(cId);
+            if (tempIdx == null) return null;
+
+            if (webBook.Chapters.has(tempIdx.WebTitle)) {
+                return webBook.Chapters.get(tempCP.WebTitle);
+            }
+
+            let tempCP = new WebChapter({ ...tempIdx });
+            return tempCP;
+        }
+
 
         /**
          * 合并目录章节

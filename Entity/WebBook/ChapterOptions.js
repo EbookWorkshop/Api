@@ -18,7 +18,7 @@ class ChapterOptions {
         /**
          * 爬下一页的规则
          */
-        this.NextPageRule = new Rule("NextPage");
+        this.NextPageRule = new Rule("ContentNextPage");
     }
 
     GetRuleList() {
