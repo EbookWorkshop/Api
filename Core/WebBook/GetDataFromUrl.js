@@ -1,6 +1,8 @@
 // 引入 Puppeteer 模块
-let puppeteer = require('puppeteer')
-const DEBUG = false;    //用于跟踪问题，跟踪站点
+const puppeteer = require('puppeteer')
+const EventManager = require("./../EventManager.js");
+
+const DEBUG = true;    //用于跟踪问题，跟踪站点
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -28,6 +30,8 @@ async function GetDataFromUrl(url, setting) {
 
     //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
+    if (DEBUG) new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
+    if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
 
     let result = new Map();
     for (let rule of setting.RuleList) {
@@ -58,8 +62,6 @@ async function GetDataFromUrl(url, setting) {
 async function ExecRule(page, rule) {
     let querySelector = page.$eval;
     if (rule.Type === "List") querySelector = page.$$eval;
-
-    if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
 
     let rsl = await querySelector.call(page, rule.Selector, (node, option) => {
         //动作表达式解释处理器 只能定义在浏览器端，对象不能序列化在服务器执行会失效

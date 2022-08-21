@@ -6,8 +6,13 @@ const WebChapter = require("./../../Entity/WebBook/WebChapter.js");
 const { GetDataFromUrl } = require("./GetDataFromUrl.js");
 const RuleManager = require("./RuleManager.js");
 const EventManager = require("./../EventManager.js");
+const DB = require("../OTO/DatabaseHelper.js");
 
+const db = new DB();
 
+/**
+ * WebBook - DTO
+ */
 class WebBookMaker {
     /**
      * 创建一个Web电子书操作器
@@ -21,7 +26,7 @@ class WebBookMaker {
         }
 
         if (!webbook) this.myWebBook = new WebBook();
-        //else this.myWebBook = webbook;
+        else this.myWebBook = webbook;
     }
 
     GetBook() {
@@ -33,25 +38,34 @@ class WebBookMaker {
      * @param {*} url 默认为空，在章节分页时递归往下找
      * @returns 
      */
-    UpdateIndex(url = "") {
+    UpdateIndex(url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = RuleManager.GetRuleByURL(curUrl);
         const option = { RuleList: webRule.index.GetRuleList() }
 
-        return GetDataFromUrl(curUrl, option).then((result) => {
+        return GetDataFromUrl(curUrl, option).then(async (result) => {
             //初始化书名
-            if (result.has("BookName") && this.myWebBook.WebBookName == "") {
+            if (result.has("BookName") && !this.myWebBook.WebBookName) {
                 let bn = result.get("BookName")[0];
                 this.myWebBook.WebBookName = bn.text;
-                if (this.myWebBook.BookName == "") this.myWebBook.BookName = bn.text;
+                if (!this.myWebBook.BookName) this.myWebBook.BookName = bn.text;
             }
 
-            if (result.has("ChapterList")) {
+            //根据书名从现有内容取得图书设置
+            if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
+                this.myWebBook = await db.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
+                this.myWebBook.AddIndexUrl(url);
+            }
+
+
+            if (result.has("ChapterList")) {    //爬到的每一章内容
                 let cl = result.get("ChapterList");
-                this.MargeIndex(cl);
+                if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
+                for (let i of cl)
+                    this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
-            if (result.has("NextPage")) {
+            if (result.has("NextPage") && false) {//DEBUG: 快速测试不翻页
                 let npData = result.get("NextPage")[0];
                 let nextPage = npData.url;
                 if (nextPage == "") {
@@ -60,18 +74,20 @@ class WebBookMaker {
                 }
 
                 // console.log(`开始爬下一页：${nextPage}`);
-                return this.UpdateIndex(nextPage);
+                return this.UpdateIndex(nextPage, orderNum);
+            } else {
+                new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
             }
         });
     }
 
 
-
     /**
-     * 更新指定章节
+     * 更新指定章节-更新正文
      * @param {int} cIndex 章节索引
+     * @param {boolean} isUpdate 是否覆盖更新-默认否
      */
-    async UpdateOneChapter(cIndex) {
+    async UpdateOneChapter(cIndex, isUpdate = false) {
         if (this.myWebBook == null) {
             console.warn("[WebBookMaker::UpdateOneChapter] 尚未加载电子书，操作失败。");
             return;
@@ -84,8 +100,10 @@ class WebBookMaker {
             return;
         }
 
+        await this.myWebBook.ReloadChapter(cIndex);
+
         let cs = this.myWebBook.Chapters;
-        if (cs.has(curCp.WebTitle)) return;        //已存在的内容跳过
+        if (cs.has(curCp.WebTitle) && !isUpdate) return;        //已存在的内容跳过
 
         let url = this.GetDefaultUrl(cIndex);
         if (!url) return;
@@ -96,9 +114,10 @@ class WebBookMaker {
         const option = { RuleList: webRule.chapter.GetRuleList() }
 
         return await GetDataFromUrl(url, option).then(async (result) => {
-            let chap = new WebChapter();
-            chap.Title = curCp.Title;
-            chap.WebTitle = curCp.WebTitle;
+            let chap = new WebChapter(curCp);
+            // chap.Title = curCp.Title;
+            // chap.WebTitle = curCp.WebTitle;
+            // chap.IndexId = curCp.IndexId;
             if (result.has("CapterTitle")) {
                 chap.Title = result.get("CapterTitle")[0].text;
             }
@@ -120,7 +139,8 @@ class WebBookMaker {
                 }
             }
 
-            cs.set(curCp.WebTitle, chap);
+            //cs.set(curCp.WebTitle, chap);
+            this.myWebBook.AddChapter(chap, isUpdate);
 
             new EventManager().emit("WebBook.UpdateOneChapter.Finish", this.myWebBook.BookId, cIndex, chap.WebTitle);
         });
@@ -129,8 +149,9 @@ class WebBookMaker {
     /**
      * 批量更新章节
      * @param {Array} cIndex 
+     * @param {boolean} isUpdate 是否覆盖更新-默认否
      */
-    UpdateChapter(cIndex) {
+    UpdateChapter(cIndex, isUpdate = false) {
         let doneNum = 0;//已完成数
         let allNum = cIndex.length;
         let doList = [];
@@ -141,7 +162,7 @@ class WebBookMaker {
                 continue;
             }
 
-            this.UpdateOneChapter(id);
+            this.UpdateOneChapter(id, isUpdate);
             doList.push(id);
         }
 
@@ -181,45 +202,6 @@ class WebBookMaker {
 
 
     ///----------------私有方法---------------------------
-    /**
-         * 合并章节目录（爬到的章节内容合并更新到本书内
-         * @param {{text,url}} index 
-         */
-    MargeIndex(index) {
-        //console.log(JSON.stringify(index, null, 2));      {text,url}
-        //this.myWebBook.Index
-
-        let bookIndex = this.myWebBook.Index;
-        let addItem = new Map();
-        for (let i of index) {
-            let hasFind = false;
-            for (let bi of bookIndex) {
-                if (bi.URL.includes(i.url)) {
-                    hasFind = true;
-                    continue;
-                } else if (bi.WebTitle == i.text) {//标题能对上，来源地址对不上时，合并来源
-                    hasFind = true;
-                    bi.URL.push(i.url);
-                }
-            }
-
-            if (!hasFind) {
-                if (addItem.has(i.text)) {                    //已存在的章节合并-标题重复的章节
-                    let curItem = addItem.get(i.text);
-                    curItem.URL.push(i.url);
-                    continue;
-                }
-
-                let iItem = new WebIndex({ title: i.text });
-                iItem.URL.push(i.url);
-                addItem.set(i.text, iItem);
-            }
-        }
-
-        bookIndex.push(...addItem.values());
-
-        // console.log(JSON.stringify(bookIndex, "", 4));
-    }
 
     /**
      * 取得章节来源网址

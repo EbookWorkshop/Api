@@ -50,6 +50,7 @@ class RuleManager {
                 result.chapter.CapterTitleRule.RemoveSelector.push(".amiddle");
                 result.chapter.CapterTitleRule.Selector = "h1.title";
                 result.chapter.CapterTitleRule.GetContentAction = "attr/innerText";
+                result.chapter.ContentRule.RemoveSelector.push("h1");
                 result.chapter.ContentRule.Selector = ".content"
                 result.chapter.ContentRule.GetContentAction = "attr/innerText";
 

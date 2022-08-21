@@ -7,7 +7,7 @@ class WebBook extends Ebook {
     /**
      * 网文电子书
      */
-    constructor({ WebBookName, defaultIndex, isCheckEnd, isCheckRepeat, ...x }) {
+    constructor({ WebBookName, defaultIndex, isCheckEnd, isCheckRepeat, ...x } = {}) {
         if (x.BookId) x.id = x.BookId;
         super(x);
 
@@ -32,6 +32,11 @@ class WebBook extends Ebook {
          * 是否检查章节重复
          */
         this.isCheckRepeat = isCheckRepeat || true;
+
+        /**
+         * 临时，仅用于合并章节时，用于记录临时的章节情况
+         */
+        this.tempMergeIndex = null; //Map
     }
 }
 
