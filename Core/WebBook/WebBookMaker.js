@@ -155,29 +155,44 @@ class WebBookMaker {
      * @param {Array} cIndex 章节ID数组
      * @param {boolean} isUpdate 是否覆盖更新-默认否
      */
-    UpdateChapter(cIdArray, isUpdate = false) {
+    async UpdateChapter(cIdArray, isUpdate = false) {
         let doneNum = 0;//已完成数
         let allNum = cIdArray.length;
         let doList = [];
         let em = new EventManager();
         let bookid = this.myWebBook.BookId;
 
-        for (let id of cIdArray) {
+        const _maxLineLength = 10;    //最大的线程次数
+        let _curLineNum = 0;   //当前线程数
 
-            this.UpdateOneChapter(id, isUpdate).then(() => {
-                em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
-            });
-            doList.push(id);
-
-        }
-
-        em.on("WebBook.UpdateOneChapter.Finish", (bookid, chapterIndex, title) => {
+        em.on("WebBook.UpdateOneChapter.Finish", (bookid, cIdArray) => {
             doneNum++;
 
             if (allNum == doneNum) {
                 em.emit("WebBook.UpdateChapter.Finish", bookid, doList);
             }
-        })
+        });
+
+        for (let id of cIdArray) {
+            _curLineNum++;
+
+            if (_curLineNum >= _maxLineLength) { //同步
+                console.log("【同步】已开始：", id);
+                await this.UpdateOneChapter(id, isUpdate).then(() => {
+                    _curLineNum--;
+                    em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                });
+            } else {  //异步
+                console.log("【异步】已开始：", id);
+                this.UpdateOneChapter(id, isUpdate).then(() => {
+                    _curLineNum--;
+                    em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                });
+            }
+
+            doList.push(id);
+        }
+
     }
 
     /**
