@@ -1,9 +1,5 @@
 const Sequelize = require("sequelize");
-const Ebook = require("../../Entity/Ebook/Ebook.js");
-const Index = require("../../Entity/Ebook/Index.js");
-const WebBook = require("../../Entity/WebBook/WebBook.js");
 const Models = require("./Models.js");
-const DO = require("./DO.js");
 
 let myDb = null;
 let myModels = null;//new Models(myDb);
@@ -40,58 +36,8 @@ class DB {
         });
     }
 
-    /**
-     * 
-     * @param {*} id 
-     * @returns 
-     */
-    async GetWebBook(id) {
-        let wb = await myModels.WebBook.findOne({ where: { BookId: id } });
-        return await DO.ModelToWebBook(wb);
-    }
 
-    /**
-     * 根据书名找到对应的电子书配置
-     * @param {string} bookName 书名/网文的唯一书名
-     * @returns WebBook
-     */
-    async GetOrCreateWebBookByName(bookName) {
-        bookName = bookName?.trim();
-        if (!bookName) return;
-        let [book, created] = await myModels.WebBook.findOrCreate({
-            where: { WebBookName: bookName }
-        });
-
-        if (created) {
-            //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
-            let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
-                where: { BookName: bookName }
-            });
-
-            if (ecreated) {
-                book.update({ BookId: ebook.id }, { where: { WebBookName: bookName } });
-            }
-        }
-
-        return await DO.ModelToWebBook(book);
-    }
-
-    /**
-     * 根据ID获得对应的WebBook对象
-     * @param {int} bookId 书的ID
-     */
-    async GetWebBookById(bookId) {
-        let book = await myModels.WebBook.findOne({
-            where: { BookId: bookId }
-        });
-
-        if (book == null) return null;
-
-        return await DO.ModelToWebBook(book);
-    }
 
 }
-
-
 
 module.exports = DB;

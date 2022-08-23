@@ -6,9 +6,7 @@ const WebChapter = require("./../../Entity/WebBook/WebChapter.js");
 const { GetDataFromUrl } = require("./GetDataFromUrl.js");
 const RuleManager = require("./RuleManager.js");
 const EventManager = require("./../EventManager.js");
-const DB = require("../OTO/DatabaseHelper.js");
-
-const db = new DB();
+const DO = require("./../OTO/DO.js");
 
 /**
  * WebBook - DTO
@@ -26,7 +24,7 @@ class WebBookMaker {
             this.myWebBook = this.InitEmptyFromIndex(webbook);
             return;
         } else if (typeof (webbook) === "number") {
-            this.loadFromDB = db.GetWebBookById(webbook).then((book) => {
+            this.loadFromDB = DO.GetWebBookById(webbook).then((book) => {
                 this.myWebBook = book;
             });
             return;
@@ -62,7 +60,7 @@ class WebBookMaker {
 
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
-                this.myWebBook = await db.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
+                this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
                 this.myWebBook.AddIndexUrl(curUrl);
             }
 
@@ -158,7 +156,7 @@ class WebBookMaker {
     async UpdateChapter(cIdArray, isUpdate = false) {
         let doneNum = 0;//已完成数
         let allNum = cIdArray.length;
-        let doList = [];
+        let doList = [];//参与过的列表，用于判断已经启动多少——失败也算
         let em = new EventManager();
         let bookid = this.myWebBook.BookId;
 
@@ -170,6 +168,10 @@ class WebBookMaker {
 
             if (allNum == doneNum) {
                 em.emit("WebBook.UpdateChapter.Finish", bookid, doList);
+
+                //清除所有监听事件，避免同一监听对象达到10个上限
+                //TODO:这可能在并发的时候删掉别人的监听器?
+                em.removeListener("WebBook.UpdateOneChapter.Finish");
             }
         });
 
@@ -179,14 +181,20 @@ class WebBookMaker {
             if (_curLineNum >= _maxLineLength) { //同步
                 console.log("【同步】已开始：", id);
                 await this.UpdateOneChapter(id, isUpdate).then(() => {
-                    _curLineNum--;
                     em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                }).catch((err) => {
+                    console.warn(`更新失败：ID-${id}，原因：${err}`);
+                }).finally(() => {
+                    _curLineNum--;
                 });
             } else {  //异步
                 console.log("【异步】已开始：", id);
                 this.UpdateOneChapter(id, isUpdate).then(() => {
-                    _curLineNum--;
                     em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                }).catch((err) => {
+                    console.warn(`更新失败：ID-${id}，原因：${err}`);
+                }).finally(() => {
+                    _curLineNum--;
                 });
             }
 
@@ -218,6 +226,13 @@ class WebBookMaker {
         return curbook;
     }
 
+    /**
+     * 删除指定书的ID
+     * @param {*} bookId 书ID
+     */
+    static async DeleteOneBook(bookId) {
+        return await DO.DeleteOneBook(bookId);
+    }
 
     ///----------------私有方法---------------------------
 

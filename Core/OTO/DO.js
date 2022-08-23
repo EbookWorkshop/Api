@@ -19,9 +19,50 @@ class DO {
 
     }
 
+    /**
+     * 根据ID获得对应的WebBook对象
+     * @param {int} bookId 书的ID
+     */
+    static async GetWebBookById(bookId) {
+        const myModels = new Models();
+        let book = await myModels.WebBook.findOne({
+            where: { BookId: bookId }
+        });
+
+        if (book == null) return null;
+
+        return await DO.ModelToWebBook(book);
+    }
 
     /**
-     * 数据库对象传输为WebBook对象
+     * 根据书名找到对应的电子书配置
+     * @param {string} bookName 书名/网文的唯一书名
+     * @returns WebBook
+     */
+    static async GetOrCreateWebBookByName(bookName) {
+        const myModels = new Models();
+        bookName = bookName?.trim();
+        if (!bookName) return;
+        let [book, created] = await myModels.WebBook.findOrCreate({
+            where: { WebBookName: bookName }
+        });
+
+        if (created) {
+            //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
+            let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
+                where: { BookName: bookName }
+            });
+
+            if (ecreated) {
+                book.update({ BookId: ebook.id }, { where: { WebBookName: bookName } });
+            }
+        }
+
+        return await DO.ModelToWebBook(book);
+    }
+
+    /**
+     * 数据库对象传输为WebBook对象-OK
      * @param {Model} ebModel 数据库模型 
      * @returns WebBook 对象
      */
@@ -168,7 +209,36 @@ class DO {
         return webBook;
     }
 
-    //static 
+    /**
+     * 删除指定书的ID
+     * @param {*} bookId 书ID
+     */
+    static async DeleteOneBook(bookId) {
+        const myModels = new Models();
+
+        const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
+        if (ebook == null) return;
+
+
+        const index = await ebook.getEbookIndex();
+
+        const wbook = await ebook.getWebBook();
+        const wbSourceUrl = await wbook.getWebBookIndexSourceURLs();
+        for (let i of index) {
+            const eIndex = await i.getWebBookIndex();
+            const eIUrl = await eIndex.getWebBookIndexURLs();
+            for (let ei of eIUrl) {
+                await ei.destroy();
+            }
+            await eIndex.destroy();
+            await i.destroy();
+        }
+        for (let wu of wbSourceUrl) {
+            await wu.destroy();
+        }
+        await wbook.destroy();
+        await ebook.destroy();
+    }
 }
 
 module.exports = DO;
