@@ -1,8 +1,12 @@
 const Models = require("./Models.js");
+const Ebook = require("../../Entity/Ebook/Ebook.js");
+const Index = require("../../Entity/Ebook/Index.js");
+const Chapter = require("../../Entity/Ebook/Chapter.js");
 const WebBook = require("../../Entity/WebBook/WebBook.js");
 const WebIndex = require("../../Entity/WebBook/WebIndex.js");
 const WebChapter = require("../../Entity/WebBook/WebChapter.js");
 
+const PDFBook = require("./../../Entity/PDFBook/PDFBook.js");
 
 /**
  * doToPo
@@ -11,12 +15,78 @@ class DO {
     constructor() { }
 
     /**
-     * 传输对象转换为EBook对象
-     * @param {*} ebModel 
+     * 
+     * @param {*} ebookModel 
+     * @param {*} BOOKTYPE 
+     * @returns 
      */
-    static async ModelToEBook(ebModel) {
+    static async ModelToBookObj(ebookModel, BOOKTYPE) {
+        // const myModels = new Models();
+        let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
 
+        /**
+         * 重新加载所有章节
+         */
+        ebook.ReloadIndex = async () => {
+            const myModels = new Models();
+            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId }, order: ["OrderNum"] });
+            for (let i of eIndexs) {
+                let index = new Index({ ...i.dataValues })
+                ebook.Index.push(index);
+            }
+        }
 
+        /**
+         * 从数据库加载指定章节到当前对象
+         * @param {*} cId 章节ID
+         */
+        ebook.ReloadChapter = async (cId) => {
+            let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: ebook.BookId } });
+            if (ebookIndex == null) return;
+            let cp = new Chapter({ ...ebookIndex.dataValues });
+            // if (cp.Content) 
+            ebook.Chapters.set(cp.Title, cp);
+        }
+
+        /**
+         * 拿到指定章节内容
+         * @param {*} cId 章节ID
+         */
+        ebook.GetChapter = (cId) => {
+            let iObj = null;
+            for (let i of ebook.Index) {
+                if (i.IndexId == cId) {
+                    iObj = i;
+                    break;
+                }
+            }
+            if (iObj == null) return null;
+            return ebook.Chapters.get(iObj.Title);
+        }
+
+        await ebook.ReloadIndex();
+        return ebook;
+    }
+
+    /**
+     * 根据ID获得对应的EBook对象
+     * @param {*} bookId 
+     * @returns EBook
+     */
+    static async GetEBookById(bookId) {
+        const myModels = new Models();
+        let book = await myModels.Ebook.findOne({ where: { id: bookId } });
+        if (book == null) return null;
+        return await DO.ModelToEBook(book);
+    }
+
+    /**
+     * 传输对象转换为EBook对象
+     * @param {*} ebookModel 
+     * @returns EBook
+     */
+    static async ModelToEBook(ebookModel) {
+        return await DO.ModelToBookObj(ebookModel, Ebook);
     }
 
     /**
@@ -63,13 +133,13 @@ class DO {
 
     /**
      * 数据库对象传输为WebBook对象-OK
-     * @param {Model} ebModel 数据库模型 
+     * @param {Model} webModel 数据库模型 
      * @returns WebBook 对象
      */
-    static async ModelToWebBook(ebModel) {
-        let ebook = await ebModel?.getEbook();
-        let webBook = new WebBook({ ...ebModel.dataValues, ...ebook.dataValues });
-        let urls = await ebModel.getWebBookIndexSourceURLs();
+    static async ModelToWebBook(webModel) {
+        let ebook = await webModel?.getEbook();
+        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues });
+        let urls = await webModel.getWebBookIndexSourceURLs();
         for (var u of urls) webBook.IndexUrl.push(u.Path);
 
         /**
@@ -238,6 +308,32 @@ class DO {
         }
         await wbook.destroy();
         await ebook.destroy();
+    }
+
+    /**
+     * 创建一个PDF对象
+     * @param {int} bookId 书的ID
+     */
+    static async GetPDFById(bookId) {
+        const myModels = new Models();
+        let book = await myModels.Ebook.findOne({ where: { id: bookId } });
+        if (book == null) return null;
+
+        let pdf = await DO.ModelToBookObj(book, PDFBook);
+
+        /**
+         * 设置包含的章节
+         * @param {Array} chapters 需要的章节Id
+         */
+        pdf.SetShowChapters = async (chapters) => {
+            for (let c of chapters) {
+                if (pdf.showIndexId.has(c)) continue;
+                await pdf.ReloadChapter(c);
+                pdf.showIndexId.add(c);
+            }
+        }
+
+        return pdf;
     }
 }
 

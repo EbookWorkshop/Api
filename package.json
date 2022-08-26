@@ -13,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "async_hooks": "^1.0.0",
+    "pdfkit": "^0.13.0",
     "puppeteer": "^16.1.0",
     "sequelize": "^6.21.3",
     "sqlite3": "^5.0.11"

@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer')
 const EventManager = require("./../EventManager.js");
 
-const DEBUG = false;    //用于跟踪问题，跟踪站点
+const DEBUG = !false;    //用于跟踪问题，跟踪站点
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -18,37 +18,43 @@ async function GetDataFromUrl(url, setting) {
             height: 900
         },
         headless: !DEBUG,        //设置为有界面，如果为true，即为无界面
-        slowMo: 50        //设置放慢每个步骤的毫秒数
+        slowMo: 250        //设置放慢每个步骤的毫秒数
     }
     let browser = await puppeteer.launch(options);
-    // 打来新页面
-    let page = await browser.newPage();
-    // 配置需要访问网址
-    await page.goto(url);
-    //接管console
-    if (DEBUG) page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
 
-    //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
+    try {
+        let page = await browser.newPage();
+        // 配置需要访问网址
+        await page.goto(url);
+        //接管console
+        if (DEBUG) page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
 
-    if (DEBUG) new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
-    if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
+        //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
-    let result = new Map();
-    for (let rule of setting.RuleList) {
-        if (rule.Selector === "") continue;
+        if (DEBUG) new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
+        if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
 
-        //先尝试删除干扰元素
-        for (let sR of rule.RemoveSelector)
-            await page.$$eval(sR, (node, option) => {
-                for (let nO of node) nO.parentNode.removeChild(nO)
-            });
+        let result = new Map();
+        for (let rule of setting.RuleList) {
+            if (rule.Selector === "") continue;
 
-        //执行规则
-        result.set(rule.RuleName, await ExecRule(page, rule));
+            //先尝试删除干扰元素
+            for (let sR of rule.RemoveSelector)
+                await page.$$eval(sR, (node, option) => {
+                    for (let nO of node) nO.parentNode.removeChild(nO)
+                });
+
+            //执行规则
+            result.set(rule.RuleName, await ExecRule(page, rule));
+        }
+
+    } catch (err) {
+        console.warn("[执行失败]GetDataFromUrl::", err.message);
+    } finally {
+        if (browser) await browser.close(); //确保关掉以免因失败耗费内存
     }
 
     // 结束关闭
-    await browser.close();
     return result;
 }
 

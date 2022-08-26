@@ -97,23 +97,23 @@ class WebBookMaker {
     async UpdateOneChapter(cId, isUpdate = false) {
         if (this.myWebBook == null) {
             console.warn("[WebBookMaker::UpdateOneChapter] 尚未加载电子书，操作失败。");
-            return;
+            return false;
         }
 
         let curIndex = this.myWebBook.GetIndex(cId);
 
         if (!curIndex) {
             console.warn(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`);
-            return;
+            return false;
         }
 
         await this.myWebBook.ReloadChapter(cId);    //尝试加载章节内容到内存
 
         let cs = this.myWebBook.Chapters;
-        if (cs.has(curIndex.WebTitle) && !isUpdate) return;        //已存在的内容跳过
+        if (cs.has(curIndex.WebTitle) && !isUpdate) return false;        //已存在的内容跳过
 
         let url = this.GetDefaultUrl(curIndex.URL);
-        if (!url) return;
+        if (!url) return false;
 
         const webRule = await RuleManager.GetRuleByURL(url);
         const option = { RuleList: webRule.chapter.GetRuleList() }
@@ -145,6 +145,8 @@ class WebBookMaker {
             this.myWebBook.AddChapter(chap, isUpdate);
 
             new EventManager().emit("WebBook.UpdateOneChapter.Finish", this.myWebBook.BookId, cId, chap.WebTitle);
+        }).catch(() => {
+            return false;
         });
     }
 
@@ -155,6 +157,7 @@ class WebBookMaker {
      */
     async UpdateChapter(cIdArray, isUpdate = false) {
         let doneNum = 0;//已完成数
+        let failNum = 0;//已失败次数
         let allNum = cIdArray.length;
         let doList = [];//参与过的列表，用于判断已经启动多少——失败也算
         let em = new EventManager();
@@ -166,8 +169,8 @@ class WebBookMaker {
         em.on("WebBook.UpdateOneChapter.Finish", (bookid, cIdArray) => {
             doneNum++;
 
-            if (allNum == doneNum) {
-                em.emit("WebBook.UpdateChapter.Finish", bookid, doList);
+            if (allNum == doneNum + failNum) {
+                em.emit("WebBook.UpdateChapter.Finish", bookid, doList, doneNum, failNum);
 
                 //清除所有监听事件，避免同一监听对象达到10个上限
                 //TODO:这可能在并发的时候删掉别人的监听器?
@@ -175,24 +178,29 @@ class WebBookMaker {
             }
         });
 
+        const lastId = cIdArray[cIdArray.length - 1];//让最后一步在同步模式下 防止未处理完就退出了
         for (let id of cIdArray) {
             _curLineNum++;
 
-            if (_curLineNum >= _maxLineLength) { //同步
+            if (_curLineNum >= _maxLineLength || lastId == id) { //同步
                 console.log("【同步】已开始：", id);
-                await this.UpdateOneChapter(id, isUpdate).then(() => {
-                    em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                await this.UpdateOneChapter(id, isUpdate).then((rsl) => {
+                    if (rsl) em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                    else failNum++;
                 }).catch((err) => {
                     console.warn(`更新失败：ID-${id}，原因：${err}`);
+                    failNum++;
                 }).finally(() => {
                     _curLineNum--;
                 });
             } else {  //异步
                 console.log("【异步】已开始：", id);
-                this.UpdateOneChapter(id, isUpdate).then(() => {
-                    em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                this.UpdateOneChapter(id, isUpdate).then((rsl) => {
+                    if (rsl) em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
+                    else failNum++;
                 }).catch((err) => {
                     console.warn(`更新失败：ID-${id}，原因：${err}`);
+                    failNum++;
                 }).finally(() => {
                     _curLineNum--;
                 });
