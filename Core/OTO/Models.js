@@ -1,5 +1,5 @@
 const Sequelize = require("sequelize");
-const EventManager = require("../EventManager.js");
+const EventManager = require("../EventManager");
 
 let PO_MODELS = null;
 

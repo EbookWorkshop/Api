@@ -1,4 +1,4 @@
-const Index = require("./../Ebook/Index.js");
+const Index = require("./../Ebook/Index");
 
 /**
  * 章节目录——网文版，多了WebTitle，用于合并不同源的章节合并

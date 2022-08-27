@@ -1,12 +1,12 @@
-const Models = require("./Models.js");
-const Ebook = require("../../Entity/Ebook/Ebook.js");
-const Index = require("../../Entity/Ebook/Index.js");
-const Chapter = require("../../Entity/Ebook/Chapter.js");
-const WebBook = require("../../Entity/WebBook/WebBook.js");
-const WebIndex = require("../../Entity/WebBook/WebIndex.js");
-const WebChapter = require("../../Entity/WebBook/WebChapter.js");
+const Models = require("./Models");
+const Ebook = require("../../Entity/Ebook/Ebook");
+const Index = require("../../Entity/Ebook/Index");
+const Chapter = require("../../Entity/Ebook/Chapter");
+const WebBook = require("../../Entity/WebBook/WebBook");
+const WebIndex = require("../../Entity/WebBook/WebIndex");
+const WebChapter = require("../../Entity/WebBook/WebChapter");
 
-const PDFBook = require("./../../Entity/PDFBook/PDFBook.js");
+const PDFBook = require("./../../Entity/PDFBook/PDFBook");
 
 /**
  * doToPo

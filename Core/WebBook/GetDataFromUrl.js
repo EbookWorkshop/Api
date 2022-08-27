@@ -1,6 +1,6 @@
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
-const EventManager = require("./../EventManager.js");
+const EventManager = require("./../EventManager");
 
 const DEBUG = !false;    //用于跟踪问题，跟踪站点
 

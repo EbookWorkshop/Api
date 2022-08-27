@@ -1,12 +1,12 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 
-const WebBook = require("./../../Entity/WebBook/WebBook.js");
-const WebIndex = require("./../../Entity/WebBook/WebIndex.js");
-const WebChapter = require("./../../Entity/WebBook/WebChapter.js");
-const { GetDataFromUrl } = require("./GetDataFromUrl.js");
-const RuleManager = require("./RuleManager.js");
-const EventManager = require("./../EventManager.js");
-const DO = require("./../OTO/DO.js");
+const WebBook = require("./../../Entity/WebBook/WebBook");
+const WebIndex = require("./../../Entity/WebBook/WebIndex");
+const WebChapter = require("./../../Entity/WebBook/WebChapter");
+const { GetDataFromUrl } = require("./GetDataFromUrl");
+const RuleManager = require("./RuleManager");
+const EventManager = require("./../EventManager");
+const DO = require("./../OTO/DO");
 
 /**
  * WebBook - DTO

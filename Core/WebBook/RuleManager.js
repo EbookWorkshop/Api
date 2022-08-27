@@ -1,7 +1,7 @@
 //管理站点与爬站规则之间的关系
-const DB = require("./../OTO/DatabaseHelper.js");
-const IndexOptions = require("./../../Entity/WebBook/IndexOptions.js");
-const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions.js");
+const DB = require("./../OTO/DatabaseHelper");
+const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
+const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
 
 /**

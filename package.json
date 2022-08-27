@@ -1,21 +1,29 @@
 {
   "name": "ebookworkshop",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "电子书工具",
   "main": "start.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "ebook"
+    "ebook",
+    "pdf",
+    "txt",
+    "kindle"
   ],
   "author": "c0618c",
   "license": "MIT",
   "dependencies": {
     "async_hooks": "^1.0.0",
+    "koa": "^2.13.4",
+    "koa-router": "^12.0.0",
+    "koa2-swagger-ui": "^5.6.0",
     "pdfkit": "^0.13.0",
     "puppeteer": "^16.1.0",
     "sequelize": "^6.21.3",
-    "sqlite3": "^5.0.11"
+    "sqlite3": "^5.0.11",
+    "swagger-jsdoc": "^6.2.5"
   }
 }

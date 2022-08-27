@@ -1,6 +1,6 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
-const EventManager = require("./../EventManager.js");
+const EventManager = require("./../EventManager");
 
 class PDFMaker {
     constructor(pdf) {

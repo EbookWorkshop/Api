@@ -1,5 +1,5 @@
 const Sequelize = require("sequelize");
-const Models = require("./Models.js");
+const Models = require("./Models");
 
 let myDb = null;
 let myModels = null;//new Models(myDb);
