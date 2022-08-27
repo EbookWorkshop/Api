@@ -45,8 +45,14 @@ class Models {
         //Ebook目录
         m.EbookIndex = sequelize.define("EbookChapter", {
             Title: { type: Sequelize.STRING(50), allowNull: false },                    //章节标题
-            Content: { type: Sequelize.STRING(8000), allowNull: true },                 //章节正文
-            OrderNum: { type: Sequelize.INTEGER, allowNull: false }
+            Content: { type: Sequelize.TEXT, allowNull: true },                         //章节正文
+            OrderNum: { type: Sequelize.INTEGER, allowNull: false },
+            HasContent: {
+                type: Sequelize.VIRTUAL,        //虚拟字段
+                get() {
+                    return this.getDataValue("Content") && true;
+                }
+            }
         });
         m.Ebook.hasMany(m.EbookIndex, { foreignKey: 'BookId', sourceKey: 'id', as: "EbookIndex" });
         m.EbookIndex.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id', as: "Ebook" });

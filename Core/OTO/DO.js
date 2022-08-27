@@ -156,7 +156,9 @@ class DO {
             }
         }
 
-        //从数据库加载所有目录信息 初始化Index数组
+        /**
+         * 从数据库加载所有目录信息 初始化Index数组
+         */
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: webBook.BookId }, order: ["OrderNum"] });
@@ -183,8 +185,8 @@ class DO {
         }
 
         /**
-         * 
-         * @param {*} cId 
+         * 返回指定ID的章节配置——在对象内查找
+         * @param {*} cId 章节ID
          * @returns WebIndex
          */
         webBook.GetIndex = (cId) => {
@@ -334,6 +336,20 @@ class DO {
         }
 
         return pdf;
+    }
+
+
+    /**
+     * 获取图书列表
+     */
+    static async GetBookList() {
+        const myModels = new Models();
+        let bookListModels = await myModels.Ebook.findAll();
+        let bookList = [];
+        for (let b of bookListModels) {
+            bookList.push(new Ebook({ ...b.dataValues }));
+        }
+        return bookList;
     }
 }
 

@@ -5,14 +5,14 @@ const swaggerDefinition = {
     info: {
         title: 'EBook Workshop',
         version: '3.0',
-        description: '文档',
+        description: 'EBook Workshop 的接口',
     },
     host: 'localhost:8777',//http://localhost:8777/swagger
     basePath: '/'
 };
 const options = {
     swaggerDefinition,
-    apis: ['./Controller/*.js'],
+    apis: ['./Controller/*/*.js','./Controller/*.js'],
 };
 const swaggerSpec = jsdoc(options)
 
@@ -24,14 +24,14 @@ module.exports = () => ({
      *     tags:
      *       - Swagger
      *     summary: 通过路由获取生成的注解文件
+     *     description: 通过路由获取生成的注解文件
      *     consumes:
      *       - application/json
      *     responses:
      *       200:
-     *         description: successful operation
+     *         description: 成功
     */
     "get .json": async (ctx) => {
-        ctx.set('Content-Type', 'application/json');
         ctx.body = swaggerSpec;
     }
 });
