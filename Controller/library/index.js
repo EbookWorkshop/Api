@@ -36,7 +36,8 @@ module.exports = () => ({
      *       required: true
      *       description: 需获取的书ID
      *       schema:
-     *         type: int
+     *         type: integer
+     *         format: int64
      *     consumes:
      *       - application/json
      *     responses:
