@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
 const EventManager = require("./../EventManager");
+const { path } = require('pdfkit');
 
 class PDFMaker {
     constructor(pdf) {
@@ -40,6 +41,7 @@ class PDFMaker {
                     resolve(fileInfo);
                 });
             } catch (e) {
+                new EventManager().emit("Debug.PDFMaker.MakePDF.Fail", e.message, fileInfo.filename, fileInfo.path)
                 reject(e);
             }
         });

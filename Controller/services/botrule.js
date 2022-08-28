@@ -107,4 +107,33 @@ module.exports = () => ({
         }
 
     },
+    /**
+     * @swagger
+     * /services/botrule:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - TODO
+     *     summary: 拿到指定站点的规则
+     *     description: 拿到指定站点的规则——给UI用于展示
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get ": async (ctx) => {
+        let host = ctx.query.host;
+
+        ctx.body = host;
+    }
 });
