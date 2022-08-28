@@ -50,6 +50,7 @@ async function GetDataFromUrl(url, setting) {
 
     } catch (err) {
         console.warn("[执行失败]GetDataFromUrl::", err.message);
+        throw err;
     } finally {
         if (browser) await browser.close(); //确保关掉以免因失败耗费内存
     }

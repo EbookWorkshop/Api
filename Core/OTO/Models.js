@@ -50,7 +50,7 @@ class Models {
             HasContent: {
                 type: Sequelize.VIRTUAL,        //虚拟字段
                 get() {
-                    return this.getDataValue("Content") && true;
+                    return this.getDataValue("Content")?.length > 0;
                 }
             }
         });
@@ -95,14 +95,14 @@ class Models {
 
         //网站规则部分
         this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
+            Host: { type: Sequelize.STRING(100), allowNull: false },
             RuleName: { type: Sequelize.STRING(20), allowNull: false },
             Selector: { type: Sequelize.STRING(100), allowNull: false },
             RemoveSelector: { type: Sequelize.STRING(200), allowNull: true },
-            GetContentAction: { type: Sequelize.STRING(100), allowNull: false },
+            GetContentAction: { type: Sequelize.STRING(100), allowNull: true },
             GetUrlAction: { type: Sequelize.STRING(100), allowNull: true },
             Type: { type: Sequelize.STRING(100), allowNull: false, defaultValue: "Object" },
             CheckSetting: { type: Sequelize.STRING(100), allowNull: true },
-            Host: { type: Sequelize.STRING(100), allowNull: true },
         });
 
         // this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址

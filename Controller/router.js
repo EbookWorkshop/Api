@@ -14,8 +14,13 @@ const load = async (dir, fatherRouter, cb) => {
         if (filename === "index.js") return;        //index通过目录形式加载
 
         let curfilename = filename.replace('.js', '');
-        const routes = require(`${url}/${curfilename}`);
-        cb(curfilename, fatherRouter, routes);
+        try {
+            const routes = require(`${url}/${curfilename}`);
+            cb(curfilename, fatherRouter, routes);
+        } catch (err) {
+            console.warn(`加载路由失败：${err.message}`);//有可能是目录情况但当前目录没有index.js
+            // return;
+        }
 
         //递归加载子目录
         if (!filename.endsWith(".js"))
@@ -31,7 +36,7 @@ load("./", "", (filename, fatherRouter, routes) => {
     Object.keys(routes).forEach(key => {
         const [method, path] = key.split(' ');
         // 注册路由
-        console.log("已加载路由：\t", prefix + path)
+        console.log(`已加载路由：\t[${method}]\t${prefix + path}`)
         router[method](prefix + path, (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
             return routes[key](ctx);

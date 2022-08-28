@@ -183,7 +183,7 @@ class WebBookMaker {
             _curLineNum++;
 
             if (_curLineNum >= _maxLineLength || lastId == id) { //同步
-                console.log("【同步】已开始：", id);
+                console.log("【同步】已开始：章节ID", id);
                 await this.UpdateOneChapter(id, isUpdate).then((rsl) => {
                     if (rsl) em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
                     else failNum++;
@@ -209,6 +209,7 @@ class WebBookMaker {
             doList.push(id);
         }
 
+        return doList;
     }
 
     /**

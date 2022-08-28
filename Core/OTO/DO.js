@@ -31,7 +31,7 @@ class DO {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId }, order: ["OrderNum"] });
             for (let i of eIndexs) {
-                let index = new Index({ ...i.dataValues })
+                let index = new Index({ ...i.dataValues, HasContent: i.HasContent })
                 ebook.Index.push(index);
             }
         }
