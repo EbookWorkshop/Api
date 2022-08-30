@@ -5,14 +5,14 @@ const swaggerDefinition = {
     info: {
         title: 'EBook Workshop',
         version: '3.0',
-        description: 'EBook Workshop 的接口',
+        description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，{ret:0}用于代表成功，{ret:1}代表执行失败。',
     },
     host: 'localhost:8777',//http://localhost:8777/swagger
     basePath: '/'
 };
 const options = {
     swaggerDefinition,
-    apis: ['./Controller/*/*.js','./Controller/*.js'],
+    apis: ['./Controller/*/*.js', './Controller/*.js'],
 };
 const swaggerSpec = jsdoc(options)
 

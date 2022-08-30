@@ -92,6 +92,14 @@ class Models {
         m.WebBookIndex.hasMany(m.WebBookIndexURL, { foreignKey: "WebBookIndexId", sourceKey: "id" });
         m.WebBookIndexURL.belongsTo(m.WebBookIndex, { foreignKey: 'WebBookIndexId', targetKey: "id" });
 
+        m.PDFBook = sequelize.define("PDFBook", {
+            PaddingX: { type: Sequelize.INTEGER, allowNull: false },
+            PaddingY: { type: Sequelize.INTEGER, allowNull: false },
+            PageWidth: { type: Sequelize.INTEGER, allowNull: false },
+            IsShowTitleOnChapter: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
+        });
+        m.Ebook.hasOne(m.PDFBook, { foreignKey: 'BookId', sourceKey: 'id' });
+        m.PDFBook.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
         //网站规则部分
         this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址

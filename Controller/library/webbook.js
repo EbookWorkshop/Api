@@ -170,5 +170,91 @@ module.exports = () => ({
         }).catch((err) => {
             ctx.body = JSON.stringify({ ret: 1, data: param, err: err.message });
         });
+    },
+
+    /**
+     * @swagger
+     * /library/webbook/addnewsource:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 新增书来源
+     *     description: 提供一个新的目录页地址，作为当前本书当前的新来源（一般是原源挂了）
+     *     parameters:
+     *       - in: body
+     *         name: bookInfo
+     *         description: 需要新增来源的书目ID，目录页地址
+     *         schema:
+     *            type: object
+     *            required:
+     *              - bookId
+     *              - url
+     *            properties:
+     *              bookId:
+     *                type: integer
+     *                format: int32
+     *              url:
+     *                type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /addnewsource": async (ctx) => {
+        let param = await Server.parseJsonFromBodyData(ctx, ["bookId", "url"]);
+        let b = await DO.GetWebBookById(param.bookId);
+        await b.AddIndexUrl(param.url, true)
+            .then(result => {
+                ctx.body = JSON.stringify({ ret: 0 });
+            }).catch((err) => {
+                ctx.body = JSON.stringify({ ret: 1, err: err.message });
+            });
+    },
+    /**
+     * @swagger
+     * /library/webbook/mergeindex:
+     *   patch:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 合并更新整个目录
+     *     description: 合并目录，并按章节同名规则加入章节页面地址
+     *     parameters:
+     *       - in: body
+     *         name: bookInfo
+     *         description: 需要更新的书目ID，章节信息
+     *         schema:
+     *           type: object
+     *           required:
+     *             - bookId
+     *           properties:
+     *             bookId:
+     *               type: integer
+     *               format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "patch /mergeindex": async (ctx) => {
+        let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
+
+        let wbm = new WebBookMaker(param.bookId);
+        await wbm.loadFromDB;
+        let curBook = wbm.GetBook();
+
+        let lastIndex = await curBook.GetMaxIndexOrder();
+
+        await wbm.UpdateIndex("", lastIndex + 1).then((rsl) => {
+            ctx.body = JSON.stringify({ ret: 0 });
+        }).catch((err) => {
+            ctx.body = JSON.stringify({ ret: 1, err: err.message });
+        })
+
     }
 });

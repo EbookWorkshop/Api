@@ -106,6 +106,8 @@ module.exports = () => ({
             let ret = await myModels.RuleForWeb.create(rule);
         }
 
+        ctx.body = JSON.stringify({ ret: 0 });
+
     },
     /**
      * @swagger

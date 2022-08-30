@@ -65,6 +65,12 @@ class WebBook extends Ebook {
      * @returns WebIndex 
      */
     GetChapter(cId) { console.warn("WebBook::GetChapter 尚未初始化，未有实现。") }
+
+    /**
+     * 拿到章节的最大序号
+     * @returns 当前最大的排序序号
+     */
+    GetMaxIndexOrder() { console.warn("WebBook::GetChapter 尚未初始化，未有实现。") }
 }
 
 module.exports = WebBook;

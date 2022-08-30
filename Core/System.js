@@ -2,6 +2,8 @@ const EventManager = require("../Core/EventManager.js");
 const DB = require("../Core/OTO/DatabaseHelper.js");
 
 
+const debug = require("./debug");
+
 module.exports = new Promise((resolve, reject) => {
     try {
 

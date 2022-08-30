@@ -146,13 +146,20 @@ class DO {
          * 添加来源地址
          * @param {*} url 
          */
-        webBook.AddIndexUrl = async (url) => {
+        webBook.AddIndexUrl = async (url, isSetDefault = false) => {
             if (!webBook.IndexUrl.includes(url)) {
                 webBook.IndexUrl.push(url);
+                if (isSetDefault) {
+                    webBook.defaultIndex = webBook.IndexUrl.length - 1;
+                    webModel.defaultIndex = webBook.defaultIndex;
+                    //将这项配置也更新到数据库
+                    await webModel.save();
+                }
                 let ret = await new Models().WebBookIndexSourceURL.create({
                     Path: url,
                     WebBookId: webBook.BookId
                 });
+                return ret;
             }
         }
 
@@ -172,6 +179,17 @@ class DO {
                 webBook.Index.push(tIdx);
             }
         }
+
+        /**
+         * 拿到章节的最大序号
+         * @returns 当前最大的排序序号
+         */
+        webBook.GetMaxIndexOrder = async () => {
+            const myModels = new Models();
+            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
+            return lastIndex.OrderNum;
+        }
+
         /**
          * 从数据库加载指定章节
          * @param {*} cId 章节ID

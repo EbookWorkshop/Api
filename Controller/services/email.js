@@ -43,12 +43,12 @@ function CreateTransport(user, pass) {
 /**
  * 发封邮件
  * @param {{ title, content, files, mailto, sender, pass }} 邮件属性
- * @param {Array} files 文件要求`{filename,path}` 或者 `{filename,content,contentType:'text/plain'}`指定文件格式
+ * @param {Array} files 文件要求相对地址数组，会自动拆分成系统接口所需格式:`{filename,path}` 或者 `{filename,content,contentType:'text/plain'}`指定文件格式
  */
 async function SendAMail({ title, content, files, mailto, sender, pass }) {
     return new Promise((resolve, reject) => {
         try {
-            console.log("准备发送邮件：", title, content, files)
+            // console.log("准备发送邮件：", title, content, files)
 
             //邮件属性——邮件的详细信息
             var mailOptions = {
@@ -134,6 +134,8 @@ module.exports = () => ({
     "post /send": async (ctx) => {
         let param = await Server.parseJsonFromBodyData(ctx, ["title", "mailto"]);
         if (param == null) return;
+        
+        new EventManager().emit("Debug.Log","GetIn!!")
 
         await SendAMail(param).then(() => {
             ctx.body = JSON.stringify({ ret: 0 });
