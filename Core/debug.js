@@ -11,8 +11,9 @@ module.exports = (() => {
     })
 
     em.on("WebBook.UpdateChapter.Process", (bookid, rate) => {
-        console.log(`正在更新中，当前进度${rate * 100}%`);
+        console.log(`正在更新中，当前进度${(rate * 100).toFixed(2)}%`);
     })
+    
     em.on("WebBook.UpdateChapter.Finish", (bookid, chapterIndexArray, doneNum, failNum) => {
         console.log("已完成更新下列章节", chapterIndexArray);
 

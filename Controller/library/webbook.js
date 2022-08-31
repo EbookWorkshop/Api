@@ -99,14 +99,18 @@ module.exports = () => ({
      *       600:
      *         description: 参数错误，参数类型错误
      */
-    "get ": async (ctx) => {
+    "delete ": async (ctx) => {
         let bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
             ctx.status = 600;
             return;
         }
 
-        ctx.body = await WebBookMaker.DeleteOneBook(bookId);
+        await WebBookMaker.DeleteOneBook(bookId).then((rsl) => {
+            ctx.body = JSON.stringify({ ret: 0 });
+        }).catch((err) => {
+            ctx.body = JSON.stringify({ ret: 1, err: err.message });
+        })
     },
 
     /**
@@ -220,7 +224,7 @@ module.exports = () => ({
      *     tags:
      *       - Library - WebBook —— 网文图书馆
      *     summary: 合并更新整个目录
-     *     description: 合并目录，并按章节同名规则加入章节页面地址
+     *     description: 将当前默认来源网站内容，与现有目录合并，并按章节同名规则加入章节页面地址。可以为同一本书合入不同来源网站。
      *     parameters:
      *       - in: body
      *         name: bookInfo

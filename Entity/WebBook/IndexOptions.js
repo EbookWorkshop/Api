@@ -21,6 +21,11 @@ class IndexOptions {
         this.NextPageRule = new Rule("IndexNextPage");
 
         /**
+         * 爬封面的规则
+         */
+        this.BookCoverRule = new Rule("BookCover");
+
+        /**
          * 爬简介的规则
          */
         //...

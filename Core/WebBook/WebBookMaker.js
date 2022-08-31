@@ -145,6 +145,7 @@ class WebBookMaker {
             this.myWebBook.AddChapter(chap, isUpdate);
 
             new EventManager().emit("WebBook.UpdateOneChapter.Finish", this.myWebBook.BookId, cId, chap.WebTitle);
+            return true;
         }).catch(() => {
             return false;
         });
@@ -168,10 +169,11 @@ class WebBookMaker {
 
         em.on("WebBook.UpdateOneChapter.Finish", (bookid, cIdArray) => {
             doneNum++;
-
+            // console.log("🐛 WebBook.UpdateOneChapter.Finish", allNum, doneNum, failNum);
             if (allNum == doneNum + failNum) {
-                em.emit("WebBook.UpdateChapter.Finish", bookid, doList, doneNum, failNum);
+                // console.log("🐛 WebBook.UpdateChapter.Finish")
 
+                em.emit("WebBook.UpdateChapter.Finish", bookid, doList, doneNum, failNum);
                 //清除所有监听事件，避免同一监听对象达到10个上限
                 //TODO:这可能在并发的时候删掉别人的监听器?
                 em.removeListener("WebBook.UpdateOneChapter.Finish");
@@ -183,26 +185,26 @@ class WebBookMaker {
             _curLineNum++;
 
             if (_curLineNum >= _maxLineLength || lastId == id) { //同步
-                console.log("【同步】已开始：章节ID", id);
+                // console.log("【同步】已开始：章节ID", id);
                 await this.UpdateOneChapter(id, isUpdate).then((rsl) => {
-                    if (rsl) em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
-                    else failNum++;
+                    if (!rsl) failNum++;
                 }).catch((err) => {
                     console.warn(`更新失败：ID-${id}，原因：${err}`);
                     failNum++;
                 }).finally(() => {
                     _curLineNum--;
+                    em.emit("WebBook.UpdateChapter.Process", bookid, (doneNum + failNum) / allNum);
                 });
             } else {  //异步
-                console.log("【异步】已开始：", id);
+                // console.log("【异步】已开始：章节ID", id);
                 this.UpdateOneChapter(id, isUpdate).then((rsl) => {
-                    if (rsl) em.emit("WebBook.UpdateChapter.Process", bookid, doneNum / allNum);
-                    else failNum++;
+                    if (!rsl) failNum++;
                 }).catch((err) => {
                     console.warn(`更新失败：ID-${id}，原因：${err}`);
                     failNum++;
                 }).finally(() => {
                     _curLineNum--;
+                    em.emit("WebBook.UpdateChapter.Process", bookid, (doneNum + failNum) / allNum);
                 });
             }
 

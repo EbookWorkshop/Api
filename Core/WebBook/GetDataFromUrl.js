@@ -71,18 +71,27 @@ async function ExecRule(page, rule) {
     if (rule.Type === "List") querySelector = page.$$eval;
 
     let rsl = await querySelector.call(page, rule.Selector, (node, option) => {
-        //动作表达式解释处理器 只能定义在浏览器端，对象不能序列化在服务器执行会失效
-        let ActionHandle = (action, obj) => {
+        /**
+         * 动作表达式解释处理器 
+         * 只能定义在浏览器端，对象不能序列化
+         * 在服务器执行会失效
+         * @param {*} action 动作表达式，如：attr/innerText
+         * @param {*} myNode 已命中的node对象
+         * @returns {text,url}
+         */
+        let ActionHandle = (action, myNode) => {
             if (action == undefined) return;
+            let result;
+
+            if (action.startsWith("/*fun*/")) {
+                var r = eval(action);
+                return result || r;
+            }
 
             let acExp = action.split("/");
-            let result;
             switch (acExp[0]) {
                 case "attr":
-                    result = obj[acExp[1]];
-                    break;
-                case "fun":
-                    result = obj[acExp[1]](acExp[2]);
+                    result = myNode[acExp[1]];
                     break;
                 case "reg":
                     result = "ToDo";
