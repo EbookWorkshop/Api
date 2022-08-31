@@ -253,7 +253,12 @@ class DO {
 
             const myModels = new Models();
             let wbIndex = await myModels.WebBookIndex.findOne({
-                where: { WebTitle: title }
+                where: { WebTitle: title },
+                include: {
+                    model: myModels.EbookIndex,
+                    as: "EbookIndex",
+                    where: { BookId: webBook.BookId }
+                },
             });
 
             if (wbIndex == null) {  //目录不存在章节时，添加新章节
