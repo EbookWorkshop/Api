@@ -1,4 +1,6 @@
 //与服务器相关的通用方法都放这
+const fs = require("fs");
+const path = require("path");
 
 /**
  * 处理通过body传递的参数
@@ -59,7 +61,24 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
     return param;
 }
 
+/**
+ * 递归-创建目录
+ * @param {*} dir 多层目录
+ * @returns 
+ */
+function MkPath(dir) {
+    if (fs.existsSync(dir)) {
+        return true;
+    } else {
+        if (MkPath(path.dirname(dir))) {
+            fs.mkdirSync(dir);
+            return true;
+        }
+    }
+}
+
 module.exports = {
+    MkPath: MkPath,
     parseBodyData: parseBodyData,
     parseJsonFromBodyData: parseJsonFromBodyData
 }

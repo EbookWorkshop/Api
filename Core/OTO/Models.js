@@ -40,7 +40,7 @@ class Models {
             Author: { type: Sequelize.STRING(20), allowNull: true },
             FontFamily: { type: Sequelize.STRING(10), allowNull: false, defaultValue: "微软雅黑" },
             FontSize: { type: Sequelize.INTEGER, defaultValue: 22 },
-            CaverImg: { type: Sequelize.STRING(50), allowNull: true },
+            CoverImg: { type: Sequelize.STRING(50), allowNull: true },
         });
         //Ebook目录
         m.EbookIndex = sequelize.define("EbookChapter", {

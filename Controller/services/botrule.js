@@ -2,8 +2,8 @@
 
 const Models = require("./../../Core/OTO/Models");
 
-// const DO = require("./../../Core/OTO/DO.js");
 const Server = require("./../../Core/Server");
+const ApiResponse = require("./../../Entity/ApiResponse");
 
 
 module.exports = () => ({
@@ -136,6 +136,36 @@ module.exports = () => ({
     "get ": async (ctx) => {
         let host = ctx.query.host;
 
-        ctx.body = host;
+        const myModels = new Models();
+        let rules = await myModels.RuleForWeb.findAll({
+            where: {
+                Host: host
+            }
+        });
+        let rsl = [];
+
+        for (let r of rules) {
+            let {
+                Host: host,
+                RuleName: ruleName,
+                Selector: selector,
+                GetContentAction: getContentAction,
+                GetUrlAction: getUrlAction,
+                CheckSetting: checkSetting,
+                Type: type
+            } = r.dataValues;
+            let temp = {
+                host,
+                ruleName,
+                selector,
+                type,
+                getContentAction,
+                getUrlAction,
+                checkSetting,
+            }
+            if (r.RemoveSelector) r.removeSelector = r.RemoveSelector.split(",");
+            rsl.push(temp)
+        }
+        ctx.body = new ApiResponse(rsl).getJSONString();
     }
 });

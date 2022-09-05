@@ -1,12 +1,16 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
-
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+const { config } = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
-const WebIndex = require("./../../Entity/WebBook/WebIndex");
+// const WebIndex = require("./../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../Entity/WebBook/WebChapter");
 const { GetDataFromUrl } = require("./GetDataFromUrl");
 const RuleManager = require("./RuleManager");
 const EventManager = require("./../EventManager");
 const DO = require("./../OTO/DO");
+const Server = require("./../Server")
 
 /**
  * WebBook - DTO
@@ -42,6 +46,7 @@ class WebBookMaker {
 
     /**
      * 更新章节目录
+     *  更新封面
      * @param {*} url 默认为空，在章节分页时递归往下找
      * @returns 
      */
@@ -72,7 +77,29 @@ class WebBookMaker {
                     this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
-            if (result.has("IndexNextPage")) {//DEBUG: 快速测试不翻页
+            if (result.has("BookCover")) {  //保存封面
+                let cv = result.get("BookCover")[0];
+                let imgPath = cv.text;
+                if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");
+                const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
+                const realDir = config.dataPath + coverImgDir;
+                // console.log(realDir);
+
+                const req = https.request(imgPath, (res) => {
+                    fs.access(realDir, (notExist) => {
+                        if (notExist) {
+                            Server.MkPath(realDir)
+                        }
+                        const coverImgPath = coverImgDir + "/" + path.basename(imgPath);
+                        res.pipe(fs.createWriteStream(config.dataPath + coverImgPath));
+                        this.myWebBook.SetCoverImg(coverImgPath);
+                    });
+                });
+                req.end();
+            }
+
+            //翻页——继续爬
+            if (result.has("IndexNextPage")) {
                 let npData = result.get("ContentNextPage")[0];
                 let nextPage = npData.url;
                 if (nextPage == "") {

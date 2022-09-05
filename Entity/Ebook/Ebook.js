@@ -2,7 +2,7 @@
  * 电子书
  */
 class Ebook {
-    constructor({ id, BookId, BookName, Author, FontFamily, FontSize, CaverImg }) {
+    constructor({ id, BookId, BookName, Author, FontFamily, FontSize, CoverImg }) {
         /**
          * 章节 Map (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
          */
@@ -28,7 +28,7 @@ class Ebook {
         //字号
         this.FontSize = FontSize || 22;   //pt
         //封面图片
-        this.CaverImg = CaverImg;
+        this.CoverImg = CoverImg;
     }
 }
 

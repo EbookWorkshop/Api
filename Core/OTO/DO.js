@@ -17,7 +17,7 @@ class DO {
     /**
      * 
      * @param {*} ebookModel 
-     * @param {*} BOOKTYPE 
+     * @param {*} BOOKTYPE 需要创建的类，如`Ebook`、`WebBook`、`PDFBook`
      * @returns 
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
@@ -64,6 +64,15 @@ class DO {
             return ebook.Chapters.get(iObj.Title);
         }
 
+        /**
+         * 设置并存储
+         * @param {*} path 
+         */
+        ebook.SetCoverImg = async (path) => {
+            ebookModel.CoverImg = path;
+            await ebookModel.save();
+        }
+
         await ebook.ReloadIndex();
         return ebook;
     }
@@ -71,13 +80,25 @@ class DO {
     /**
      * 根据ID获得对应的EBook对象
      * @param {*} bookId 
-     * @returns EBook
+     * @returns Ebook
      */
     static async GetEBookById(bookId) {
         const myModels = new Models();
         let book = await myModels.Ebook.findOne({ where: { id: bookId } });
         if (book == null) return null;
         return await DO.ModelToEBook(book);
+    }
+
+    /**
+     * 根据ID获得对应的 章节对象
+     * @param {*} chapterId 章节ID
+     * @returns 章节
+     */
+    static async GetEBookChapterById(chapterId) {
+        const myModels = new Models();
+        let chapter = await myModels.EbookIndex.findOne({ where: { id: chapterId } });
+        if (chapter == null) return null;
+        return { ...chapter.dataValues };
     }
 
     /**
@@ -138,9 +159,12 @@ class DO {
      */
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();
+        let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
         let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues });
         let urls = await webModel.getWebBookIndexSourceURLs();
         for (var u of urls) webBook.IndexUrl.push(u.Path);
+
+        webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
 
         /**
          * 添加来源地址
@@ -321,6 +345,7 @@ class DO {
         const wbSourceUrl = await wbook.getWebBookIndexSourceURLs();
         for (let i of index) {
             const eIndex = await i.getWebBookIndex();
+            if (eIndex === null) continue;
             const eIUrl = await eIndex.getWebBookIndexURLs();
             for (let ei of eIUrl) {
                 await ei.destroy();
@@ -367,7 +392,7 @@ class DO {
      */
     static async GetBookList() {
         const myModels = new Models();
-        let bookListModels = await myModels.Ebook.findAll();
+        let bookListModels = await myModels.Ebook.findAll({ order: [["id", "DESC"]] });
         let bookList = [];
         for (let b of bookListModels) {
             bookList.push(new Ebook({ ...b.dataValues }));

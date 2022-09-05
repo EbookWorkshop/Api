@@ -5,7 +5,7 @@ const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
 
 /**
- * 规则管理器 TODO：
+ * 规则管理器 
  */
 class RuleManager {
     /**
@@ -29,6 +29,8 @@ class RuleManager {
                 case "BookName": curRule = result.index.BookNameRule; break;
                 case "ChapterList": curRule = result.index.ChapterListRule; break;
                 case "IndexNextPage": curRule = result.index.NextPageRule; break;
+                case "BookCover": curRule = result.index.BookCoverRule; break;
+
                 case "CapterTitle": curRule = result.chapter.CapterTitleRule; break;
                 case "Content": curRule = result.chapter.ContentRule; break;
                 case "ContentNextPage": curRule = result.chapter.NextPageRule; break;
@@ -41,25 +43,6 @@ class RuleManager {
             curRule.GetUrlAction = r.GetUrlAction;
             curRule.CheckSetting = r.CheckSetting;
         }
-
-
-        // //TODO：需要解决目录页和阅读页二级域名不同，规则的判断情况（？？提取到一级域名？）
-        // //TODO: 读取指定站点的爬取规则 先写个临时的。。 
-        // switch (host) {
-        //     case "qidian.com":     //起点
-        //         result.index.BookNameRule.Selector = "h1 em";
-        //         result.index.BookNameRule.GetContentAction = "attr/innerText";
-        //         result.index.ChapterListRule.Selector = "ul.cf li a"
-        //         result.index.ChapterListRule.GetContentAction = "attr/innerText";
-        //         result.index.ChapterListRule.GetUrlAction = "attr/href";
-
-        //         result.chapter.CapterTitleRule.Selector = "h3.j_chapterName span:first-child";
-        //         result.chapter.CapterTitleRule.GetContentAction = "attr/innerText";
-        //         result.chapter.ContentRule.Selector = ".read-content.j_readContent"
-        //         result.chapter.ContentRule.GetContentAction = "attr/innerText";
-        //         result.chapter.ContentRule.RemoveSelector.push(".review-count");
-        //         break;
-        // }
 
         return result;
     }

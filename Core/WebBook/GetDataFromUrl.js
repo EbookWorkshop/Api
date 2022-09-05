@@ -88,10 +88,16 @@ async function ExecRule(page, rule) {
                 return result || r;
             }
 
+            /**
+             * 配置的动作表达式
+             */
             let acExp = action.split("/");
             switch (acExp[0]) {
                 case "attr":
                     result = myNode[acExp[1]];
+                    break;
+                case "cache":       //缓存的
+                    result = "cache::" + myNode[acExp[1]];
                     break;
                 case "reg":
                     result = "ToDo";
@@ -114,6 +120,7 @@ async function ExecRule(page, rule) {
         }
         return myRsl;
     }, rule);
+
     return rsl;
 }
 
@@ -125,8 +132,9 @@ const GetDataFromUrllDefaultSetting = {
     RuleList: [],            //待爬取内容规则集合
 };
 
-// exports.GetDataFromUrl = GetDataFromUrl;
-// exports.DefaultSetting = GetDataFromUrllDefaultSetting;
+function CacheFile() {
+
+}
 
 module.exports = {
     TimeOut: 30000,     //ms

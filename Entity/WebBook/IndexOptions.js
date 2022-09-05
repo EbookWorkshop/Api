@@ -38,7 +38,8 @@ class IndexOptions {
         return [
             this.BookNameRule,
             this.ChapterListRule,
-            this.NextPageRule
+            this.NextPageRule,
+            this.BookCoverRule
         ];
     }
 }

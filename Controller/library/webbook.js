@@ -1,6 +1,7 @@
 const DO = require("../../Core/OTO/DO");
 const WebBookMaker = require("./../../Core/WebBook/WebBookMaker");
 const Server = require("./../../Core/Server");
+const ApiResponse = require("./../../Entity/ApiResponse");
 
 
 
@@ -31,12 +32,17 @@ module.exports = () => ({
      */
     "get ": async (ctx) => {
         let bookId = ctx.query.bookid;
+        let result = new ApiResponse();
         if (bookId * 1 != bookId) {
             ctx.status = 600;
+            result.code = 60000;
+            result.msg = "参数错误";
+            ctx.body = result.getJSONString();
             return;
         }
 
-        ctx.body = await DO.GetWebBookById(bookId * 1);
+        result.data = await DO.GetWebBookById(bookId * 1);
+        ctx.body = result.getJSONString();
     },
 
     /**
@@ -45,8 +51,8 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Library - WebBook —— 网文图书馆
-     *     summary: 创建书
-     *     description: 通过传入网文目录页，建立对应的书籍
+     *     summary: 创建书并建立目录
+     *     description: 通过传入网文目录页，建立对应的书籍，并建立目录
      *     parameters:
      *     - name: bookIndexUrl
      *       in: body
@@ -63,15 +69,19 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
+        let backRsl = new ApiResponse();
+
         let bookUrl = await Server.parseBodyData(ctx);
 
         let wbm = new WebBookMaker(bookUrl);
         await wbm.UpdateIndex()
             .then(result => {
-                let book = wbm.GetBook();
-                ctx.body = JSON.stringify(book);
+                backRsl.data = wbm.GetBook();
+                ctx.body = backRsl.getJSONString();
             }).catch((err) => {
-                ctx.body = JSON.stringify({ ret: 1, err: err.message, url: bookUrl });
+                backRsl.code = 50000;
+                backRsl.msg = err.message;
+                ctx.body = backRsl.getJSONString();
             });
     },
 
