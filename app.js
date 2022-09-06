@@ -16,7 +16,7 @@ app.use(koaSwagger({
 //设置跨域
 app.use(async (ctx, next) => {
     ctx.set("Access-Control-Allow-Origin", "*");
-    ctx.set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, POST, DELETE");
+    ctx.set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, POST, DELETE, PATCH");
     ctx.set("Access-Control-Allow-Headers", "Content-Type,Access-Token,Authorization,Accept,Origin,X-Requested-With,Accept-Language,Content-Language");
     ctx.set("Access-Control-Allow-Credentials", true);
     if (ctx.request.method === 'OPTIONS') { // 直接响应数据 应对axios的跨域探测

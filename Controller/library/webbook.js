@@ -160,6 +160,8 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "patch /updatechapter": async (ctx) => {
+        let result = new ApiResponse();
+
         let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
 
         let b = await DO.GetWebBookById(param.bookId);
@@ -174,7 +176,10 @@ module.exports = () => ({
         }
 
         if (cIds.length == 0) {
-            ctx.body = JSON.stringify({ ret: 1, err: "所有章节已有内容，若需要更新请提供指定章节ID，并开启强制更新。", bookname: ebook.BookName });
+            result.msg = "所有章节已有内容，若需要更新请提供指定章节ID，并开启强制更新。";
+            result.data = ebook.BookName;
+            result.code = 50000
+            ctx.body = result.getJSONString();
             return;
         }
 
