@@ -185,10 +185,14 @@ module.exports = () => ({
 
         let wbm = new WebBookMaker(b);
         await wbm.UpdateChapter(cIds, param.isUpdate).then((rsl) => {
-            ctx.body = JSON.stringify({ ret: 0, data: rsl });
+            result.data = rsl;
         }).catch((err) => {
-            ctx.body = JSON.stringify({ ret: 1, data: param, err: err.message });
+            result.code = 50000;
+            result.msg = err.message;
+        }).finally(() => {
+            ctx.body = result.getJSONString();
         });
+
     },
 
     /**
