@@ -115,7 +115,6 @@ module.exports = () => ({
      *   get:
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
-     *       - TODO
      *     summary: 拿到指定站点的规则
      *     description: 拿到指定站点的规则——给UI用于展示
      *     parameters:

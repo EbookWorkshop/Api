@@ -4,6 +4,8 @@ const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
 const EventManager = require("./../../Core/EventManager");
 const path = require('path')
+const ApiResponse = require("./../../Entity/ApiResponse");
+const Models = require("./../../Core/OTO/Models");
 
 
 let mailServerSetting = {}; //TODO: 数据库读取
@@ -96,7 +98,6 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Services - EMail —— 系统服务：邮件
-     *       - TODO
      *     summary: 通过简易的SMTP服务发送邮件
      *     description: 可以发一封邮件，能带附件
      *     parameters:
@@ -134,13 +135,16 @@ module.exports = () => ({
     "post /send": async (ctx) => {
         let param = await Server.parseJsonFromBodyData(ctx, ["title", "mailto"]);
         if (param == null) return;
-        
-        new EventManager().emit("Debug.Log","GetIn!!")
 
-        await SendAMail(param).then(() => {
-            ctx.body = JSON.stringify({ ret: 0 });
-        }).catch(err => {
-            ctx.body = JSON.stringify({ ret: 0, err: err.message });
+        // new EventManager().emit("Debug.Log", "GetIn!!")
+        let backRsl = new ApiResponse();
+
+        await SendAMail(param).then(result => {
+        }).catch((err) => {
+            backRsl.code = 50000;
+            backRsl.msg = err.message;
+        }).finally(() => {
+            ctx.body = backRsl.getJSONString();
         });
     },
 
@@ -150,7 +154,6 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Services - EMail —— 系统服务：邮件
-     *       - TODO
      *     summary: 设置默认邮箱账户
      *     description: 设置一个账户，用于默认发送邮件，需要提供邮箱地址及认证密码
      *     parameters:
@@ -176,11 +179,43 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /account": async (ctx) => {
+        let backRsl = new ApiResponse();
+
         let param = await Server.parseJsonFromBodyData(ctx, ["address", "password"]);
-        if (param == null) return;
+        if (param == null) {
+            backRsl.code = 50000;
+            backRsl.msg = "参数错误。";
+            ctx.body = backRsl.getJSONString();
+            return;
+        }
 
-        ctx.body = JSON.stringify({ ret: 1, err: "TODO:将账户信息存到数据库" })
+        const EMAIL_SETTING_GROUP = "send_email_account";
+        const myModels = new Models();
+        let settings = await myModels.SystemConfig.findAll({
+            where: {
+                Group: EMAIL_SETTING_GROUP
+            }
+        });
+        for (let s of settings) s.destroy();
 
+        await myModels.SystemConfig.create({
+            Group: EMAIL_SETTING_GROUP,
+            Name: "address",
+            Value: param.address,
+        }).then(() => {
+            return myModels.SystemConfig.create({
+                Group: EMAIL_SETTING_GROUP,
+                Name: "password",
+                Value: param.password,
+            });
+        }).then(result => {
+            //全部成功
+        }).catch((err) => {
+            backRsl.code = 50000;
+            backRsl.msg = err.message;
+        }).finally(() => {
+            ctx.body = backRsl.getJSONString();
+        });
     },
 
 })

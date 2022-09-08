@@ -116,6 +116,15 @@ class Models {
         // this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
         // });
 
+        //系统配置项表
+        this.SystemConfig = sequelize.define("SystemConfig", {
+            Group: { type: Sequelize.STRING(20), allowNull: false, defaultValue: "default" },     //配置分组
+            Name: { type: Sequelize.STRING(20), allowNull: false },      //配置名称
+            Value: { type: Sequelize.STRING(500), allowNull: false },   //配置值
+            RealDataType: { type: Sequelize.STRING(10), allowNull: true },  //真实的值类型
+        });
+
+
 
         await sequelize.sync();     //同步所有模型
         for (var n in m) {
