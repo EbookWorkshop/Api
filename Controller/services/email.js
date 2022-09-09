@@ -10,6 +10,9 @@ const Models = require("./../../Core/OTO/Models");
 
 let mailServerSetting = {}; //TODO: 数据库读取
 
+const EMAIL_SETTING_GROUP = "send_email_account";       //系统设置-邮箱的配置分组
+const KINDLE_INBOX = "kindle_inbox";                   //系统设置-收件箱-可用于kindle的收件箱
+
 
 /**
  * 通过发件地址推测出邮箱服务器地址
@@ -189,7 +192,6 @@ module.exports = () => ({
             return;
         }
 
-        const EMAIL_SETTING_GROUP = "send_email_account";
         const myModels = new Models();
         let settings = await myModels.SystemConfig.findAll({
             where: {
@@ -209,6 +211,133 @@ module.exports = () => ({
                 Value: param.password,
             });
         }).then(result => {
+            //全部成功
+        }).catch((err) => {
+            backRsl.code = 50000;
+            backRsl.msg = err.message;
+        }).finally(() => {
+            ctx.body = backRsl.getJSONString();
+        });
+    },
+
+    /**
+     * @swagger
+     * /services/email/account:
+     *   get:
+     *     tags:
+     *       - Services - EMail —— 系统服务：邮件
+     *     summary: 获取邮件发送账户
+     *     description: 获取发送邮件时用的账户密码
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /account": async (ctx) => {
+        let backRsl = new ApiResponse();
+        const myModels = new Models();
+        let settings = await myModels.SystemConfig.findAll({
+            where: {
+                Group: EMAIL_SETTING_GROUP
+            }
+        });
+
+        backRsl.data = {};
+        for (let s of settings) {
+            backRsl.data[s.Name] = s.Value;
+        }
+
+        ctx.body = backRsl.getJSONString();
+    },
+
+    /**
+     * @swagger
+     * /services/email/inbox:
+     *   get:
+     *     tags:
+     *       - Services - EMail —— 系统服务：邮件
+     *     summary: 获取邮件默认收件地址
+     *     description: 获取用于默认收件的邮箱地址，如用于kindle邮件推送
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /inbox": async (ctx) => {
+        let backRsl = new ApiResponse();
+        const myModels = new Models();
+        let settings = await myModels.SystemConfig.findAll({
+            where: {
+                Group: KINDLE_INBOX
+            }
+        });
+
+        backRsl.data = {};
+        for (let s of settings) {
+            backRsl.data[s.Name] = s.Value;
+        }
+
+        ctx.body = backRsl.getJSONString();
+    },
+
+    /**
+     * @swagger
+     * /services/email/inbox:
+     *   post:
+     *     tags:
+     *       - Services - EMail —— 系统服务：邮件
+     *     summary: 保存邮件默认收件地址
+     *     description: 保存用于默认收件的邮箱地址，如用于kindle邮件推送
+     *     parameters:
+     *       - in: body
+     *         name: account
+     *         description: 用于Kindle等收件的地址
+     *         schema:
+     *             type: object
+     *             required:
+     *               - address
+     *             properties:
+     *               address:
+     *                 type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /inbox": async (ctx) => {
+        let backRsl = new ApiResponse();
+        let param = await Server.parseJsonFromBodyData(ctx, ["address"]);
+        if (param == null) {
+            backRsl.code = 50000;
+            backRsl.msg = "参数错误。";
+            ctx.body = backRsl.getJSONString();
+            return;
+        }
+
+
+        const myModels = new Models();
+        let settings = await myModels.SystemConfig.findOne({
+            where: {
+                Group: KINDLE_INBOX
+            }
+        });
+
+        if (settings) settings.destroy();
+
+        await myModels.SystemConfig.create({
+            Group: KINDLE_INBOX,
+            Name: "address",
+            Value: param.address,
+        }).then(() => {
             //全部成功
         }).catch((err) => {
             backRsl.code = 50000;
