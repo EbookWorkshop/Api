@@ -356,19 +356,16 @@ module.exports = () => ({
 
 
         const myModels = new Models();
-        let settings = await myModels.SystemConfig.findOne({
+        let [settings] = await myModels.SystemConfig.findOrCreate({
             where: {
-                Group: KINDLE_INBOX
+                Group: KINDLE_INBOX,
+                Name: "address"
             }
         });
 
-        if (settings) settings.destroy();
+        settings.Value = param.address;
 
-        await myModels.SystemConfig.create({
-            Group: KINDLE_INBOX,
-            Name: "address",
-            Value: param.address,
-        }).then(() => {
+        await settings.save().then(() => {
             //全部成功
         }).catch((err) => {
             backRsl.code = 50000;
