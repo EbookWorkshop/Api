@@ -2,7 +2,7 @@ const EventManager = require("../Core/EventManager.js");
 const DB = require("../Core/OTO/DatabaseHelper.js");
 
 
-const debug = require("./debug");
+const debug = require("./debug");//载入Debug模块
 
 module.exports = new Promise((resolve, reject) => {
     try {

@@ -3,6 +3,9 @@ const router = require('koa-router')()
 const path = require('path')
 const fs = require('fs');
 
+const EventManager = require("./../Core/EventManager");
+const em = new EventManager();
+
 /**
  * 路由模块装载器
  * 如 func1.js 含对应路由规则：`get /test`，映射的路由为：/func1/test
@@ -51,7 +54,7 @@ function loader(filename, fatherRouter, routes) {
     Object.keys(routes).forEach(key => {
         const [method, path] = key.split(' ');
         // 注册路由
-        console.log(`已加载路由：\t[${method.toUpperCase()}]\t${prefix + path}`)
+        em.emit("Debug.Log", `已加载路由：\t[${method.toUpperCase()}]\t${prefix + path}\t\t${__filename}`,);
         router[method.toLowerCase()](prefix + path, (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
             return routes[key](ctx);

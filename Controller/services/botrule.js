@@ -76,7 +76,7 @@ module.exports = () => ({
             hostCheck.add(p.host);
         }
         if (hostCheck.size != 1) {
-            ctx.body = JSON.stringify({ ret: 1, err: "发现多套网站的规则，每次更新只能同一套网站。" });
+            ctx.body = new ApiResponse({ code: 50000, msg: "发现多套网站的规则，每次更新只能同一套网站。" }).getJSONString();
             return;
         }
 
@@ -106,9 +106,10 @@ module.exports = () => ({
             let ret = await myModels.RuleForWeb.create(rule);
         }
 
-        ctx.body = JSON.stringify({ ret: 0 });
+        ctx.body = new ApiResponse().getJSONString();
 
     },
+
     /**
      * @swagger
      * /services/botrule:
@@ -162,9 +163,72 @@ module.exports = () => ({
                 getUrlAction,
                 checkSetting,
             }
-            if (r.RemoveSelector) r.removeSelector = r.RemoveSelector.split(",");
+            if (r.RemoveSelector) temp.removeSelector = r.RemoveSelector.split(",");
             rsl.push(temp)
         }
         ctx.body = new ApiResponse(rsl).getJSONString();
-    }
+    },
+    /**
+     * @swagger
+     * /services/botrule:
+     *   delete:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 删除指定站点的规则
+     *     description: 删除指定站点的规则
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "delete ": async (ctx) => {
+        let host = ctx.query.host;
+
+        const myModels = new Models();
+        let rules = await myModels.RuleForWeb.findAll({
+            where: {
+                Host: host
+            }
+        });
+
+        for (let r of rules) r.destroy();
+
+        ctx.body = new ApiResponse().getJSONString();
+    },
+
+    /**
+     * @swagger
+     * /services/botrule/hostlist:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 拿到已配置规则的站点列表
+     *     description: 拿到已配置规则的站点的列表
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /hostlist": async (ctx) => {
+        const myModels = new Models();
+        let rules = await myModels.RuleForWeb.findAll();
+        let tempHost = new Set();
+        for (let r of rules) {
+            tempHost.add(r.Host)
+        }
+        ctx.body = new ApiResponse(Array.from(tempHost)).getJSONString();
+    },
 });

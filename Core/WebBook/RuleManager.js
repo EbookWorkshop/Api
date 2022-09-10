@@ -61,11 +61,12 @@ class RuleManager {
 
         let host = urlObj.host;
 
-        let ha = host.split(".");
-        if (ha.length >= 3) {
-            ha.shift();
-            host = ha.join(".");
-        }
+        //去掉二级域名——已经可以方便复制配置，不需要
+        // let ha = host.split(".");
+        // if (ha.length >= 3) {
+        //     ha.shift();
+        //     host = ha.join(".");
+        // }
         return host;
     }
 
