@@ -1,6 +1,7 @@
 //与服务器相关的通用方法都放这
 const fs = require("fs");
 const path = require("path");
+const ApiResponse = require('../Entity/ApiResponse');
 
 /**
  * 处理通过body传递的参数
@@ -55,7 +56,7 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
         }
     } catch (err) {
         ctx.status = 600;
-        ctx.body = JSON.stringify({ ret: 1, err: err.message });
+        ctx.body = new ApiResponse({ code: 60000, msg: "参数错误。" + err.message }).getJSONString();
         return null;
     }
     return param;

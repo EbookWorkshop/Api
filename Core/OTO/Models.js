@@ -102,7 +102,7 @@ class Models {
         m.PDFBook.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
         //网站规则部分
-        this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
+        m.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
             Host: { type: Sequelize.STRING(100), allowNull: false },
             RuleName: { type: Sequelize.STRING(20), allowNull: false },
             Selector: { type: Sequelize.STRING(100), allowNull: false },
@@ -117,12 +117,27 @@ class Models {
         // });
 
         //系统配置项表
-        this.SystemConfig = sequelize.define("SystemConfig", {
+        m.SystemConfig = sequelize.define("SystemConfig", {
             Group: { type: Sequelize.STRING(20), allowNull: false, defaultValue: "default" },     //配置分组
             Name: { type: Sequelize.STRING(20), allowNull: false },      //配置名称
             Value: { type: Sequelize.STRING(500), allowNull: false },   //配置值
             RealDataType: { type: Sequelize.STRING(10), allowNull: true },  //真实的值类型
         });
+
+
+        //校阅规则配置表
+        m.ReviewRule = sequelize.define("ReviewRule", {
+            Name: { type: Sequelize.STRING(20), allowNull: false },      //配置名称
+            Rule: { type: Sequelize.STRING(100), allowNull: true },      //查找规则、查找串
+            Replace: { type: Sequelize.STRING(20), allowNull: true },      //真实的值类型
+        });
+        //哪本书在用
+        m.ReviewRuleUsing = sequelize.define("ReviewRuleUsing", {
+        });
+        // m.ReviewRuleUsing.hasMany(m.ReviewRule, { foreignKey: 'RuleId', sourceKey: 'id' });
+        // m.ReviewRuleUsing.hasMany(m.Ebook, { foreignKey: 'BookId', sourceKey: 'id' });
+        m.ReviewRuleUsing.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
+        m.ReviewRuleUsing.belongsTo(m.ReviewRule, { foreignKey: 'RuleId', targetKey: 'id' });
 
 
 

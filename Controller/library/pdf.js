@@ -3,7 +3,7 @@ const DO = require("./../../Core/OTO/DO.js");
 
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const Server = require("./../../Core/Server");
-
+const ApiResponse = require('../../Entity/ApiResponse');
 
 module.exports = () => ({
     /**
@@ -57,7 +57,7 @@ module.exports = () => ({
         }
 
         if (cIds.length == 0) {
-            ctx.body = JSON.stringify({ ret: 1, err: "没有可用章节，请先添加章节内容", bookname: ebook.BookName });
+            ctx.body = new ApiResponse({ code: 50000, msg: "没有可用章节，请先添加章节内容", data: ebook.BookName }).getJSONString();
             return;
         }
 
@@ -65,10 +65,10 @@ module.exports = () => ({
         await pdfMaker.SetShowChapters(cIds);
 
         await pdfMaker.MakePdfFile().then((rsl) => {
-            ctx.body = JSON.stringify({ ret: 0, book: rsl, chapterIds: cIds });
+            ctx.body = new ApiResponse({ book: rsl, chapterIds: cIds }).getJSONString();
         }).catch((err) => {
             console.warn("生成PDF出错：", err.message);
-            ctx.body = JSON.stringify({ ret: 1, err: "生成PDF出错：" + err.message });
+            ctx.body = new ApiResponse({ code: 50000, msg: "生成PDF出错：" + err.message }).getJSONString();
         });
     },
 });

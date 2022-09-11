@@ -117,9 +117,9 @@ module.exports = () => ({
         }
 
         await WebBookMaker.DeleteOneBook(bookId).then((rsl) => {
-            ctx.body = JSON.stringify({ ret: 0 });
+            ctx.body = new ApiResponse().getJSONString();
         }).catch((err) => {
-            ctx.body = JSON.stringify({ ret: 1, err: err.message });
+            ctx.body = new ApiResponse({ code: 50000, msg: "删除出错：" + err.message }).getJSONString();
         })
     },
 
@@ -231,9 +231,9 @@ module.exports = () => ({
         let b = await DO.GetWebBookById(param.bookId);
         await b.AddIndexUrl(param.url, true)
             .then(result => {
-                ctx.body = JSON.stringify({ ret: 0 });
+                ctx.body = new ApiResponse().getJSONString();
             }).catch((err) => {
-                ctx.body = JSON.stringify({ ret: 1, err: err.message });
+                ctx.body = new ApiResponse({ code: 50000, msg: "新增出错：" + err.message }).getJSONString();
             });
     },
     /**
@@ -274,9 +274,9 @@ module.exports = () => ({
         let lastIndex = await curBook.GetMaxIndexOrder();
 
         await wbm.UpdateIndex("", lastIndex + 1).then((rsl) => {
-            ctx.body = JSON.stringify({ ret: 0 });
+            ctx.body = new ApiResponse().getJSONString();
         }).catch((err) => {
-            ctx.body = JSON.stringify({ ret: 1, err: err.message });
+            ctx.body = new ApiResponse({ code: 50000, msg: "更新目录出错：" + err.message }).getJSONString();
         })
 
     }
