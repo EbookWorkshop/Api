@@ -100,7 +100,7 @@ class WebBookMaker {
 
             //翻页——继续爬
             if (result.has("IndexNextPage")) {
-                let npData = result.get("ContentNextPage")[0];
+                let npData = result.get("IndexNextPage")[0];
                 let nextPage = npData.url;
                 if (nextPage == "") {
                     new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
