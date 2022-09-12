@@ -1,13 +1,15 @@
+const ApiResponse = require("../Entity/ApiResponse");
+
 
 module.exports = () => ({
     /**
      * @swagger
-     * /library/booklist:
+     * /user/login:
      *   get:
      *     tags:
-     *       - Library —— 图书馆
-     *     summary: 拿到所有书的信息
-     *     description: 拿到所有书的信息
+     *       - User —— 用户管理
+     *     summary: 登陆
+     *     description: 拿到登陆的Token
      *     consumes:
      *       - application/json
      *     responses:
@@ -17,12 +19,12 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "post /login": async (ctx) => {
-        ctx.body = JSON.stringify({
+        ctx.body = new ApiResponse({
             token: '12134'
-        })
+        }).getJSONString();
     },
     "get /info": ctx => {
-        ctx.body = JSON.stringify({
+        ctx.body = new ApiResponse({
           name: 'admin',
           avatar:
             '//lf1-xgcdn-tos.pstatp.com/obj/vcloud/vadmin/start.8e0e4855ee346a46ccff8ff3e24db27b.png',
@@ -40,10 +42,10 @@ module.exports = () => ({
           accountId: '9527',
           certification: 1,
           role: 'admin',
-        })
+        }).getJSONString();
     },
     "get /menu": ctx => {
-        ctx.body = JSON.stringify([
+        ctx.body = new ApiResponse([
         {
           path: '/dashboard',
           name: 'dashboard',
@@ -72,6 +74,6 @@ module.exports = () => ({
             },
           ],
         },
-      ])
+      ]).getJSONString()
     }
 });
