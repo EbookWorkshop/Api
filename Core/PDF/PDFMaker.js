@@ -1,7 +1,6 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
 const EventManager = require("./../EventManager");
-const { path } = require('pdfkit');
 
 class PDFMaker {
     constructor(pdf) {
@@ -25,12 +24,12 @@ class PDFMaker {
             filename: this.pdf.BookName + ".pdf",
             path: "./Data/Books/" + this.pdf.BookName + '.pdf'      //TODO:路径不存在时会报错、书名含非系统命名规范时会报错
         };
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 //创建一个写入对象 `{ doc, stream }`
                 const { doc: pdfDoc, stream: fileStream } = CreateNewDoc(fileInfo.path, this.GetSettingFromPdf());
 
-                AddChaptersToPdf(this.pdf, pdfDoc);
+                await AddChaptersToPdf(this.pdf, pdfDoc);
 
                 //关闭结束文档
                 pdfDoc.text("（完）", this.pdf.paddingX, this.pdf.paddingY, { width: this.pdf.pageWidth });
@@ -76,8 +75,9 @@ function CreateNewDoc(filepath, setting) {
  * @param {*} pdfBook PDFBook 电子书对象
  * @param {*} pdfDoc pdf文档对象
  */
-function AddChaptersToPdf(pdfBook, pdfDoc) {
+async function AddChaptersToPdf(pdfBook, pdfDoc) {
     for (let cId of pdfBook.showIndexId.values()) {
+        await pdfBook.ReviewChapter(cId)
         let curContent = pdfBook.GetChapter(cId);
 
         //加到大纲（pdf的目录）

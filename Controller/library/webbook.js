@@ -119,7 +119,7 @@ module.exports = () => ({
         await WebBookMaker.DeleteOneBook(bookId).then((rsl) => {
             ctx.body = new ApiResponse().getJSONString();
         }).catch((err) => {
-            ctx.body = new ApiResponse({ code: 50000, msg: "删除出错：" + err.message }).getJSONString();
+            ctx.body = new ApiResponse(err, "删除出错：" + err.message, 50000).getJSONString();
         })
     },
 
@@ -233,7 +233,7 @@ module.exports = () => ({
             .then(result => {
                 ctx.body = new ApiResponse().getJSONString();
             }).catch((err) => {
-                ctx.body = new ApiResponse({ code: 50000, msg: "新增出错：" + err.message }).getJSONString();
+                ctx.body = new ApiResponse(err, "新增出错：" + err.message, 50000).getJSONString();
             });
     },
     /**
@@ -276,7 +276,7 @@ module.exports = () => ({
         await wbm.UpdateIndex("", lastIndex + 1).then((rsl) => {
             ctx.body = new ApiResponse().getJSONString();
         }).catch((err) => {
-            ctx.body = new ApiResponse({ code: 50000, msg: "更新目录出错：" + err.message }).getJSONString();
+                ctx.body = new ApiResponse(err, "更新目录出错：" + err.message, 50000).getJSONString();
         })
 
     }

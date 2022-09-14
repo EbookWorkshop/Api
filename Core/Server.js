@@ -56,7 +56,7 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
         }
     } catch (err) {
         ctx.status = 600;
-        ctx.body = new ApiResponse({ code: 60000, msg: "参数错误。" + err.message }).getJSONString();
+        ctx.body = new ApiResponse(err, err, 60000).getJSONString();
         return null;
     }
     return param;

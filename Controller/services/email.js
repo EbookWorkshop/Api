@@ -29,17 +29,12 @@ function GetServer(user) {
  */
 function CreateTransport(user, pass) {
     let setting = {
-        // service: GetServer(mailServerSetting.email),
+        service: GetServer(user),
         auth: {
-            user: mailServerSetting.email,
-            pass: mailServerSetting.pass
+            user: user,
+            pass: pass
         }
     };
-    if (user && pass) {
-        setting.service = GetServer(user);
-        setting.auth.user = user;
-        setting.auth.pass = pass;
-    }
     return nodemailer.createTransport(smtpTransport(setting));
 }
 
@@ -78,7 +73,7 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
                         Name: "password"
                     }
                 });
-                if (pt) pass = mt.Value;
+                if (pt) pass = pt.Value;
             }
 
             if (sender === "" || mailto === "" || pass === "") {
@@ -141,8 +136,7 @@ module.exports = () => ({
      *         schema:
      *             type: object
      *             required:
-     *               - title
-     *               - mailto
+     *               - files
      *             properties:
      *               title:
      *                 type: string
@@ -167,7 +161,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /send": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["title", "mailto"]);
+        let param = await Server.parseJsonFromBodyData(ctx, ["files"]);
         if (param == null) return;
 
         // new EventManager().emit("Debug.Log", "GetIn!!")

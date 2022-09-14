@@ -9,10 +9,10 @@ const ApiResponse = require("../../Entity/ApiResponse");
 module.exports = () => ({
     /**
     * @swagger
-    * /review/rule/list:
+    * /review/bookwithrule/list:
     *   get:
     *     tags:
-    *       - Review - Rule —— 自助校阅 - 规则库
+    *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
     *     summary: 自助校正的规则库
     *     description: 自助校正的规则库
     *     consumes:
@@ -25,15 +25,15 @@ module.exports = () => ({
     */
     "get /list": async (ctx) => {
         const myModels = new Models();
-        let rules = await myModels.ReviewRule.findAll();
+        let rules = await myModels.ReviewRuleUsingUsing.findAll();
         ctx.body = new ApiResponse(rules).getJSONString();
     },
     /**
     * @swagger
-    * /review/rule:
+    * /review/bookwithrule:
     *   post:
     *     tags:
-    *       - Review - Rule —— 自助校阅 - 规则库
+    *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
     *     summary: 自助校正的规则库
     *     description: 自助校正的规则库
     *     parameters:
@@ -43,15 +43,15 @@ module.exports = () => ({
     *         schema:
     *             type: object
     *             required:
-    *               - name
-    *               - rule
+    *               - bookId
+    *               - ruleId
     *             properties:
-    *               name:
-    *                 type: string
-    *               rule:
-    *                 type: string
-    *               replace:
-    *                 type: string
+    *               bookId:
+    *                 type: integer
+    *                 format: int32
+    *               ruleId:
+    *                 type: integer
+    *                 format: int32
     *     consumes:
     *       - application/json
     *     responses:
@@ -61,37 +61,35 @@ module.exports = () => ({
     *         description: 参数错误，参数类型错误
     */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["name", "rule"]);
+        let param = await Server.parseJsonFromBodyData(ctx, ["bookId", "ruleId"]);
         if (param == null) return;
 
         const myModels = new Models();
-        let whereParam = { Rule: param.rule };
-        if (param.id != "") whereParam = { id: param.id };
-        let [rule, created] = await myModels.ReviewRule.findOrCreate({
+        let whereParam = { BookId: param.bookId, RuleId: param.ruleId };
+        if (param.id) whereParam = { id: param.id };
+        let [rule, created] = await myModels.ReviewRuleUsing.findOrCreate({
             where: whereParam,
             defaults: {
-                Name: param.name,
-                Rule: param.rule,
-                Replace: param.replace,
+                BookId: param.bookId,
+                RuleId: param.ruleId,
             }
         }).catch(err => {
             ctx.body = new ApiResponse(err, err.message, 50000).getJSONString();
             return null;
         });
         if (!created) {
-            rule.Name = param.name;
-            rule.Rule = param.rule;
-            rule.Replace = param.replace;
+            rule.BookId = param.bookId;
+            rule.RuleId = param.ruleId;
             rule.save();
         }
         ctx.body = new ApiResponse(rule).getJSONString();
     },
     /**
     * @swagger
-    * /review/rule:
+    * /review/bookwithrule:
     *   delete:
     *     tags:
-    *       - Review - Rule —— 自助校阅 - 规则库
+    *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
     *     summary: 删除ID所属的规则
     *     description: 删除ID所属的规则
     *     parameters:
@@ -117,7 +115,7 @@ module.exports = () => ({
             return;
         }
         const myModels = new Models();
-        let rules = await myModels.ReviewRule.findAll({
+        let rules = await myModels.ReviewRuleUsing.findAll({
             where: { id: id }
         });
         rules.map((item) => item.destroy());

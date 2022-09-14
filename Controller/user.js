@@ -26,8 +26,7 @@ module.exports = () => ({
     "get /info": ctx => {
         ctx.body = new ApiResponse({
           name: 'admin',
-          avatar:
-            '//lf1-xgcdn-tos.pstatp.com/obj/vcloud/vadmin/start.8e0e4855ee346a46ccff8ff3e24db27b.png',
+          avatar: '/src/assets/logo-dark.svg',
           email: '',
           job: '',
           jobName: '',

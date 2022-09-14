@@ -136,6 +136,8 @@ class Models {
         });
         // m.ReviewRuleUsing.hasMany(m.ReviewRule, { foreignKey: 'RuleId', sourceKey: 'id' });
         // m.ReviewRuleUsing.hasMany(m.Ebook, { foreignKey: 'BookId', sourceKey: 'id' });
+        m.Ebook.hasMany(m.ReviewRuleUsing, { foreignKey: 'BookId', sourceKey: 'id' });
+        m.ReviewRule.hasMany(m.ReviewRuleUsing, { foreignKey: 'RuleId', sourceKey: 'id' });
         m.ReviewRuleUsing.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
         m.ReviewRuleUsing.belongsTo(m.ReviewRule, { foreignKey: 'RuleId', targetKey: 'id' });
 

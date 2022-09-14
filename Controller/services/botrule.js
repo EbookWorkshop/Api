@@ -76,7 +76,7 @@ module.exports = () => ({
             hostCheck.add(p.host);
         }
         if (hostCheck.size != 1) {
-            ctx.body = new ApiResponse({ code: 50000, msg: "发现多套网站的规则，每次更新只能同一套网站。" }).getJSONString();
+            ctx.body = new ApiResponse(null, "发现多套网站的规则，每次更新只能同一套网站。", 50000).getJSONString();
             return;
         }
 

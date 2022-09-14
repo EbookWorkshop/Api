@@ -29,6 +29,9 @@ class Ebook {
         this.FontSize = FontSize || 22;   //pt
         //封面图片
         this.CoverImg = CoverImg;
+
+        //校阅规则
+        this.ReviewRules = null;
     }
 }
 

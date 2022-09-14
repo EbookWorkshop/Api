@@ -9,8 +9,8 @@
 假如在文件`/Controller/partA/partB/file.js`，抛出对象如下：
 ```js
 {
-    "get /action":()=>{/* do something */},
-    "post /fun/dosomething":()=>{/* do something */}
+    "get /action":(ctx)=>{/* do something */},
+    "post /fun/dosomething":(ctx)=>{/* do something */}
 }
 ```
 则在模块成功装载后，会配置路由：

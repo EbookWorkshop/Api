@@ -53,15 +53,9 @@ class DO {
          * @param {*} cId 章节ID
          */
         ebook.GetChapter = (cId) => {
-            let iObj = null;
-            for (let i of ebook.Index) {
-                if (i.IndexId == cId) {
-                    iObj = i;
-                    break;
-                }
-            }
-            if (iObj == null) return null;
-            return ebook.Chapters.get(iObj.Title);
+            let iObj = ebook.Index.filter(i => i.IndexId === cId);
+            if (iObj.length <= 0) return null;
+            return ebook.Chapters.get(iObj[0].Title);
         }
 
         /**
@@ -71,6 +65,41 @@ class DO {
         ebook.SetCoverImg = async (path) => {
             ebookModel.CoverImg = path;
             await ebookModel.save();
+        }
+
+        ebook.InitReviewRules = async () => {
+            if (ebook.ReviewRules != null) return;
+            ebook.ReviewRules = [];
+            let reviewRules = await ebookModel.getReviewRuleUsings();
+
+            for (let rule of reviewRules) {
+                let rr = await rule.getReviewRule();
+                if (rr) ebook.ReviewRules.push({
+                    Rule: rr.Rule,
+                    Replace: rr.Replace
+                });
+            }
+        }
+
+        /**
+         * 校正指定章节
+         * @param {*} cId 
+         * @returns 
+         */
+        ebook.ReviewChapter = async (cId) => {
+            let iObj = ebook.Index.filter(i => i.IndexId === cId);
+            if (iObj.length <= 0) return null;
+            if (ebook.ReviewRules == null) await ebook.InitReviewRules();
+
+            let curContent = ebook.Chapters.get(iObj[0].Title);
+            for (let r of ebook.ReviewRules) {
+                let rTarget = r.Replace;
+                if (rTarget.includes("\\")) {//MARK: 被替换字符如含转义符，需要先一步解释，需要这里先进行替换
+                    rTarget = rTarget.replace(/\\n/g, '\n');
+                }
+                curContent.Content = curContent.Content.replace(new RegExp(r.Rule, "g"), rTarget);
+            }
+            ebook.Chapters.set(iObj[0].Title, curContent);
         }
 
         await ebook.ReloadIndex();

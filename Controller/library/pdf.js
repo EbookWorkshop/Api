@@ -57,7 +57,7 @@ module.exports = () => ({
         }
 
         if (cIds.length == 0) {
-            ctx.body = new ApiResponse({ code: 50000, msg: "没有可用章节，请先添加章节内容", data: ebook.BookName }).getJSONString();
+            ctx.body = new ApiResponse(ebook.BookName, "没有可用章节，请先添加章节内容", 50000).getJSONString();
             return;
         }
 
@@ -68,7 +68,7 @@ module.exports = () => ({
             ctx.body = new ApiResponse({ book: rsl, chapterIds: cIds }).getJSONString();
         }).catch((err) => {
             console.warn("生成PDF出错：", err.message);
-            ctx.body = new ApiResponse({ code: 50000, msg: "生成PDF出错：" + err.message }).getJSONString();
+            ctx.body = new ApiResponse(err, "生成PDF出错：" + err.message, 50000).getJSONString();
         });
     },
 });
