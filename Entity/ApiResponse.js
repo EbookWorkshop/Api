@@ -11,7 +11,7 @@ class ApiResponse {
      */
     constructor(data, msg, code = 20000, status = 0) {
         this.status = status;
-        this.msg = msg || code === 20000 ? "" : "未知错误";
+        this.msg = msg || (code === 20000 ? "" : "未知错误");
         this.code = code;
         this.data = data || null;
 

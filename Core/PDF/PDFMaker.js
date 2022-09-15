@@ -1,10 +1,11 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
 const EventManager = require("./../EventManager");
+const { config } = require("./../../config");
 
 class PDFMaker {
     constructor(pdf) {
-        this.pdf = pdf;
+        this.pdf = pdf;     //书本身
     }
 
     /**
@@ -28,6 +29,8 @@ class PDFMaker {
             try {
                 //创建一个写入对象 `{ doc, stream }`
                 const { doc: pdfDoc, stream: fileStream } = CreateNewDoc(fileInfo.path, this.GetSettingFromPdf());
+
+                AddBookCoverToPdf(this.pdf, pdfDoc);//制作封面
 
                 await AddChaptersToPdf(this.pdf, pdfDoc);
 
@@ -80,13 +83,33 @@ async function AddChaptersToPdf(pdfBook, pdfDoc) {
         await pdfBook.ReviewChapter(cId)
         let curContent = pdfBook.GetChapter(cId);
 
+        if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
         //加到大纲（pdf的目录）
         pdfDoc.outline.addItem(curContent.Title);
 
         //加入整段正文
         pdfDoc.text(curContent.Content, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
     }
+}
 
+/**
+ * 制作封面
+ * @param {*} pdfBook 电子书
+ * @param {*} pdfDoc pdf对象
+ */
+function AddBookCoverToPdf(pdfBook, pdfDoc) {
+    if (pdfBook.CoverImg) CreateImageCover(pdfBook, pdfDoc);
+
+}
+
+/**
+ * 用图片生成一个封面
+ * @param {*} pdfBook 
+ * @param {*} pdfDoc 
+ */
+function CreateImageCover(pdfBook, pdfDoc) {
+    const realDir = config.dataPath + pdfBook.CoverImg;
+    pdfDoc.image(realDir, 0, 0, { width: pdfBook.pageWidth, align: 'center', valign: 'center' }).addPage();
 }
 
 module.exports = PDFMaker;
