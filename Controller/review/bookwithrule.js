@@ -13,8 +13,8 @@ module.exports = () => ({
     *   get:
     *     tags:
     *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
-    *     summary: 自助校正的规则库
-    *     description: 自助校正的规则库
+    *     summary: 自助校正的规则引用情况
+    *     description: 自助校正的规则引用情况
     *     consumes:
     *       - application/json
     *     responses:
@@ -25,8 +25,25 @@ module.exports = () => ({
     */
     "get /list": async (ctx) => {
         const myModels = new Models();
-        let rules = await myModels.ReviewRuleUsingUsing.findAll();
-        ctx.body = new ApiResponse(rules).getJSONString();
+        let rules = await myModels.ReviewRuleUsing.findAll({
+            include: [myModels.Ebook, myModels.ReviewRule],
+            order: [
+                [myModels.Ebook, 'id', 'ASC']
+            ]
+        });
+        let result = [];
+        if (rules) {
+            rules.map(item => {
+                result.push({
+                    id: item.id,
+                    bookId: item.Ebook.id,
+                    bookName: item.Ebook.BookName,
+                    ruleId: item.ReviewRule.id,
+                    ruleName: item.ReviewRule.Name
+                })
+            })
+        }
+        ctx.body = new ApiResponse(result).getJSONString();
     },
     /**
     * @swagger
