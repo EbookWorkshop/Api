@@ -4,6 +4,7 @@ const DO = require("./../../Core/OTO/DO.js");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const Server = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
+const { SendAMail } = require("./../../Core/services/email")
 
 module.exports = () => ({
     /**
@@ -26,6 +27,8 @@ module.exports = () => ({
      *             bookId:
      *               type: integer
      *               format: int32
+     *             sendByEmail:
+     *               type: boolen
      *             chapterIds:
      *               type: array
      *               items:
@@ -64,11 +67,18 @@ module.exports = () => ({
         let pdfMaker = new PDFMaker(ebook);
         await pdfMaker.SetShowChapters(cIds);
 
-        await pdfMaker.MakePdfFile().then((rsl) => {
+        await pdfMaker.MakePdfFile().then(async (rsl) => {
+            if (param.sendByEmail) {
+                await SendAMail({
+                    title: rsl.filename,
+                    content: rsl.filename,
+                    files: [rsl.path]
+                });
+            }
             ctx.body = new ApiResponse({ book: rsl, chapterIds: cIds }).getJSONString();
         }).catch((err) => {
             console.warn("生成PDF出错：", err.message);
-            ctx.body = new ApiResponse(err, "生成PDF出错：" + err.message, 50000).getJSONString();
+            ctx.body = new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + err.message, 50000).getJSONString();
         });
     },
 });
