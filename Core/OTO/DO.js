@@ -261,16 +261,10 @@ class DO {
          * @returns WebIndex
          */
         webBook.GetIndex = (cId) => {
-            let tempIdx = null;
-            for (let c of webBook.Index) {
-                if (c.IndexId == cId) {
-                    tempIdx = c;
-                    break;
-                }
-            }
-            if (tempIdx == null) return null;
+            let tempIdx = webBook.Index.filter(i => i.IndexId === cId);
+            if (tempIdx.length === 0) return null;
 
-            return new WebIndex({ ...tempIdx });
+            return new WebIndex({ ...tempIdx[0] });
         }
 
         /**

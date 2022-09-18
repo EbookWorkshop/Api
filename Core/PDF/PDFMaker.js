@@ -87,8 +87,15 @@ async function AddChaptersToPdf(pdfBook, pdfDoc) {
         //加到大纲（pdf的目录）
         pdfDoc.outline.addItem(curContent.Title);
 
+
+        //如果当前章节没内容，则加入默认提示。
+        let txt = curContent.Content;
+        if (!txt) {
+            txt = `${curContent.Title}\n当前章节内容缺失。`;
+        }
+
         //加入整段正文
-        pdfDoc.text(curContent.Content, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
+        pdfDoc.text(txt, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
     }
 }
 

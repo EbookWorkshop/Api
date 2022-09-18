@@ -28,7 +28,7 @@ module.exports = () => ({
      *               type: integer
      *               format: int32
      *             sendByEmail:
-     *               type: boolen
+     *               type: boolean
      *             chapterIds:
      *               type: array
      *               items:
@@ -49,14 +49,10 @@ module.exports = () => ({
         let ebook = await DO.GetPDFById(bookid);
         ebook.FontFamily = "Alibaba-PuHuiTi-Medium";    //debug
 
+        //没指定章节ID时默认拿到所有章节列表
         let cIds = param.chapterIds;
         if (!cIds || cIds.length == 0) {
-            cIds = [];
-            for (let i of ebook.Index) {
-                if (!i.IsHasContent) continue;
-
-                cIds.push(i.IndexId);
-            }
+            cIds = ebook.Index.map(item => item.IndexId);
         }
 
         if (cIds.length == 0) {
