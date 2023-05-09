@@ -1,4 +1,3 @@
-//const DB = require("./../../Core/OTO/DatabaseHelper");
 const DO = require("./../../Core/OTO/DO.js");
 
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
