@@ -5,9 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
+            "name": "附加到调试进程",
+            "port": 9229,
+            "request": "attach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "启动调试",
             "skipFiles": [
                 "<node_internals>/**"
             ],

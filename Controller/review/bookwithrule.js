@@ -51,8 +51,8 @@ module.exports = () => ({
     *   post:
     *     tags:
     *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
-    *     summary: 自助校正的规则库
-    *     description: 自助校正的规则库
+    *     summary: 新增设置书使用的，校阅规则
+    *     description: 新增设置书使用的，校阅规则
     *     parameters:
     *       - in: body
     *         name: rule
@@ -92,14 +92,14 @@ module.exports = () => ({
             }
         }).catch(err => {
             ctx.body = new ApiResponse(err, err.message, 50000).getJSONString();
-            return null;
+            return [null,null]; //return to line 87
         });
-        if (!created) {
+        if (rule && !created) {
             rule.BookId = param.bookId;
             rule.RuleId = param.ruleId;
             rule.save();
         }
-        ctx.body = new ApiResponse(rule).getJSONString();
+        if(rule) ctx.body = new ApiResponse(rule).getJSONString();
     },
     /**
     * @swagger

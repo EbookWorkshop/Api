@@ -76,7 +76,7 @@ module.exports = () => ({
             }
         }).catch(err => {
             ctx.body = new ApiResponse(err, err.message, 50000).getJSONString();
-            return null;
+            return [null,null]; //return to line 70
         });
         if (!created) {
             rule.Name = param.name;
@@ -84,7 +84,7 @@ module.exports = () => ({
             rule.Replace = param.replace;
             rule.save();
         }
-        ctx.body = new ApiResponse(rule).getJSONString();
+        if(rule) ctx.body = new ApiResponse(rule).getJSONString();
     },
     /**
     * @swagger
