@@ -2,7 +2,7 @@
 const Server = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
-const { SendAMail } = require("./../../Core/services/email")
+const { SendAMail,EMAIL_SETTING_GROUP,KINDLE_INBOX } = require("./../../Core/services/email")
 
 
 module.exports = () => ({

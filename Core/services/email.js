@@ -119,5 +119,7 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
 }
 
 module.exports = {
-    SendAMail
+    SendAMail,
+    EMAIL_SETTING_GROUP,
+    KINDLE_INBOX,
 }

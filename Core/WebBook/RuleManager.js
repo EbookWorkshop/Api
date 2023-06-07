@@ -23,6 +23,8 @@ class RuleManager {
             where: { Host: host }
         });
 
+        if (allRules.length === 0) throw ({ message: `网站尚未配置规则：${host}` });
+
         for (let r of allRules) {
             let curRule = null;
             switch (r.RuleName) {
