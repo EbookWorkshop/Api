@@ -2,6 +2,8 @@ const { AsyncResource } = require('async_hooks');
 const { EventEmitter } = require('events');
 const path = require('path');
 const { Worker } = require('worker_threads');
+const EventManager = require("./../EventManager");
+const em = new EventManager();
 
 const kCallback = Symbol('kCallback');
 const kTaskInfo = Symbol('kTaskInfo');
@@ -24,6 +26,9 @@ class WorkerPoolTaskInfo extends AsyncResource {
     }
 }
 
+/**
+ * 线程池
+ */
 class WorkerPool extends EventEmitter {
     /**
      * 创建简易线程池
@@ -41,8 +46,15 @@ class WorkerPool extends EventEmitter {
         this.workers = [];      //总线程池
         this.freeWorkers = [];  //空闲可用线程
 
-        for (let i = 0; i < numThreads; i++)
+        let createNum = 2;// Math.max(this.numThreads / 2, 2);      //启动时创建的线程数，默认先创建2个
+        for (let i = 0; i < createNum; i++)
             this.AddNewWorker();
+
+        em.emit("WorkerPool.Init", {
+            MaxThread: this.numThreads,
+            NowWorker: this.workers.length,
+            FreeWorker: this.freeWorkers.length
+        });
     }
 
     /**
@@ -62,6 +74,13 @@ class WorkerPool extends EventEmitter {
 
             this.freeWorkers.push(worker);
             this.emit(kWorkerFreedEvent);
+
+            em.emit("WorkerPool.Worker.Done", {
+                MaxThread: this.numThreads,
+                NowWorker: this.workers.length,
+                FreeWorker: this.freeWorkers.length,
+                Id: this.workers.indexOf(worker)
+            });
         });
         worker.on('error', (err) => {
 
@@ -71,11 +90,21 @@ class WorkerPool extends EventEmitter {
             else
                 this.emit('error', err);
 
+            let workerId = this.workers.indexOf(worker);
+
             //删掉当前线程，换一个新的。以防线程跑飞后越来越少可用线程
-            this.workers.splice(this.workers.indexOf(worker), 1);
+            this.workers.splice(workerId, 1);
             this.AddNewWorker();
 
             worker.terminate(); //尝试关掉这个进程
+
+            em.emit("WorkerPool.Worker.Error", {
+                MaxThread: this.numThreads,
+                NowWorker: this.workers.length,
+                FreeWorker: this.freeWorkers.length,
+                Id: workerId,
+                err: err
+            });
         });
         this.workers.push(worker);
         this.freeWorkers.push(worker);
@@ -97,6 +126,13 @@ class WorkerPool extends EventEmitter {
         }
 
         const worker = this.freeWorkers.pop();//空闲线程
+
+        em.emit("WorkerPool.Worker.Start", {
+            MaxThread: this.numThreads,
+            NowWorker: this.workers.length,
+            FreeWorker: this.freeWorkers.length,
+            Id: this.workers.indexOf(worker)
+        });
 
         worker[kCallback] = callback;
         worker[kTaskInfo] = new WorkerPoolTaskInfo(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.

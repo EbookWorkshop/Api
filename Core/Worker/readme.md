@@ -1,6 +1,7 @@
 # 线程池
 
 ## 调用示例
+其中`filepath`为需要多线程执行的js文件，文件入口为RunTask。`filePath` 可以以`@`开头代表相对根目录。
 ```js
 const pool = WorkerPool.GetWorkerPool();
 pool.RunTask({

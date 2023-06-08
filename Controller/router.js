@@ -54,7 +54,8 @@ function loader(filename, fatherRouter, routes) {
     Object.keys(routes).forEach(key => {
         const [method, path] = key.split(' ');
         // 注册路由
-        em.emit("Debug.Log", `已加载路由：\t[${method.toUpperCase()}]\t${prefix + path}\t\t${__filename}`,);
+        let mType = `[${method.toUpperCase()}]`.padStart(10," ");
+        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(prefix + path).padEnd(40," ")}\t${__filename}`,);
         router[method.toLowerCase()](prefix + path, (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
             return routes[key](ctx);

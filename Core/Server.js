@@ -27,8 +27,8 @@ function parseBodyData(ctx) {
 
 /**
  * 从请求解释出json，检测必要的参数
- * @param {*} ctx 
- * @param {Array} requireCheck 
+ * @param {*} ctx 上下文
+ * @param {Array} requireCheck 必填检查
  * @returns 解释后的结果
  */
 async function parseJsonFromBodyData(ctx, requireCheck = []) {

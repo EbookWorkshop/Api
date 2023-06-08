@@ -1,13 +1,15 @@
+const Rule = require("./../../Entity/WebBook/Rule");
+const { puppeteerDebug: isDEBUG, dataPath } = require("./../../config").config;
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
 const EventManager = require("./../EventManager");
+const { ExecRule } = require("./ExecRule");
 
-const DEBUG = false;    //用于跟踪问题，跟踪站点
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
  * @param {string} url 目标地址
- * @param {{RuleList}} setting 爬取的站点配置
+ * @param {{RuleList:Rule[]}} setting 爬取的站点配置
  */
 async function GetDataFromUrl(url, setting) {
     //无界面浏览器性能更高更快，有界面一般用于调试开发
@@ -17,7 +19,7 @@ async function GetDataFromUrl(url, setting) {
             width: 1400,
             height: 900
         },
-        headless: !DEBUG,        //设置为有界面，如果为true，即为无界面
+        headless: !isDEBUG,        //设置为有界面，如果为true，即为无界面
         slowMo: 250        //设置放慢每个步骤的毫秒数
     }
     let browser = await puppeteer.launch(options);
@@ -27,13 +29,14 @@ async function GetDataFromUrl(url, setting) {
         let page = await browser.newPage();
         // 配置需要访问网址
         await page.goto(url);
-        //接管console
-        if (DEBUG) page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
-
         //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
-        if (DEBUG) new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
-        if (DEBUG) await page.screenshot({ path: `./Debug/a.png` });
+        //接管console 网站在浏览器上发的空调信息转发到服务器控台
+        if (isDEBUG) {
+            page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
+            new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
+            await page.screenshot({ path: `${dataPath}/Debug/a.png` });//截图
+        }
 
         for (let rule of setting.RuleList) {
             if (rule.Selector === "") continue;
@@ -57,71 +60,6 @@ async function GetDataFromUrl(url, setting) {
 
     // 结束关闭
     return result;
-}
-
-
-/**
- * 解释规则，将当前页面的内容按配置的规则解释为提取内容
- * @param {*} page 已打开的网页
- * @param {*} rule 提取内容规则配置
- * @returns 
- */
-async function ExecRule(page, rule) {
-    let querySelector = page.$eval;
-    if (rule.Type === "List") querySelector = page.$$eval;
-
-    let rsl = await querySelector.call(page, rule.Selector, (node, option) => {
-        /**
-         * 动作表达式解释处理器 
-         * 只能定义在浏览器端，对象不能序列化
-         * 在服务器执行会失效
-         * @param {*} action 动作表达式，如：attr/innerText
-         * @param {*} myNode 已命中的node对象
-         * @returns {text,url}
-         */
-        let ActionHandle = (action, myNode) => {
-            if (action == undefined) return;
-            let result;
-
-            if (action.startsWith("/*fun*/")) {
-                var r = eval(action);
-                return result || r;
-            }
-
-            /**
-             * 配置的动作表达式
-             */
-            let acExp = action.split("/");
-            switch (acExp[0]) {
-                case "attr":
-                    result = myNode[acExp[1]];
-                    break;
-                case "cache":       //缓存的
-                    result = "cache::" + myNode[acExp[1]];
-                    break;
-                case "reg":
-                    result = "ToDo";
-                    break;
-            }
-            return result;
-        }
-
-
-        let myRsl = [];
-        if (option.Type !== "List") {
-            node = [node];
-        }
-
-        for (let n of node) {
-            let curObj = { Rule: option };
-            curObj.text = ActionHandle(option.GetContentAction, n);
-            curObj.url = ActionHandle(option.GetUrlAction, n);
-            myRsl.push(curObj);
-        }
-        return myRsl;
-    }, rule);
-
-    return rsl;
 }
 
 /**
