@@ -9,7 +9,7 @@ let { URL } = require("url");
  */
 class RuleManager {
     /**
-     * 
+     * 通过地址获得对应的规则配置
      * @param {*} url 
      */
     static async GetRuleByURL(url) {
@@ -36,6 +36,7 @@ class RuleManager {
                 case "CapterTitle": curRule = result.chapter.CapterTitleRule; break;
                 case "Content": curRule = result.chapter.ContentRule; break;
                 case "ContentNextPage": curRule = result.chapter.NextPageRule; break;
+                //TODO: 作者、简介等
             }
 
             curRule.RuleName = r.RuleName;

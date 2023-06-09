@@ -77,25 +77,33 @@ class WebBookMaker {
                     this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
-            if (result.has("BookCover")) {  //保存封面
-                let cv = result.get("BookCover")[0];
-                let imgPath = cv.text;
-                if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");
-                const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
-                const realDir = config.dataPath + coverImgDir;
-                // console.log(realDir);
+            try {
+                if (result.has("BookCover")) {  //保存封面
+                    let cv = result.get("BookCover")[0];
+                    let imgPath = cv.text;
+                    if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
+                    const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
+                    const realDir = config.dataPath + coverImgDir;
+                    // console.log(realDir);
 
-                const req = https.request(imgPath, (res) => {
+                    //判断书目录是否存在，不存在则创建
                     fs.access(realDir, (notExist) => {
                         if (notExist) {
                             Server.MkPath(realDir)
                         }
+                    });
+
+                    //获取图片
+                    console.debug("尝试获取封面图片：",imgPath);
+                    const req = https.request(imgPath, (res) => {
                         const coverImgPath = coverImgDir + "/" + path.basename(imgPath);
                         res.pipe(fs.createWriteStream(config.dataPath + coverImgPath));
                         this.myWebBook.SetCoverImg(coverImgPath);
+                        req.end();
                     });
-                });
-                req.end();
+                }
+            } catch (err) {
+                console.warn("TODO:: 下载设定封面失败！", err);
             }
 
             //翻页——继续爬

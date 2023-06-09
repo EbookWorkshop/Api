@@ -19,9 +19,10 @@ async function GetDataFromUrl(url, setting) {
             width: 1400,
             height: 900
         },
-        headless: !isDEBUG,        //设置为有界面，如果为true，即为无界面
-        slowMo: 250        //设置放慢每个步骤的毫秒数
+        headless: "new",
+        slowMo: 233        //设置放慢每个步骤的毫秒数
     }
+    if (isDEBUG) options.headless = false;//设置为有界面，如果为true，即为无界面
     let browser = await puppeteer.launch(options);
     let result = new Map();
 
@@ -63,6 +64,15 @@ async function GetDataFromUrl(url, setting) {
 }
 
 /**
+ * 多线程执行入口
+ * @param {{url:string, setting:object}} param 参数
+ */
+async function RunTask(param) {
+    return await GetDataFromUrl(param.url,param.setting);
+}
+
+
+/**
  * 默认的爬页规则配置
  */
 const GetDataFromUrllDefaultSetting = {
@@ -78,4 +88,5 @@ module.exports = {
     TimeOut: 30000,     //ms
     DefaultSetting: GetDataFromUrllDefaultSetting,
     GetDataFromUrl: GetDataFromUrl,
+
 }

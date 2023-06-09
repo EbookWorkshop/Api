@@ -22,7 +22,7 @@ async function VisualizationOfRule(url, rule) {
         lastPage = page;
     }
 
-    await page.goto(url);
+    if(!page.url() !== url) await page.goto(url); //相同的页面不再刷新
 
     let rsl = await ExecRule(page, rule, true);
     console.log("规则获得结果内容：", ...rsl);
@@ -30,15 +30,13 @@ async function VisualizationOfRule(url, rule) {
 }
 
 async function GetBrowser() {
-    if (curBrowser == null) {
+    if (curBrowser == null || !curBrowser?.isConnected()) {
+        if (curBrowser && !curBrowser.isConnected()) curBrowser.close();
         let options = {
             //设置视窗的宽高
-            defaultViewport: {
-                width: 1400,
-                height: 900
-            },
-            headless: false,        //设置为有界面，如果为true，即为无界面
-            slowMo: 250        //设置放慢每个步骤的毫秒数
+            defaultViewport: null,//不设置具体视口大小，可以用最大化调整窗口大小
+            headless: false,        //设置为有界面，如果为new，即为无界面
+            slowMo: 100        //设置放慢每个步骤的毫秒数
         }
         curBrowser = await puppeteer.launch(options);
     }

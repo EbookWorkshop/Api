@@ -225,8 +225,8 @@ class DO {
             for (let i of eIndexs) {
                 let eI = await i.getWebBookIndex();
 
-                let tIdx = new WebIndex({ ...i.dataValues, ...eI.dataValues });
-                let urls = await eI.getWebBookIndexURLs();
+                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues });
+                let urls = await eI?.getWebBookIndexURLs() || [];
                 for (let u of urls) tIdx.URL.push(u.Path);
 
                 webBook.Index.push(tIdx);
