@@ -10,15 +10,21 @@ module.exports = (() => {
         console.log("目录更新完毕！！");
     })
 
-    em.on("WebBook.UpdateChapter.Process", (bookid, rate) => {
-        console.log(`正在更新中，当前进度${(rate * 100).toFixed(2)}%`);
+    em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err) => {
+        console.log(`更新章节失败：${bookid}-${cId}:`);
+        console.error(err);
     })
 
+    em.on("WebBook.UpdateChapter.Process", (bookid, rate, ok, fail, all) => {
+        console.log(`正在更新中，当前进度${(rate * 100).toFixed(2)}%\n\t\t完成：${ok}\t失败：${fail}\t总数：${all}`);
+    })
     em.on("WebBook.UpdateChapter.Finish", (bookid, chapterIndexArray, doneNum, failNum) => {
         console.log("已完成更新下列章节", chapterIndexArray);
 
         console.log(`已成功：${doneNum}；已失败：${failNum}`);
-    })
+    });
+
+
     em.on("Debug.Puppeteer.OpenUrl", (url) => {
         console.log("开始访问URL:", url)
     });

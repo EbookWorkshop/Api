@@ -79,7 +79,6 @@ class WebBookMaker {
                 this.myWebBook.AddIndexUrl(curUrl);
             }
 
-
             if (result.has("ChapterList")) {    //爬到的每一章内容
                 let cl = result.get("ChapterList");
                 if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
@@ -87,38 +86,34 @@ class WebBookMaker {
                     this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
-            try {
-                if (result.has("BookCover")) {  //保存封面
-                    let cv = result.get("BookCover")[0];
-                    let imgPath = cv.text;
-                    if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
-                    const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
-                    const realDir = config.dataPath + coverImgDir;
-                    // console.log(realDir);
+            if (result.has("BookCover")) {  //保存封面
+                let cv = result.get("BookCover")[0];
+                let imgPath = cv.text;
+                if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
+                const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
+                const realDir = config.dataPath + coverImgDir;
+                // console.log(realDir);
 
-                    //判断书目录是否存在，不存在则创建
-                    fs.access(realDir, (notExist) => {
-                        if (notExist) {
-                            Server.MkPath(realDir)
-                        }
-                    });
+                //判断书目录是否存在，不存在则创建
+                fs.access(realDir, (notExist) => {
+                    if (notExist) {
+                        Server.MkPath(realDir)
+                    }
+                });
 
-                    //获取图片
-                    console.debug("尝试获取封面图片：", imgPath);
-                    const coverImgPath = coverImgDir + "/" + path.basename(imgPath);//图片存储的相对位置
-                    wPool.RunTask({
-                        taskfile: "@/Core/Utils/CacheFile",
-                        param: {
-                            url: imgPath,
-                            savePath: config.dataPath + coverImgPath
-                        }
-                    }, (result, err) => {
-                        console.debug("封面图片缓存结果：", result);
-                        if (result) this.myWebBook.SetCoverImg(coverImgPath);
-                    });
-                }
-            } catch (err) {
-                console.warn("TODO:: 下载设定封面失败！", err);
+                //获取图片
+                console.debug("尝试获取封面图片：", imgPath);
+                const coverImgPath = coverImgDir + "/" + path.basename(imgPath);//图片存储的相对位置
+                wPool.RunTask({
+                    taskfile: "@/Core/Utils/CacheFile",
+                    param: {
+                        url: imgPath,
+                        savePath: config.dataPath + coverImgPath
+                    }
+                }, (result, err) => {
+                    console.debug("封面图片缓存结果：", result);
+                    if (result) this.myWebBook.SetCoverImg(coverImgPath);
+                });
             }
 
             //翻页——继续爬
@@ -145,15 +140,11 @@ class WebBookMaker {
      * @param {boolean} isUpdate 是否覆盖更新-默认否
      */
     async UpdateOneChapter(cId, isUpdate = false) {
-        if (this.myWebBook == null) {
-            console.warn("[WebBookMaker::UpdateOneChapter] 尚未加载电子书，操作失败。");
-            return false;
-        }
-
-        let curIndex = this.myWebBook.GetIndex(cId);
+        let curIndex = this.myWebBook?.GetIndex(cId);
 
         if (!curIndex) {
-            console.warn(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`);
+            // console.warn(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`);
+            new EventManager().emit("WebBook.UpdateOneChapter.Error", this.myWebBook?.BookId, cId, new Error(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`));
             return false;
         }
 
@@ -168,7 +159,20 @@ class WebBookMaker {
         const webRule = await RuleManager.GetRuleByURL(url);
         const option = { RuleList: webRule.chapter.GetRuleList() }
 
-        return await GetDataFromUrl(url, option).then(async (result) => {
+        wPool.RunTask({
+            taskfile: "@/Core/Utils/GetDataFromUrl",
+            param: {
+                url: url,
+                setting: option
+            },
+            taskType: "puppeteer",
+            maxThreadNum: 10
+        }, async (result, err) => {
+            if (err) {
+                new EventManager().emit("WebBook.UpdateOneChapter.Error", this.myWebBook?.BookId, cId, err);
+                return;
+            }
+
             let chap = new WebChapter(curIndex);
             if (result.has("CapterTitle")) {
                 chap.Title = result.get("CapterTitle")[0].text;
@@ -195,10 +199,8 @@ class WebBookMaker {
             this.myWebBook.AddChapter(chap, isUpdate);
 
             new EventManager().emit("WebBook.UpdateOneChapter.Finish", this.myWebBook.BookId, cId, chap.WebTitle);
-            return true;
-        }).catch(() => {
-            return false;
         });
+        return true;
     }
 
     /**
@@ -214,50 +216,27 @@ class WebBookMaker {
         let em = new EventManager();
         let bookid = this.myWebBook.BookId;
 
-        const _maxLineLength = 10;    //最大的线程次数
-        let _curLineNum = 0;   //当前线程数
-
+        let _updateProcess = (ok, fail, all) => {
+            em.emit("WebBook.UpdateChapter.Process", bookid, (ok + fail) / all, ok, fail, all);
+            if (all == ok + fail) em.emit("WebBook.UpdateChapter.Finish", bookid, doList, ok, fail);
+        }
         em.on("WebBook.UpdateOneChapter.Finish", (bookid, cIdArray) => {
             doneNum++;
-            // console.log("🐛 WebBook.UpdateOneChapter.Finish", allNum, doneNum, failNum);
-            if (allNum == doneNum + failNum) {
-                // console.log("🐛 WebBook.UpdateChapter.Finish")
-
-                em.emit("WebBook.UpdateChapter.Finish", bookid, doList, doneNum, failNum);
-                //清除所有监听事件，避免同一监听对象达到10个上限
-                //TODO:这可能在并发的时候删掉别人的监听器?
-                em.removeListener("WebBook.UpdateOneChapter.Finish");
-            }
+            _updateProcess(doneNum, failNum, allNum);
+        });
+        em.on("WebBook.UpdateOneChapter.Error", (bookid, cIdArray) => {
+            failNum++;
+            _updateProcess(doneNum, failNum, allNum);
         });
 
-        const lastId = cIdArray[cIdArray.length - 1];//让最后一步在同步模式下 防止未处理完就退出了
+        //安排任务
         for (let id of cIdArray) {
-            _curLineNum++;
-
-            if (_curLineNum >= _maxLineLength || lastId == id) { //同步
-                // console.log("【同步】已开始：章节ID", id);
-                await this.UpdateOneChapter(id, isUpdate).then((rsl) => {
-                    if (!rsl) failNum++;
-                }).catch((err) => {
-                    console.warn(`更新失败：ID-${id}，原因：${err}`);
-                    failNum++;
-                }).finally(() => {
-                    _curLineNum--;
-                    em.emit("WebBook.UpdateChapter.Process", bookid, (doneNum + failNum) / allNum);
-                });
-            } else {  //异步
-                // console.log("【异步】已开始：章节ID", id);
-                this.UpdateOneChapter(id, isUpdate).then((rsl) => {
-                    if (!rsl) failNum++;
-                }).catch((err) => {
-                    console.warn(`更新失败：ID-${id}，原因：${err}`);
-                    failNum++;
-                }).finally(() => {
-                    _curLineNum--;
-                    em.emit("WebBook.UpdateChapter.Process", bookid, (doneNum + failNum) / allNum);
-                });
-            }
-
+            this.UpdateOneChapter(id, isUpdate).then((rsl) => {
+                if (!rsl) failNum++;
+            }).catch((err) => {
+                console.warn(`更新失败：ID-${id}，原因：${err.message}`);
+                failNum++;
+            });
             doList.push(id);
         }
 
