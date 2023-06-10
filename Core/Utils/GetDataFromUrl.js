@@ -1,9 +1,9 @@
-const Rule = require("./../../Entity/WebBook/Rule");
-const { puppeteerDebug: isDEBUG, dataPath } = require("./../../config").config;
+const Rule = require("../../Entity/WebBook/Rule");
+const { puppeteerDebug: isDEBUG, dataPath } = require("../../config").config;
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
-const EventManager = require("./../EventManager");
-const { ExecRule } = require("./ExecRule");
+const EventManager = require("../EventManager");
+const { ExecRule } = require("../WebBook/ExecRule");
 
 
 /**
@@ -66,9 +66,10 @@ async function GetDataFromUrl(url, setting) {
 /**
  * 多线程执行入口
  * @param {{url:string, setting:object}} param 参数
+ * @returns {Promise<Map<string,any>>}
  */
 async function RunTask(param) {
-    return await GetDataFromUrl(param.url,param.setting);
+    return await GetDataFromUrl(param.url, param.setting);
 }
 
 
@@ -88,5 +89,5 @@ module.exports = {
     TimeOut: 30000,     //ms
     DefaultSetting: GetDataFromUrllDefaultSetting,
     GetDataFromUrl: GetDataFromUrl,
-
+    RunTask
 }

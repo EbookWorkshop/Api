@@ -7,12 +7,16 @@ exports.config = {
      */
     dataPath: "./Data",
 
+    /**
+     * 数据库存放路径
+     */
+    databasePath: "./Data/library/save.sqlite",
 
     /**
      * 输出调试信息，监听debug消息
      */
     debug: true,
-    
+
 
     /**
      * 浏览器 Debug

@@ -15,10 +15,23 @@ parentPort.on('message', (task) => {
 
         let { RunTask } = require(GetRealFilePath(taskfile));        //取得需要在线程运行的文件
         result = RunTask(param);
+        // console.debug("线程已取得结果：", result);//注意返回值需要可序列化
 
-        parentPort.postMessage(result);//执行完成，往主线程发送结果
+        if (result instanceof Promise) {
+            result.then((rsl) => {
+                parentPort.postMessage(rsl);
+            }).catch(err => {
+                parentPort.postMessage(err);
+            })
+        } else {
+            parentPort.postMessage(result);//执行完成，往主线程发送结果
+        }
+
     } catch (err) {
-        console.error("线程执行出错：", err);
+        if (err.message == "RunTask is not a function")
+            console.warn(`尚未实现多线程接口 RunTask：\t${task.taskfile}`);
+        else
+            console.error("线程执行出错：", err, task);
     }
 });
 
@@ -31,8 +44,7 @@ parentPort.on('message', (task) => {
 function GetRealFilePath(pathSetting) {
     if (!pathSetting.startsWith("@")) return pathSetting;
 
-    let root = __dirname.replace(/(?:[\//]+)Core[\//]Worker[\//]?/, "");
-    console.debug("服务器根目录", root)
-
-    return pathSetting.replace("@", root);
+    let root = __dirname.replace(/(?:[\\/]+)Core[\\/]Worker[\\/]?/, "");
+    let path = pathSetting.replace("@", root);
+    return path;
 }

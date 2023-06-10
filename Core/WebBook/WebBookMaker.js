@@ -1,16 +1,18 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
-const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const { config } = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
 // const WebIndex = require("./../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../Entity/WebBook/WebChapter");
-const { GetDataFromUrl } = require("./GetDataFromUrl");
+const { GetDataFromUrl } = require("../Utils/GetDataFromUrl");
 const RuleManager = require("./RuleManager");
 const EventManager = require("./../EventManager");
 const DO = require("./../OTO/DO");
-const Server = require("./../Server")
+const WorkerPool = require("./../Worker/WorkerPool");
+const wPool = WorkerPool.GetWorkerPool();
+
+const Server = require("./../Server");
 
 /**
  * WebBook - DTO
@@ -55,7 +57,15 @@ class WebBookMaker {
         const webRule = await RuleManager.GetRuleByURL(curUrl);
         const option = { RuleList: webRule.index.GetRuleList() }
 
-        return GetDataFromUrl(curUrl, option).then(async (result) => {
+        wPool.RunTask({
+            taskfile: "@/Core/Utils/GetDataFromUrl",
+            param: {
+                url: curUrl,
+                setting: option
+            },
+            taskType: "puppeteer",
+            maxThreadNum: 10
+        }, async (result) => {
             //初始化书名
             if (result.has("BookName") && !this.myWebBook.WebBookName) {
                 let bn = result.get("BookName")[0];
@@ -94,12 +104,17 @@ class WebBookMaker {
                     });
 
                     //获取图片
-                    console.debug("尝试获取封面图片：",imgPath);
-                    const req = https.request(imgPath, (res) => {
-                        const coverImgPath = coverImgDir + "/" + path.basename(imgPath);
-                        res.pipe(fs.createWriteStream(config.dataPath + coverImgPath));
-                        this.myWebBook.SetCoverImg(coverImgPath);
-                        req.end();
+                    console.debug("尝试获取封面图片：", imgPath);
+                    const coverImgPath = coverImgDir + "/" + path.basename(imgPath);//图片存储的相对位置
+                    wPool.RunTask({
+                        taskfile: "@/Core/Utils/CacheFile",
+                        param: {
+                            url: imgPath,
+                            savePath: config.dataPath + coverImgPath
+                        }
+                    }, (result, err) => {
+                        console.debug("封面图片缓存结果：", result);
+                        if (result) this.myWebBook.SetCoverImg(coverImgPath);
                     });
                 }
             } catch (err) {

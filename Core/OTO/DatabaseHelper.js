@@ -1,8 +1,10 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
+const { databasePath } = require("./../../config").config;
 
 let myDb = null;
 let myModels = null;//new Models(myDb);
+
 
 /**
  * 数据库
@@ -10,10 +12,10 @@ let myModels = null;//new Models(myDb);
 class DB {
     constructor() {
         if (myDb == null) {
-            myDb = DB.Connect();
+            myDb = DB.Connect(databasePath);
             myModels = new Models(myDb);
         }
-
+        return myDb;
     }
     static GetDB() {
         return myDb;
@@ -27,7 +29,7 @@ class DB {
      * @returns 
      */
     static Connect(path) {
-        path = path || "./Data/library/save.sqlite";  //TODO：数据库存储路径 -- 配置化
+        path = path || databasePath;
         return new Sequelize({
             dialect: 'sqlite',
             storage: path,

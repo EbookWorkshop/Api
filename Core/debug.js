@@ -34,14 +34,14 @@ module.exports = (() => {
     em.on("WorkerPool.Init", ({ MaxThread, NowWorker, FreeWorker }) => {
         console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程池初始化完成！`);
     });
-    em.on("WorkerPool.Worker.Start", ({ MaxThread, NowWorker, FreeWorker, Id }) => {
-        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已安排任务`);
+    em.on("WorkerPool.Worker.Start", ({ MaxThread, NowWorker, FreeWorker, Id, Task }) => {
+        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已安排任务:\t\t${Task}`);
     });
-    em.on("WorkerPool.Worker.Done", ({ MaxThread, NowWorker, FreeWorker, Id }) => {
-        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已完成任务`);
+    em.on("WorkerPool.Worker.Done", ({ MaxThread, NowWorker, FreeWorker, Id, Task }) => {
+        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已完成任务:\t\t${Task}`);
     });
-    em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, err }) => {
-        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\t线程${Id}:运行出错：`);
+    em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, Task, err }) => {
+        console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\t线程${Id}:运行出错：\t\t${Task}`);
         console.error(err);
     });
 

@@ -76,7 +76,7 @@ module.exports = () => ({
         let wbm = new WebBookMaker(bookUrl);
         await wbm.UpdateIndex()
             .then(result => {
-                backRsl.data = wbm.GetBook();
+                backRsl.data = "已启动分析，稍后将生成书本配置。"
                 ctx.body = backRsl.getJSONString();
             }).catch((err) => {
                 backRsl.code = 50000;
