@@ -15,7 +15,7 @@ app.use(koaSwagger({
 
 app.on("error", (err, ctx) => {
     if (ctx) CtxSetAllowHead(ctx);  //处理500错误到前端时会有跨域拦截
-    console.err("KOA ERR: ", err);
+    console.error("KOA ERR: ", err);
 })
 
 //设置跨域

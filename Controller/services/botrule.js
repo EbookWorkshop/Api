@@ -1,5 +1,6 @@
 //爬站规则
 
+const RuleManager = require("../../Core/WebBook/RuleManager");
 const Models = require("./../../Core/OTO/Models");
 
 const Server = require("./../../Core/Server");
@@ -135,38 +136,7 @@ module.exports = () => ({
      */
     "get ": async (ctx) => {
         let host = ctx.query.host;
-
-        const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll({
-            where: {
-                Host: host
-            }
-        });
-        let rsl = [];
-
-        for (let r of rules) {
-            let {
-                Host: host,
-                RuleName: ruleName,
-                Selector: selector,
-                GetContentAction: getContentAction,
-                GetUrlAction: getUrlAction,
-                CheckSetting: checkSetting,
-                Type: type
-            } = r.dataValues;
-            let temp = {
-                host,
-                ruleName,
-                selector,
-                type,
-                getContentAction,
-                getUrlAction,
-                checkSetting,
-            }
-            if (r.RemoveSelector) temp.removeSelector = r.RemoveSelector.split(",");
-            rsl.push(temp)
-        }
-        ctx.body = new ApiResponse(rsl).getJSONString();
+        ctx.body = new ApiResponse(await RuleManager.GetRuleJsonByURL(host)).getJSONString();
     },
     /**
      * @swagger
@@ -231,4 +201,136 @@ module.exports = () => ({
         }
         ctx.body = new ApiResponse(Array.from(tempHost)).getJSONString();
     },
+    /**
+     * @swagger
+     * /services/botrule/vis:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 预览当前规则
+     *     description: 根据提供的信息，在目标页面上预览规则，以验证配置是否正确
+     *     parameters:
+     *       - in: body
+     *         name: rule
+     *         description: 站点规则
+     *         schema:
+     *             type: object
+     *             required:
+     *               - testUrl
+     *               - selector
+     *             properties:
+     *               ruleName:
+     *                 type: string
+     *                 enum:
+     *                   - BookName
+     *                   - ChapterList
+     *                   - CapterTitle
+     *                   - Content
+     *                   - IndexNextPage
+     *                   - ContentNextPage
+     *               testUrl:
+     *                 type: string
+     *               selector:
+     *                 type: string
+     *               removeSelector:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *               getContentAction:
+     *                 type: string
+     *               getUrlAction:
+     *                 type: string
+     *               type:
+     *                 type: string
+     *                 default: Object
+     *                 enum:
+     *                   - Object
+     *                   - List
+     *               checkSetting:
+     *                 type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /vis": async (ctx) => {
+        let param = await Server.parseJsonFromBodyData(ctx, ["testUrl", "selector"]);
+        if (param == null) return;
+
+        let rule = new Rule(param.ruleName);
+        rule.Selector = param.selector;
+
+        if (Array.isArray(param.removeSelector) && param.removeSelector.length > 0) {
+            rule.RemoveSelector = param.removeSelector.join(",");
+        }
+
+        if (param.getContentAction) rule.GetContentAction = param.getContentAction;
+        if (param.getUrlAction) rule.GetUrlAction = param.getUrlAction;
+        if (param.type == "Object" || param.type == "List") rule.Type = param.type;
+        if (param.checkSetting) rule.CheckSetting = param.checkSetting;
+
+        let ret = await VisualizationOfRule(param.testUrl, rule);
+
+        ctx.body = new ApiResponse(ret).getJSONString();
+    },
+    /**
+     * @swagger
+     * /services/botrule/export:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 导出指定站点的规则
+     *     description: 导出指定站点的规则——用于备份，数据迁移等
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /export": async (ctx) => {
+        let host = ctx.query.host;
+        ctx.body = JSON.stringify(await RuleManager.GetRuleJsonByURL(host));
+        ctx.set("Content-Type", "application/octet-stream");
+        ctx.set("Content-Disposition", `attachment;filename=EBW_botrule_export_${host}.json`);
+
+    },
+
+    /**
+     * @swagger
+     * /services/botrule/import:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 导入指定站点的规则
+     *     description: 导入指定站点的规则——用于备份，数据迁移等
+     *     parameters:
+     *     - name: data
+     *       in: body
+     *       required: true
+     *       description: 导入的json内容
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /import": async (ctx) => {
+        ctx.body = "TODO"
+    }
 });

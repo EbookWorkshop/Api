@@ -25,6 +25,7 @@ class WorkerPoolTaskInfo extends AsyncResource {
      * @param {*} result 回调的结果
      */
     Done(err, result) {
+        // console.log("线程结束的回调", result, err);
         this.runInAsyncScope(this.callback, null, result, err);
         this.emitDestroy();  // `TaskInfo`s are used only once.
     }
@@ -131,7 +132,7 @@ class WorkerPool extends EventEmitter {
         worker.on('error', (err) => {
             //若有回调的话，将错误发到回调上
             if (worker[kTaskCallback])
-                worker[kTaskCallback].Done(err, null);      //方案2
+                worker[kTaskCallback].Done(err, null);      //出错时的回调
             else
                 this.emit('error', err);
 
@@ -169,7 +170,7 @@ class WorkerPool extends EventEmitter {
         }
      *
      * ```
-     * @param {function(param,err)} callback 线程结束后的回调
+     * @param {function(result:object,err)} callback 线程结束后的回调，如果线程运行出错，result的值将为null
      */
     RunTask(taskParam, callback) {
         //排队机制

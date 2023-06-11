@@ -66,6 +66,10 @@ class WebBookMaker {
             taskType: "puppeteer",
             maxThreadNum: 10
         }, async (result) => {
+            if (result == null) {
+                new EventManager().emit("WebBook.UpdateIndex.Error");
+                return;
+            }
             //初始化书名
             if (result.has("BookName") && !this.myWebBook.WebBookName) {
                 let bn = result.get("BookName")[0];
@@ -111,7 +115,7 @@ class WebBookMaker {
                         savePath: config.dataPath + coverImgPath
                     }
                 }, (result, err) => {
-                    console.debug("封面图片缓存结果：", result);
+                    // console.debug("封面图片缓存结果：", result, err);
                     if (result) this.myWebBook.SetCoverImg(coverImgPath);
                 });
             }

@@ -10,28 +10,38 @@ const fs = require("fs");
  */
 function CacheFile(url, savePath) {
     return new Promise((resolve, reject) => {
-        try {
-            let tUrl = new URL(url);
-            // 发送一个请求到代理服务器
-            const options = {
-                method: "GET",
-                headers: {
-                },
-                hostname: tUrl.hostname,
-                path: tUrl.pathname + (tUrl.search || ""),
-                port: tUrl.port,
-                rejectUnauthorized: false    //忽略证书校验
-            };
+        let tUrl = new URL(url);
+        // 发送一个请求到代理服务器
+        const options = {
+            method: "GET",
+            headers: {
+                'Content-Type': `application/x-www-form-urlencoded`,
+                'Content-Length': 0
+            },
+            hostname: tUrl.hostname,
+            path: tUrl.pathname + (tUrl.search || ""),
+            port: tUrl.port,
+            rejectUnauthorized: false    //忽略证书校验
+        };
 
-            const req = https.request(options, (res) => {
-                res.pipe(fs.createWriteStream(savePath));
-                resolve(true);
-            });
-            req.end();//
-        } catch (err) {
+        const req = https.request(options, (res) => {
+            try {
+                const fStream = fs.createWriteStream(savePath);
+                res.pipe(fStream);
+
+                fStream.on("finish", () => {
+                    resolve(true);
+                });
+            } catch (err) {
+                reject(false, err);
+            }
+        });
+        req.on('error', (err) => {
             console.warn("获取图片失败:", url, err)
             reject(false, err);
-        }
+            // throw err;
+        })
+        req.end();
     });
 }
 

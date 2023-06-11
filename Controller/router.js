@@ -4,6 +4,7 @@ const path = require('path')
 const fs = require('fs');
 
 const EventManager = require("./../Core/EventManager");
+const ApiResponse = require("./../Entity/ApiResponse");
 const em = new EventManager();
 
 /**
@@ -54,11 +55,17 @@ function loader(filename, fatherRouter, routes) {
     Object.keys(routes).forEach(key => {
         const [method, path] = key.split(' ');
         // 注册路由
-        let mType = `[${method.toUpperCase()}]`.padStart(10," ");
-        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(prefix + path).padEnd(40," ")}\t${__filename}`,);
+        let mType = `[${method.toUpperCase()}]`.padStart(10, " ");
+        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(prefix + path).padEnd(40, " ")}\t${__filename}`,);
         router[method.toLowerCase()](prefix + path, (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
-            return routes[key](ctx);
+
+            //在最顶层捕获错误，以防出错后程序中断
+            try {
+                return routes[key](ctx);
+            } catch (err) {
+                ctx.body = new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000);
+            }
         });
     })
 }

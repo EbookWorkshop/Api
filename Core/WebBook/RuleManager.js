@@ -1,5 +1,6 @@
 //管理站点与爬站规则之间的关系
 const DB = require("./../OTO/DatabaseHelper");
+const Models = require("./../../Core/OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
@@ -71,6 +72,47 @@ class RuleManager {
         //     host = ha.join(".");
         // }
         return host;
+    }
+
+    /**
+     * 取得规则配置的json数据
+     * @param {string} url 
+     * @returns {json}
+     */
+    static async GetRuleJsonByURL(url) {
+        let host = url.startsWith("http") ? this.GetHost(url) : url;
+
+        const myModels = new Models();
+        let rules = await myModels.RuleForWeb.findAll({
+            where: {
+                Host: host
+            }
+        });
+        let rsl = [];
+
+        for (let r of rules) {
+            let {
+                Host: host,
+                RuleName: ruleName,
+                Selector: selector,
+                GetContentAction: getContentAction,
+                GetUrlAction: getUrlAction,
+                CheckSetting: checkSetting,
+                Type: type
+            } = r.dataValues;
+            let temp = {
+                host,
+                ruleName,
+                selector,
+                type,
+                getContentAction,
+                getUrlAction,
+                checkSetting,
+            }
+            if (r.RemoveSelector) temp.removeSelector = r.RemoveSelector.split(",");
+            rsl.push(temp)
+        }
+        return rsl;
     }
 
 }
