@@ -3,9 +3,11 @@ const system = require("./Core/System");
 const router = require('./Controller/router')
 const Koa = require('koa');
 const static = require('koa-static');
-const app = new Koa();
-//swagger-文档中间件
 const { koaSwagger } = require('koa2-swagger-ui');
+
+const app = new Koa();
+
+//swagger-文档中间件
 app.use(koaSwagger({
     routePrefix: '/swagger', // api文档访问地址
     swaggerOptions: {
@@ -29,9 +31,10 @@ app.use(router.routes());
 //启动静态文件服务
 app.use(static("./Data"))
 
-system.then(() => {
+system.then((service) => {
     console.log("开始监听：8777");
-    app.listen(8777);
+    let server = app.listen(8777);
+    new service.io(server);
 });
 
 

@@ -1,6 +1,8 @@
-const EventManager = require("../Core/EventManager.js");
-const DB = require("../Core/OTO/DatabaseHelper.js");
-const WP = require("./Worker/WorkerPool.js");
+const EventManager = require("./EventManager");
+const DB = require("./OTO/DatabaseHelper");
+const WP = require("./Worker/WorkerPool");
+const IO = require("./Socket");
+
 
 const { debug: isDebug } = require("./../config").config;
 
@@ -14,11 +16,14 @@ module.exports = new Promise((resolve, reject) => {
         const wp = new WP();        //启用线程池
         const db = new DB();        //启用数据库
         const em = new EventManager();    //启用消息管理
+        const io = IO;        //
         //koa app？
 
         //数据库初始化完成
         em.once("DB.Models.Init", () => {
-            resolve();
+            resolve({
+                wp, db, em, io
+            });
         });
     } catch (err) {
         reject(err);

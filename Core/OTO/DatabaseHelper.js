@@ -15,7 +15,7 @@ class DB {
             myDb = DB.Connect(databasePath);
             myModels = new Models(myDb);
         }
-        return myDb;
+        //return myDb;
     }
     static GetDB() {
         return myDb;
