@@ -80,17 +80,18 @@ class WorkerPool extends EventEmitter {
         this.runningThreadCountByType = new Map();
         this.on(kWorkerFreedEvent, (taskType) => {
             let tt = this.waitingTask.get(taskType || "");
-            if (taskType && tt && tt.length > 0) {
+            if (taskType && tt && tt.length > 0) {      //释放限定进程后，优先处理同类进程需求
                 let p = tt.shift();
                 this.RunTask(p.taskParam, p.callback);
             } else {
                 for (var curType of this.waitingTask.keys()) {
                     if (curType == taskType) continue;
                     let taskList = this.waitingTask.get(curType);
+                    if (taskList.length == 0) continue;
                     if (this.runningThreadCountByType.get(curType) >= taskList[0]?.taskParam?.maxThreadNum) continue;
 
-                    let runTask = taskList.shift();
-                    this.RunTask(runTask.taskParam, runTask.callback);
+                    let p = taskList.shift();
+                    this.RunTask(p.taskParam, p.callback);
                     break;
                 }
             }
@@ -138,6 +139,12 @@ class WorkerPool extends EventEmitter {
 
             let taskParam = worker[kTaskParam];
             let workerId = this.workers.indexOf(worker);
+
+            //限制总数类的线程数量释放
+            if (taskParam.taskType && taskParam.maxThreadNum > 0) {
+                let curNum = this.runningThreadCountByType.get(taskParam.taskType) || 1;
+                this.runningThreadCountByType.set(taskParam.taskType, curNum - 1);
+            }
 
             //删掉当前线程，换一个新的。以防线程跑飞后越来越少可用线程
             this.workers.splice(workerId, 1);

@@ -45,24 +45,23 @@ class SocketIO {
     myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
       myIO.emit("WebBook.Chapter.Update", {
         status: true,
-        title: title,
+        title,
         chapterId: cId,
-        bookId: bookid
-      })
-
+        bookid
+      });
     });
-    myEM.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err) => {
-      // console.log(`更新章节失败：${bookid}-${cId}:`);
-      // console.error(err);
+
+    myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err) => {
+      myIO.emit("WebBook.UpdateOneChapter.Error", { bookid, chapterId, err: { name: err.name, message: err.message } });
     })
 
-    myEM.on("WebBook.UpdateChapter.Process", (bookid, rate, ok, fail, all) => {
-      myIO.emit("WebBook.UpdateChapter.Process", { bookid, rate, ok, fail, all })
+    myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
+      myIO.emit("WebBook.UpdateChapter.Process", { bookid, chapterId, rate, ok, fail, all })
     });
 
-    myEM.on("WebBook.UpdateChapter.Finish", (bookid, chapterIndexArray, doneNum, failNum) => {
+    myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
       myIO.emit("WebBook.UpdateChapter.Finish", {
-        bookid, chapterIndexArray, doneNum, failNum
+        bookid, bookName, chapterIndexArray, doneNum, failNum
       })
     });
   }

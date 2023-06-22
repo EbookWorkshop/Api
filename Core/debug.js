@@ -15,13 +15,14 @@ module.exports = (() => {
         console.error(err);
     })
 
-    em.on("WebBook.UpdateChapter.Process", (bookid, rate, ok, fail, all) => {
-        console.log(`正在更新中，当前进度${(rate * 100).toFixed(2)}%\n\t\t完成：${ok}\t失败：${fail}\t总数：${all}`);
+    em.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
+        console.log(`正在更新中[${bookid}-${chapterId}]，当前进度${(rate * 100).toFixed(2)}%\n\t\t完成：${ok}\t失败：${fail}\t总数：${all}`);
     })
-    em.on("WebBook.UpdateChapter.Finish", (bookid, chapterIndexArray, doneNum, failNum) => {
+    em.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
         console.log("已完成更新下列章节", chapterIndexArray);
 
-        console.log(`已成功：${doneNum}；已失败：${failNum}`);
+        console.log(`《${bookName}》已成功：${doneNum}；已失败：${failNum}`);
+
     });
 
 
