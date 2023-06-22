@@ -153,6 +153,20 @@ class DO {
 
         return await DO.ModelToWebBook(book);
     }
+    /**
+     * 根据ID获得对应的WebBook的来源地址
+     * @param {int} bookId 书的ID
+     */
+    static async GetWebBookSourcesById(bookId) {
+        const myModels = new Models();
+        let bookSources = await myModels.WebBookIndexSourceURL.findAll({
+            where: { WebBookId: bookId }
+        });
+
+        if (bookSources == null) return null;
+
+        return await bookSources;
+    }
 
     /**
      * 根据书名找到对应的电子书配置

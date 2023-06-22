@@ -278,6 +278,44 @@ module.exports = () => ({
         }).catch((err) => {
                 ctx.body = new ApiResponse(err, "更新目录出错：" + err.message, 50000).getJSONString();
         })
+    },
+    /**
+     * @swagger
+     * /library/webbook/sources:
+     *   get:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 拿到指定ID书的目录来源地址
+     *     description: 拿到指定ID书的，网页来源的地址
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取的书ID
+     *       schema:
+     *         type: integer
+     *         format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /sources": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        let result = new ApiResponse();
+        if (bookId * 1 != bookId) {
+            ctx.status = 600;
+            result.code = 60000;
+            result.msg = "参数错误";
+            ctx.body = result.getJSONString();
+            return;
+        }
 
-    }
+        result.data = await DO.GetWebBookSourcesById(bookId * 1);
+        ctx.body = result.getJSONString();
+    },
+
 });

@@ -21,7 +21,7 @@ parentPort.on('message', (task) => {
             result.then((rsl) => {
                 parentPort.postMessage(rsl);
             }).catch(err => {
-                parentPort.postMessage(err);
+                throw(err);
             })
         } else {
             parentPort.postMessage(result);//执行完成，往主线程发送结果

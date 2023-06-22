@@ -220,17 +220,17 @@ class WebBookMaker {
         let em = new EventManager();
         let bookid = this.myWebBook.BookId;
 
-        let _updateProcess = (ok, fail, all) => {
-            em.emit("WebBook.UpdateChapter.Process", bookid, (ok + fail) / all, ok, fail, all);
+        let _updateProcess = (chapterId, ok, fail, all) => {
+            em.emit("WebBook.UpdateChapter.Process", bookid, chapterId, (ok + fail) / all, ok, fail, all);
             if (all == ok + fail) em.emit("WebBook.UpdateChapter.Finish", bookid, doList, ok, fail);
         }
-        em.on("WebBook.UpdateOneChapter.Finish", (bookid, cIdArray) => {
+        em.on("WebBook.UpdateOneChapter.Finish", (bookid, chapterId, title) => {
             doneNum++;
-            _updateProcess(doneNum, failNum, allNum);
+            _updateProcess(chapterId, doneNum, failNum, allNum);
         });
-        em.on("WebBook.UpdateOneChapter.Error", (bookid, cIdArray) => {
+        em.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err) => {
             failNum++;
-            _updateProcess(doneNum, failNum, allNum);
+            _updateProcess(chapterId, doneNum, failNum, allNum);
         });
 
         //安排任务

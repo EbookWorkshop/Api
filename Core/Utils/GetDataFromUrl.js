@@ -20,7 +20,8 @@ async function GetDataFromUrl(url, setting) {
             height: 900
         },
         headless: "new",
-        slowMo: 233        //设置放慢每个步骤的毫秒数
+        slowMo: 233,        //设置放慢每个步骤的毫秒数
+        ignoreDefaultArgs:['--enable-automation'],      //去掉自动化提示-可能对部分反爬策略有帮助
     }
     if (isDEBUG) options.headless = false;//设置为有界面，如果为true，即为无界面
     let browser = await puppeteer.launch(options);

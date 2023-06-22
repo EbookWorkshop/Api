@@ -104,10 +104,10 @@ class WorkerPool extends EventEmitter {
      */
     AddNewWorker() {
         const worker = new Worker(path.resolve(__dirname, 'WorkerRunner.js'));
-        worker.on('message', (result, err) => {      //执行后主线程监听结果
+        worker.on('message', (result) => {      //执行后主线程监听结果
 
             let taskParam = worker[kTaskParam];
-            worker[kTaskCallback].Done(err, result);       //WorkerPoolTaskInfo.Done 执行回调
+            worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
             worker[kTaskCallback] = null;
             worker[kTaskParam] = null;
 
