@@ -65,7 +65,7 @@ export default {
         }
 
         // 指定保存文件的路径
-        let filePath = "./Data/" + "font/" + file.name;
+        let filePath = "./Data/" + "font/" + file.originalFilename;
 
         AddFile(file, filePath).then((rsl) => {
             new ApiResponse(rsl).toCTX(ctx);

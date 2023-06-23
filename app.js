@@ -3,9 +3,13 @@ const system = require("./Core/System");
 const router = require('./Controller/router')
 const Koa = require('koa');
 const static = require('koa-static');
+const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
 
 const app = new Koa();
+
+// 使用koa-body中间件解析请求体
+app.use(koaBody({ multipart: true }));
 
 //swagger-文档中间件
 app.use(koaSwagger({

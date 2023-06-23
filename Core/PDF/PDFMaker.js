@@ -2,6 +2,7 @@ const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
 const EventManager = require("./../EventManager");
 const { config } = require("./../../config");
+const sharp = require("sharp");     //提供图像格式转换
 
 class PDFMaker {
     constructor(pdf) {
@@ -31,7 +32,7 @@ class PDFMaker {
                 //创建一个写入对象 `{ doc, stream }`
                 const { doc: pdfDoc, stream: fileStream } = CreateNewDoc(fileInfo.path, this.GetSettingFromPdf());
 
-                AddBookCoverToPdf(this.pdf, pdfDoc);//制作封面
+                await AddBookCoverToPdf(this.pdf, pdfDoc);//制作封面
 
                 await AddChaptersToPdf(this.pdf, pdfDoc);
 
@@ -105,8 +106,8 @@ async function AddChaptersToPdf(pdfBook, pdfDoc) {
  * @param {*} pdfBook 电子书
  * @param {*} pdfDoc pdf对象
  */
-function AddBookCoverToPdf(pdfBook, pdfDoc) {
-    if (pdfBook.CoverImg) CreateImageCover(pdfBook, pdfDoc);
+async function AddBookCoverToPdf(pdfBook, pdfDoc) {
+    if (pdfBook.CoverImg) await CreateImageCover(pdfBook, pdfDoc);
 
 }
 
@@ -115,9 +116,20 @@ function AddBookCoverToPdf(pdfBook, pdfDoc) {
  * @param {*} pdfBook 
  * @param {*} pdfDoc 
  */
-function CreateImageCover(pdfBook, pdfDoc) {
+async function CreateImageCover(pdfBook, pdfDoc) {
     const realDir = config.dataPath + pdfBook.CoverImg;
-    pdfDoc.image(realDir, 0, 0, { width: pdfBook.pageWidth, align: 'center', valign: 'center' }).addPage();
+
+    let imgFile = realDir;
+    if (realDir.endsWith(".webp")) {
+        imgFile = realDir.replace(/webp$/, "png");
+        await sharp(realDir).png().toFile(imgFile);
+    }
+
+    pdfDoc.image(imgFile, 0, 0, { width: pdfBook.pageWidth, align: 'center', valign: 'center' }).addPage();
+
+    if (imgFile != realDir) {
+        fs.unlink(imgFile,()=>{});
+    }
 }
 
 module.exports = PDFMaker;

@@ -239,7 +239,8 @@ class WebBookMaker {
                 if (!rsl) failNum++;
             }).catch((err) => {
                 console.warn(`更新失败：ID-${id}，原因：${err.message}`);
-                failNum++;
+                // failNum++;
+                em.emit("WebBook.UpdateOneChapter.Error", bookid, id, err);
             });
             doList.push(id);
         }

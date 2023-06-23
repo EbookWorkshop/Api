@@ -36,9 +36,9 @@ export async function ListFile(path, filetype = null) {
 export async function AddFile(file, filePath) {
     return new Promise((resolve, reject) => {
         try {
-            const reader = fs.createReadStream(file.path);
+            // const reader = fs.createReadStream(file.path);
             const writer = fs.createWriteStream(filePath);
-            reader.pipe(writer);
+            file._writeStream.pipe(writer);
             resolve(true);
         } catch (err) {
             reject(err);
