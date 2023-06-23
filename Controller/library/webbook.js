@@ -32,17 +32,12 @@ module.exports = () => ({
      */
     "get ": async (ctx) => {
         let bookId = ctx.query.bookid;
-        let result = new ApiResponse();
+
         if (bookId * 1 != bookId) {
-            ctx.status = 600;
-            result.code = 60000;
-            result.msg = "参数错误";
-            ctx.body = result.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-
-        result.data = await DO.GetWebBookById(bookId * 1);
-        ctx.body = result.getJSONString();
+        new ApiResponse(await DO.GetWebBookById(bookId * 1)).toCTX(ctx);
     },
 
     /**
@@ -69,19 +64,14 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let backRsl = new ApiResponse();
-
         let bookUrl = await Server.parseBodyData(ctx);
 
         let wbm = new WebBookMaker(bookUrl);
         await wbm.UpdateIndex()
             .then(result => {
-                backRsl.data = "已启动分析，稍后将生成书本配置。"
-                ctx.body = backRsl.getJSONString();
+                new ApiResponse("已启动分析，稍后将生成书本配置。").toCTX(ctx);
             }).catch((err) => {
-                backRsl.code = 50000;
-                backRsl.msg = err.message;
-                ctx.body = backRsl.getJSONString();
+                new ApiResponse(null, err.message, 50000).toCTX(ctx);
             });
     },
 
@@ -112,14 +102,14 @@ module.exports = () => ({
     "delete ": async (ctx) => {
         let bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
-            ctx.status = 600;
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
         await WebBookMaker.DeleteOneBook(bookId).then((rsl) => {
-            ctx.body = new ApiResponse().getJSONString();
+            new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-            ctx.body = new ApiResponse(err, "删除出错：" + err.message, 50000).getJSONString();
+            new ApiResponse(err, "删除出错：" + err.message, 50000).toCTX(ctx);
         })
     },
 
@@ -160,8 +150,6 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "patch /updatechapter": async (ctx) => {
-        let result = new ApiResponse();
-
         let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
 
         let b = await DO.GetWebBookById(param.bookId);
@@ -176,21 +164,15 @@ module.exports = () => ({
         }
 
         if (cIds.length == 0) {
-            result.msg = "所有章节已有内容，若需要更新请提供指定章节ID，并开启强制更新。";
-            result.data = ebook.BookName;
-            result.code = 50000
-            ctx.body = result.getJSONString();
+            new ApiResponse(ebook.BookName, "所有章节已有内容，若需要更新请提供指定章节ID，并开启强制更新。", 50000).toCTX(ctx);
             return;
         }
 
         let wbm = new WebBookMaker(b);
         await wbm.UpdateChapter(cIds, param.isUpdate).then((rsl) => {
-            result.data = rsl;
+            new ApiResponse(rsl).toCTX(ctx);
         }).catch((err) => {
-            result.code = 50000;
-            result.msg = err.message;
-        }).finally(() => {
-            ctx.body = result.getJSONString();
+            new ApiResponse(null, err.message, 50000).toCTX(ctx);
         });
 
     },
@@ -223,17 +205,17 @@ module.exports = () => ({
      *     responses:
      *       200:
      *         description: 请求成功
-     *       600:
-     *         description: 参数错误，参数类型错误
+     *       500:
+     *         description: 接口执行出错
      */
     "post /addnewsource": async (ctx) => {
         let param = await Server.parseJsonFromBodyData(ctx, ["bookId", "url"]);
         let b = await DO.GetWebBookById(param.bookId);
         await b.AddIndexUrl(param.url, true)
             .then(result => {
-                ctx.body = new ApiResponse().getJSONString();
+                new ApiResponse(result).toCTX(ctx);
             }).catch((err) => {
-                ctx.body = new ApiResponse(err, "新增出错：" + err.message, 50000).getJSONString();
+                new ApiResponse(err, "新增出错：" + err.message, 50000).toCTX(ctx);
             });
     },
     /**
@@ -274,9 +256,9 @@ module.exports = () => ({
         let lastIndex = await curBook.GetMaxIndexOrder();
 
         await wbm.UpdateIndex("", lastIndex + 1).then((rsl) => {
-            ctx.body = new ApiResponse().getJSONString();
+            new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-                ctx.body = new ApiResponse(err, "更新目录出错：" + err.message, 50000).getJSONString();
+            new ApiResponse(err, "更新目录出错：" + err.message, 50000).toCTX(ctx);
         })
     },
     /**
@@ -305,17 +287,12 @@ module.exports = () => ({
      */
     "get /sources": async (ctx) => {
         let bookId = ctx.query.bookid;
-        let result = new ApiResponse();
         if (bookId * 1 != bookId) {
-            ctx.status = 600;
-            result.code = 60000;
-            result.msg = "参数错误";
-            ctx.body = result.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
-        result.data = await DO.GetWebBookSourcesById(bookId * 1);
-        ctx.body = result.getJSONString();
+        new ApiResponse(await DO.GetWebBookSourcesById(bookId * 1)).toCTX(ctx);
     },
 
 });

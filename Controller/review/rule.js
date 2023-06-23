@@ -26,7 +26,7 @@ module.exports = () => ({
     "get /list": async (ctx) => {
         const myModels = new Models();
         let rules = await myModels.ReviewRule.findAll();
-        ctx.body = new ApiResponse(rules).getJSONString();
+        new ApiResponse(rules).toCTX(ctx);
     },
     /**
     * @swagger
@@ -75,8 +75,8 @@ module.exports = () => ({
                 Replace: param.replace,
             }
         }).catch(err => {
-            ctx.body = new ApiResponse(err, err.message, 50000).getJSONString();
-            return [null,null]; //return to line 70
+            new ApiResponse(err, err.message, 50000).toCTX(ctx);
+            return [null, null]; //return to line 70
         });
         if (!created) {
             rule.Name = param.name;
@@ -84,7 +84,7 @@ module.exports = () => ({
             rule.Replace = param.replace;
             rule.save();
         }
-        if(rule) ctx.body = new ApiResponse(rule).getJSONString();
+        if (rule) new ApiResponse(rule).toCTX(ctx);
     },
     /**
     * @swagger
@@ -113,7 +113,7 @@ module.exports = () => ({
     "delete ": async (ctx) => {
         let id = ctx.query.id;
         if (id * 1 != id) {
-            ctx.body = new ApiResponse(null, "参数错误。", 50000).getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
         const myModels = new Models();
@@ -122,6 +122,6 @@ module.exports = () => ({
         });
         rules.map((item) => item.destroy());
 
-        ctx.body = new ApiResponse(rules).getJSONString();
+        new ApiResponse(rules).toCTX(ctx);
     },
 });

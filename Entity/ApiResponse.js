@@ -29,6 +29,15 @@ class ApiResponse {
             data: this.data
         })
     }
+
+    /**
+     * 将结果设置到ctx中
+     * @param {*} ctx 
+     */
+    toCTX(ctx) {
+        ctx.status = this.code / 100;
+        ctx.body = this.getJSONString();
+    }
 }
 
 module.exports = ApiResponse;

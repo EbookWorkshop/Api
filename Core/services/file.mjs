@@ -2,6 +2,7 @@
  * 通用的文件上传、下载、列出等逻辑
  */
 // const fs = require("fs");
+import exp from "constants";
 import fs from "fs";
 
 
@@ -28,6 +29,20 @@ export async function ListFile(path, filetype = null) {
     return result;
 }
 
+/**
+ * 
+ * @param {*} file 
+ */
+export async function AddFile(file, filePath) {
+    return new Promise((resolve, reject) => {
+        try {
+            const reader = fs.createReadStream(file.path);
+            const writer = fs.createWriteStream(filePath);
+            reader.pipe(writer);
+            resolve(true);
+        } catch (err) {
+            reject(err);
+        }
+    })
 
-
-// ListFile("./Data/font", ["ttf", "fon"]);
+}

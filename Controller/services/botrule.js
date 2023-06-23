@@ -77,7 +77,7 @@ module.exports = () => ({
             hostCheck.add(p.host);
         }
         if (hostCheck.size != 1) {
-            ctx.body = new ApiResponse(null, "发现多套网站的规则，每次更新只能同一套网站。", 50000).getJSONString();
+            new ApiResponse(null, "发现多套网站的规则，每次更新只能同一套网站。", 50000).toCTX(ctx);
             return;
         }
 
@@ -107,7 +107,7 @@ module.exports = () => ({
             let ret = await myModels.RuleForWeb.create(rule);
         }
 
-        ctx.body = new ApiResponse().getJSONString();
+        new ApiResponse().toCTX(ctx);
 
     },
 
@@ -136,7 +136,7 @@ module.exports = () => ({
      */
     "get ": async (ctx) => {
         let host = ctx.query.host;
-        ctx.body = new ApiResponse(await RuleManager.GetRuleJsonByURL(host)).getJSONString();
+        new ApiResponse(await RuleManager.GetRuleJsonByURL(host)).toCTX(ctx);
     },
     /**
      * @swagger
@@ -173,7 +173,7 @@ module.exports = () => ({
 
         for (let r of rules) r.destroy();
 
-        ctx.body = new ApiResponse().getJSONString();
+        new ApiResponse().toCTX(ctx);
     },
 
     /**
@@ -199,7 +199,7 @@ module.exports = () => ({
         for (let r of rules) {
             tempHost.add(r.Host)
         }
-        ctx.body = new ApiResponse(Array.from(tempHost)).getJSONString();
+        new ApiResponse(Array.from(tempHost)).toCTX(ctx);
     },
     /**
      * @swagger
@@ -274,7 +274,7 @@ module.exports = () => ({
 
         let ret = await VisualizationOfRule(param.testUrl, rule);
 
-        ctx.body = new ApiResponse(ret).getJSONString();
+        new ApiResponse(ret).toCTX(ctx);
     },
     /**
      * @swagger

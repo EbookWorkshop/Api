@@ -43,7 +43,7 @@ module.exports = () => ({
                 })
             })
         }
-        ctx.body = new ApiResponse(result).getJSONString();
+        new ApiResponse(result).toCTX(ctx);
     },
     /**
     * @swagger
@@ -91,15 +91,15 @@ module.exports = () => ({
                 RuleId: param.ruleId,
             }
         }).catch(err => {
-            ctx.body = new ApiResponse(err, err.message, 50000).getJSONString();
-            return [null,null]; //return to line 87
+            new ApiResponse(null, err.message, 50000).toCTX(ctx);
+            return [null, null]; //return to line 87
         });
         if (rule && !created) {
             rule.BookId = param.bookId;
             rule.RuleId = param.ruleId;
             rule.save();
         }
-        if(rule) ctx.body = new ApiResponse(rule).getJSONString();
+        if (rule) new ApiResponse(rule).toCTX(ctx);
     },
     /**
     * @swagger
@@ -128,7 +128,7 @@ module.exports = () => ({
     "delete ": async (ctx) => {
         let id = ctx.query.id;
         if (id * 1 != id) {
-            ctx.body = new ApiResponse(null, "参数错误。", 50000).getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
         const myModels = new Models();
@@ -137,6 +137,6 @@ module.exports = () => ({
         });
         rules.map((item) => item.destroy());
 
-        ctx.body = new ApiResponse(rules).getJSONString();
+        new ApiResponse(rules).toCTX(ctx);
     },
 });

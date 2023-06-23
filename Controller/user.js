@@ -19,12 +19,12 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "post /login": async (ctx) => {
-        ctx.body = new ApiResponse({
+        new ApiResponse({
             token: '12134'
-        }).getJSONString();
+        }).toCTX(ctx);
     },
     "get /info": ctx => {
-        ctx.body = new ApiResponse({
+        new ApiResponse({
           name: 'admin',
           avatar: '/src/assets/logo-dark.svg',
           email: '',
@@ -41,10 +41,10 @@ module.exports = () => ({
           accountId: '9527',
           certification: 1,
           role: 'admin',
-        }).getJSONString();
+        }).toCTX(ctx);
     },
     "get /menu": ctx => {
-        ctx.body = new ApiResponse([
+        new ApiResponse([
         {
           path: '/dashboard',
           name: 'dashboard',
@@ -73,6 +73,6 @@ module.exports = () => ({
             },
           ],
         },
-      ]).getJSONString()
+      ]).toCTX(ctx);
     }
 });

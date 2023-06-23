@@ -19,8 +19,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /booklist": async (ctx) => {
-        let result = new ApiResponse(await DO.GetBookList())
-        ctx.body = result.getJSONString();
+        new ApiResponse(await DO.GetBookList()).toCTX(ctx);
     },
 
     /**
@@ -51,12 +50,11 @@ module.exports = () => ({
         let bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
             ctx.status = 600;
-            let result = new ApiResponse(null, "请求参数错误", 60000);
-            ctx.body = result.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
-        ctx.body = new ApiResponse(await DO.GetEBookById(bookId * 1)).getJSONString();
+        new ApiResponse(await DO.GetEBookById(bookId * 1)).toCTX(ctx);
     },
 
     /**
@@ -86,12 +84,10 @@ module.exports = () => ({
     "get /book/chapter": async (ctx) => {
         let chapterId = ctx.query.chapterid;
         if (chapterId * 1 != chapterId) {
-            ctx.status = 600;
-            let result = new ApiResponse(null, "请求参数错误", 60000);
-            ctx.body = result.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
-        ctx.body = new ApiResponse(await DO.GetEBookChapterById(chapterId * 1)).getJSONString();
+        new ApiResponse(await DO.GetEBookChapterById(chapterId * 1)).toCTX(ctx);
     },
 });

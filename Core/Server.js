@@ -55,8 +55,7 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
             pmCheck(param);
         }
     } catch (err) {
-        ctx.status = 600;
-        ctx.body = new ApiResponse(err, err, 60000).getJSONString();
+        new ApiResponse(err, err, 60000).toCTX(ctx);
         return null;
     }
     return param;

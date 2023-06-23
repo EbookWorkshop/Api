@@ -2,7 +2,7 @@
 const Server = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
-const { SendAMail,EMAIL_SETTING_GROUP,KINDLE_INBOX } = require("./../../Core/services/email")
+const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email")
 
 
 module.exports = () => ({
@@ -49,16 +49,11 @@ module.exports = () => ({
         let param = await Server.parseJsonFromBodyData(ctx, ["files"]);
         if (param == null) return;
 
-        // new EventManager().emit("Debug.Log", "GetIn!!")
-        let backRsl = new ApiResponse();
-
         await SendAMail(param).then(result => {
+            new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-            backRsl.code = 50000;
-            backRsl.msg = err.message;
-        }).finally(() => {
-            ctx.body = backRsl.getJSONString();
-        });
+            new ApiResponse(null, err.message, 50000).toCTX(ctx);
+        })
     },
 
     /**
@@ -96,9 +91,7 @@ module.exports = () => ({
 
         let param = await Server.parseJsonFromBodyData(ctx, ["address", "password"]);
         if (param == null) {
-            backRsl.code = 50000;
-            backRsl.msg = "参数错误。";
-            ctx.body = backRsl.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
@@ -122,12 +115,10 @@ module.exports = () => ({
             });
         }).then(result => {
             //全部成功
+            new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-            backRsl.code = 50000;
-            backRsl.msg = err.message;
-        }).finally(() => {
-            ctx.body = backRsl.getJSONString();
-        });
+            new ApiResponse(null, err.message, 50000).toCTX(ctx);
+        })
     },
 
     /**
@@ -147,7 +138,6 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "get /account": async (ctx) => {
-        let backRsl = new ApiResponse();
         const myModels = new Models();
         let settings = await myModels.SystemConfig.findAll({
             where: {
@@ -155,12 +145,12 @@ module.exports = () => ({
             }
         });
 
-        backRsl.data = {};
+        let data = {};
         for (let s of settings) {
-            backRsl.data[s.Name] = s.Value;
+            data[s.Name] = s.Value;
         }
 
-        ctx.body = backRsl.getJSONString();
+        new ApiResponse(data).toCTX(ctx);
     },
 
     /**
@@ -187,13 +177,12 @@ module.exports = () => ({
                 Group: KINDLE_INBOX
             }
         });
-
-        backRsl.data = {};
+        let data = {};
         for (let s of settings) {
-            backRsl.data[s.Name] = s.Value;
+            data[s.Name] = s.Value;
         }
 
-        ctx.body = backRsl.getJSONString();
+        new ApiResponse(data).toCTX(ctx);
     },
 
     /**
@@ -227,9 +216,7 @@ module.exports = () => ({
         let backRsl = new ApiResponse();
         let param = await Server.parseJsonFromBodyData(ctx, ["address"]);
         if (param == null) {
-            backRsl.code = 50000;
-            backRsl.msg = "参数错误。";
-            ctx.body = backRsl.getJSONString();
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
@@ -246,11 +233,9 @@ module.exports = () => ({
 
         await settings.save().then(() => {
             //全部成功
+            new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-            backRsl.code = 50000;
-            backRsl.msg = err.message;
-        }).finally(() => {
-            ctx.body = backRsl.getJSONString();
+            new ApiResponse(null, err.message, 50000).toCTX(ctx);
         });
     },
 
