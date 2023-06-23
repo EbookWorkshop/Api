@@ -23,19 +23,27 @@ async function load(dir, fatherRouter, cb_loader) {
     files.forEach((filename) => {
         if (__filename.endsWith(filename)) return;    //防止加载当前文件
         if (filename === "index.js") return;        //index通过目录形式加载
-        if (!filename.endsWith('.js') && /[^\.]+\.[^\/]+$/.test(filename)) return;      //不加载有后缀但不是js的文件
+        if (!filename.endsWith('js') && /[^\.]+\.[^\/]+$/.test(filename)) return;      //不加载有后缀但不是js的文件
 
+        let isESM = filename.endsWith("mjs");
         let curfilename = filename.replace('.js', '');
+        let routerPath = `${url}/${curfilename}`;
         try {
-            const routes = require(`${url}/${curfilename}`);        //实际加载模块
-            cb_loader(curfilename, fatherRouter, routes);
+            if (isESM) {
+                import(`${dir}/${curfilename}`).then(routes => {//ESM模块只能用相对路径加载
+                    cb_loader(curfilename.replace(".mjs",""), fatherRouter, routes.default);
+                })
+            } else {    //isCJS
+                const routes = require(routerPath);        //实际加载模块
+                cb_loader(curfilename, fatherRouter, routes);
+            }
         } catch (err) {
-            console.warn(`加载路由失败：${err.message}`);//有可能是目录情况但当前目录没有index.js
+            console.warn(`加载路由失败：${routerPath}\n${err.message}`);//有可能是目录情况但当前目录没有index.js
             // return;
         }
 
         //递归加载子目录
-        if (!filename.endsWith(".js"))
+        if (!filename.endsWith("js"))
             load(`${dir}/${curfilename}`, curfilename, cb_loader);
     });
 }
@@ -51,6 +59,8 @@ function loader(filename, fatherRouter, routes) {
 
     if (typeof (routes) === "function") //模块文件导出为function形式的处理
         routes = routes();
+    // else
+    //     console.log(filename, typeof (routes), routes);//`module.exports = {}`这样导出的模块会去到这里
 
     Object.keys(routes).forEach(key => {
         const [method, path] = key.split(' ');
@@ -71,6 +81,6 @@ function loader(filename, fatherRouter, routes) {
 }
 
 //加载当前文件夹下所有js结尾的文件作为控制器
-load("./", "", loader)
+load(".", "", loader)
 
 module.exports = router;

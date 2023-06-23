@@ -12,7 +12,7 @@ const swaggerDefinition = {
 };
 const options = {
     swaggerDefinition,
-    apis: ['./Controller/*/*.js', './Controller/*.js'],
+    apis: ['./Controller/**/*.?(m)js'],     // micromatch 规则
 };
 const swaggerSpec = jsdoc(options)
 
