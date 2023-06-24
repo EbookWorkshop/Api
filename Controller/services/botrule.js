@@ -2,9 +2,10 @@
 
 const RuleManager = require("../../Core/WebBook/RuleManager");
 const Models = require("./../../Core/OTO/Models");
-
+const Rule = require("./../../Entity/WebBook/Rule");
 const Server = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
+const {VisualizationOfRule} = require("./../../Core/WebBook/RuleVis")
 
 
 module.exports = () => ({

@@ -16,7 +16,7 @@ let lastPage = null;
 async function VisualizationOfRule(url, rule) {
     let browser = await GetBrowser();
     let page = lastPage;
-
+    let curTime = new Date().getTime()
     if (page == null || page.isClosed()) {
         page = await browser.newPage();
         lastPage = page;
@@ -25,7 +25,7 @@ async function VisualizationOfRule(url, rule) {
     if(!page.url() !== url) await page.goto(url); //相同的页面不再刷新
 
     let rsl = await ExecRule(page, rule, true);
-    console.log("规则获得结果内容：", ...rsl);
+    console.log(`[耗时${new Date().getTime()-curTime}ms]规则获得结果内容：`, ...rsl);
     return rsl;
 }
 

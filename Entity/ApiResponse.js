@@ -11,7 +11,7 @@ class ApiResponse {
      */
     constructor(data, msg, code = 20000, status = 0) {
         this.status = status;
-        this.msg = msg || (code === 20000 ? "" : "未知错误");
+        this.msg = msg || (code === 20000 ? "" : "API未知错误");
         this.code = code;
         this.data = data || null;
 
@@ -35,7 +35,21 @@ class ApiResponse {
      * @param {*} ctx 
      */
     toCTX(ctx) {
-        ctx.status = this.code / 100;
+        // ctx.status = this.code / 100;
+        if (ctx.status == 404) {
+            ctx.status = 200;//处理已成功拿到数据但接口状态是404的特殊情况
+        } else if (ctx.status != 200) {
+            this.code = ctx.status * 100;
+
+            if (this.msg === "") {
+                this.msg = `接口出现未正确响应的响应！一般这是API的响应不符合约束规范导致的。更多细节留意API后台输出。\nAPI：${ctx.request.url}`;
+                console.log(ctx);
+            }
+
+            ctx.status = 200;//前端需要全部返回200 才能正确显示提示信息
+        } else if (ctx.status == 200 && this.code != 20000) {
+            this.code = 20000;//以防哪个API忘了设置Code 为20000了
+        }
         ctx.body = this.getJSONString();
     }
 }

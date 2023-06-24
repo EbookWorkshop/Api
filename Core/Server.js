@@ -6,12 +6,17 @@ const ApiResponse = require('../Entity/ApiResponse');
 /**
  * 处理通过body传递的参数
  * @param {*} ctx 
- * @returns {string}
+ * @returns {any}
  */
 function parseBodyData(ctx) {
     return new Promise((resolve, reject) => {
         try {
-            let postData = ''
+            let postData = ctx.request?.body;
+            if (postData) {
+                return resolve(postData);
+            }
+
+            //在引入中间件koa-body之后，下面这方法基本不需要了 留着调试以及应对特殊情况
             ctx.req.addListener('data', (data) => {
                 postData += data
             })
@@ -32,10 +37,9 @@ function parseBodyData(ctx) {
  * @returns 解释后的结果
  */
 async function parseJsonFromBodyData(ctx, requireCheck = []) {
-    let bodyStr = await parseBodyData(ctx);
-    let param = null;
+    let param = await parseBodyData(ctx);
     try {
-        param = JSON.parse(bodyStr);
+        if (typeof (param) === "string") param = JSON.parse(bodyStr);
 
         if (!requireCheck || requireCheck.length == 0) return param;
 
@@ -55,7 +59,7 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
             pmCheck(param);
         }
     } catch (err) {
-        new ApiResponse(err, err, 60000).toCTX(ctx);
+        new ApiResponse(err, err.message, 60000).toCTX(ctx);
         return null;
     }
     return param;

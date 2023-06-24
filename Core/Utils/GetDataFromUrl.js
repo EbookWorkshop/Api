@@ -43,12 +43,6 @@ async function GetDataFromUrl(url, setting) {
         for (let rule of setting.RuleList) {
             if (rule.Selector === "") continue;
 
-            //先尝试删除干扰元素
-            for (let sR of rule.RemoveSelector)
-                await page.$$eval(sR, (node, option) => {
-                    for (let nO of node) nO.parentNode.removeChild(nO)
-                });
-
             //执行规则
             result.set(rule.RuleName, await ExecRule(page, rule));
         }

@@ -102,7 +102,7 @@ export default {
         let fontName = await Server.parseBodyData(ctx);
         let filePath = "./Data/" + "font/";
         DeleteFile(filePath + fontName).catch((err) => {
-            new ApiResponse(null, "删除失败:" + err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
+            new ApiResponse("删除失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
         }).then((reslut) => {
             new ApiResponse(reslut).toCTX(ctx);
         })

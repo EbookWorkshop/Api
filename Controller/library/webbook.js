@@ -56,7 +56,7 @@ module.exports = () => ({
      *       schema:
      *         type: string
      *     consumes:
-     *       - application/json
+     *       - text/plan
      *     responses:
      *       200:
      *         description: 请求成功
