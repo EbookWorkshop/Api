@@ -4,6 +4,7 @@
 // const fs = require("fs");
 import exp from "constants";
 import fs from "fs";
+import { resolve } from "path";
 
 
 /**
@@ -30,8 +31,9 @@ export async function ListFile(path, filetype = null) {
 }
 
 /**
- * 
- * @param {*} file 
+ * 在指定目录存储文件
+ * @param {{_writeStream:stream}} file HTTP文件对象
+ * @param {string} filePath 需要存储的文件目录+存储文件名
  */
 export async function AddFile(file, filePath) {
     return new Promise((resolve, reject) => {
@@ -45,4 +47,18 @@ export async function AddFile(file, filePath) {
         }
     })
 
+}
+
+/**
+ * 删除指定的文件
+ * @param {*} fileFullPath 需删除的文件完整路径（带文件名）
+ * @returns {Promise}
+ */
+export async function DeleteFile(fileFullPath) {
+    return new Promise((resolve, reject) => {
+        fs.accessSync(fileFullPath);//不存在的时候 会抛出err
+
+        fs.unlinkSync(fileFullPath);
+        resolve(true);
+    });
 }

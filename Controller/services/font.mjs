@@ -3,7 +3,8 @@
  * 试用ESM模式，注意：ESM的模块异步加载，无状态
  */
 import ApiResponse from "../../Entity/ApiResponse.js"
-import { ListFile, AddFile } from "../../Core/services/file.mjs";
+import { ListFile, AddFile, DeleteFile } from "../../Core/services/file.mjs";
+import Server from "./../../Core/Server.js";
 
 // const ApiResponse = require("../../Entity/ApiResponse");
 
@@ -72,5 +73,39 @@ export default {
         }).catch((err) => {
             new ApiResponse(err, err.message, 50000).toCTX(ctx);
         })
-    }
+    },
+
+    /**
+     * @swagger
+     * /services/font:
+     *   delete:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 删除
+     *     description: 删除字库里指定的字体文件
+     *     parameters:
+     *     - name: fontName
+     *       in: body
+     *       required: true
+     *       description: 将要删除字体文件名
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "delete ": async (ctx) => {
+        let fontName = await Server.parseBodyData(ctx);
+        let filePath = "./Data/" + "font/";
+        DeleteFile(filePath + fontName).catch((err) => {
+            new ApiResponse(null, "删除失败:" + err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
+        }).then((reslut) => {
+            new ApiResponse(reslut).toCTX(ctx);
+        })
+
+    },
 };

@@ -6,7 +6,7 @@ const ApiResponse = require('../Entity/ApiResponse');
 /**
  * 处理通过body传递的参数
  * @param {*} ctx 
- * @returns 
+ * @returns {string}
  */
 function parseBodyData(ctx) {
     return new Promise((resolve, reject) => {
