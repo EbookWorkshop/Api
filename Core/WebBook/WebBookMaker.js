@@ -143,12 +143,12 @@ class WebBookMaker {
      * @param {int} cId 章节Id
      * @param {boolean} isUpdate 是否覆盖更新-默认否
      */
-    async UpdateOneChapter(cId, isUpdate = false) {
+    async UpdateOneChapter(cId, isUpdate = false, jobId = "") {
         let curIndex = this.myWebBook?.GetIndex(cId);
 
         if (!curIndex) {
             // console.warn(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`);
-            new EventManager().emit("WebBook.UpdateOneChapter.Error", this.myWebBook?.BookId, cId, new Error(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`));
+            new EventManager().emit(`WebBook.UpdateOneChapter.Error_${jobId}`, this.myWebBook?.BookId, cId, new Error(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`));
             return false;
         }
 
@@ -173,7 +173,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (err) {
-                new EventManager().emit("WebBook.UpdateOneChapter.Error", this.myWebBook?.BookId, cId, err);
+                new EventManager().emit(`WebBook.UpdateOneChapter.Error_${jobId}`, this.myWebBook?.BookId, cId, err);
                 return;
             }
 
@@ -202,7 +202,9 @@ class WebBookMaker {
             //cs.set(curCp.WebTitle, chap);
             this.myWebBook.AddChapter(chap, isUpdate);
 
-            new EventManager().emit("WebBook.UpdateOneChapter.Finish", this.myWebBook.BookId, cId, chap.WebTitle);
+            const em = new EventManager();
+            em.emit(`WebBook.UpdateOneChapter.Finish_${jobId}`, this.myWebBook.BookId, cId, chap.WebTitle);
+            em.emit(`WebBook.UpdateOneChapter.Finish`, this.myWebBook.BookId, cId, chap.WebTitle);
         });
         return true;
     }
@@ -218,29 +220,41 @@ class WebBookMaker {
         let allNum = cIdArray.length;
         let doList = [];//参与过的列表，用于判断已经启动多少——失败也算
         let em = new EventManager();
-        let bookid = this.myWebBook.BookId;
+        let myBookId = this.myWebBook.BookId;
+
+        let jobId = Math.random().toString();
+
 
         let _updateProcess = (chapterId, ok, fail, all) => {
-            em.emit("WebBook.UpdateChapter.Process", bookid, chapterId, (ok + fail) / all, ok, fail, all);
-            if (all == ok + fail) em.emit("WebBook.UpdateChapter.Finish", bookid, this.myWebBook.BookName, doList, ok, fail);
+            console.log(chapterId, ok, fail, all)
+            em.emit("WebBook.UpdateChapter.Process", myBookId, chapterId, (ok + fail) / all, ok, fail, all);
+            if (all == ok + fail) em.emit("WebBook.UpdateChapter.Finish", myBookId, this.myWebBook.BookName, doList, ok, fail);
         }
-        em.on("WebBook.UpdateOneChapter.Finish", (bookid, chapterId, title) => {
+
+        //之前的监听器关掉——如果有
+        if (em.listenerCount(`WebBook.UpdateOneChapter.Finish_${jobId}`) > 0) em.removeAllListeners(`WebBook.UpdateOneChapter.Finish_${jobId}`);
+        if (em.listenerCount(`WebBook.UpdateOneChapter.Error_${jobId}`) > 0) em.removeAllListeners(`WebBook.UpdateOneChapter.Error_${jobId}`);
+
+        //重设本次的监听器
+        em.on(`WebBook.UpdateOneChapter.Finish_${jobId}`, (bookid, chapterId, title) => {
+            if (myBookId != bookid) return;
             doneNum++;
             _updateProcess(chapterId, doneNum, failNum, allNum);
         });
-        em.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err) => {
+        em.on(`WebBook.UpdateOneChapter.Error_${jobId}`, (bookid, chapterId, err) => {
+            if (myBookId != bookid) return;
             failNum++;
             _updateProcess(chapterId, doneNum, failNum, allNum);
         });
 
         //安排任务
         for (let id of cIdArray) {
-            this.UpdateOneChapter(id, isUpdate).then((rsl) => {
+            this.UpdateOneChapter(id, isUpdate, jobId).then((rsl) => {
                 if (!rsl) failNum++;
             }).catch((err) => {
                 console.warn(`更新失败：ID-${id}，原因：${err.message}`);
                 // failNum++;
-                em.emit("WebBook.UpdateOneChapter.Error", bookid, id, err);
+                em.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, myBookId, id, err);
             });
             doList.push(id);
         }
