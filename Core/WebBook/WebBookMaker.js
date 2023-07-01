@@ -148,7 +148,7 @@ class WebBookMaker {
 
         if (!curIndex) {
             // console.warn(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`);
-            new EventManager().emit(`WebBook.UpdateOneChapter.Error_${jobId}`, this.myWebBook?.BookId, cId, new Error(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`));
+            new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, new Error(`[WebBookMaker::UpdateOneChapter] 指定章节(ID:${cId})并不存在，请先建立目录。`), jobId);
             return false;
         }
 
@@ -173,7 +173,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (err) {
-                new EventManager().emit(`WebBook.UpdateOneChapter.Error_${jobId}`, this.myWebBook?.BookId, cId, err);
+                new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId);
                 return;
             }
 
