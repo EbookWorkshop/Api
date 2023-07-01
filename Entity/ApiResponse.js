@@ -1,5 +1,6 @@
 /**
  * 标准接口结果返回
+ * TO (Transfer 0bject)，数据传输对象、传输数据的对象
  */
 class ApiResponse {
     /**
@@ -51,6 +52,16 @@ class ApiResponse {
             this.code = 20000;//以防哪个API忘了设置Code 为20000了
         }
         ctx.body = this.getJSONString();
+    }
+
+    /**
+     * 生成一个仅含‘成功’、‘失败’的返回结果
+     * @param {*} result 是否成功
+     * @param {*} msg 相关信息
+     * @returns 
+     */
+    static GetResult(result, msg) {
+        return new ApiResponse(result, msg, result ? 20000 : 50000);
     }
 }
 

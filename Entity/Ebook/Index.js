@@ -4,7 +4,7 @@ class Index {
         /**
          * 章节标题
          */
-        this.Title = Title;
+        this.Title = Title?.trim();
 
         this.OrderNum = OrderNum;
 

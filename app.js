@@ -9,7 +9,12 @@ const { koaSwagger } = require('koa2-swagger-ui');
 const app = new Koa();
 
 // 使用koa-body中间件解析请求体
-app.use(koaBody({ multipart: true }));
+app.use(koaBody({
+    multipart: true,        //解释多个文件
+    formLimit: '50mb',
+    jsonLimit: '50mb',
+    textLimit: '50mb',
+}));
 
 //swagger-文档中间件
 app.use(koaSwagger({

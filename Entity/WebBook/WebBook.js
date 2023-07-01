@@ -3,6 +3,9 @@ let ChapterOptions = require("./ChapterOptions");
 
 let Ebook = require("../Ebook/Ebook");
 
+/**
+ * 网页上扒的书
+ */
 class WebBook extends Ebook {
     /**
      * 网文电子书

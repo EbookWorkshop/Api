@@ -9,16 +9,17 @@ const WebChapter = require("../../Entity/WebBook/WebChapter");
 const PDFBook = require("./../../Entity/PDFBook/PDFBook");
 
 /**
- * doToPo
+ * PoToDo、DoToPo
+ * 将实体类和数据库类互转
  */
 class DO {
     constructor() { }
 
     /**
-     * 
-     * @param {*} ebookModel 
-     * @param {*} BOOKTYPE 需要创建的类，如`Ebook`、`WebBook`、`PDFBook`
-     * @returns 
+     * Po to Do
+     * @param {*} ebookModel PO
+     * @param {Ebook|WebBook|PDFBook} BOOKTYPE 需要创建的类，如`Ebook`、`WebBook`、`PDFBook`
+     * @returns {BOOKTYPE} 
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
         // const myModels = new Models();
@@ -107,6 +108,26 @@ class DO {
     }
 
     /**
+     * Do to Po
+     * @param {Ebook} book EBook实体
+     */
+    static async EBookObjToModel(book) {
+        let tbook = await DO.GetEBookByName(book.BookName);
+        if (tbook != null) DO.DeleteOneBook(tbook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
+
+        if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
+        let PO = Models.GetPO();
+        let poBook = await PO.Ebook.create({
+            ...book
+        });
+
+        for (let i of book.Index) {
+            let result = await poBook.createEbookIndex({ ...i, Content: book.Chapters.get(i.Title) });
+            console.log(result);
+        }
+    }
+
+    /**
      * 根据ID获得对应的EBook对象
      * @param {*} bookId 
      * @returns Ebook
@@ -114,6 +135,17 @@ class DO {
     static async GetEBookById(bookId) {
         const myModels = new Models();
         let book = await myModels.Ebook.findOne({ where: { id: bookId } });
+        if (book == null) return null;
+        return await DO.ModelToEBook(book);
+    }
+    /**
+     * 通过书名查找书
+     * @param {*} name 书名（强制去除空格）
+     * @returns {Ebook}
+     */
+    static async GetEBookByName(name) {
+        const myModels = new Models();
+        let book = await myModels.Ebook.findOne({ where: { bookName: name.trim() } });
         if (book == null) return null;
         return await DO.ModelToEBook(book);
     }
@@ -131,9 +163,9 @@ class DO {
     }
 
     /**
-     * 传输对象转换为EBook对象
-     * @param {*} ebookModel 
-     * @returns EBook
+     * PO转换为EBook对象 PO to DO
+     * @param {*} ebookModel
+     * @returns {EBook}
      */
     static async ModelToEBook(ebookModel) {
         return await DO.ModelToBookObj(ebookModel, Ebook);
@@ -196,7 +228,7 @@ class DO {
     }
 
     /**
-     * 数据库对象传输为WebBook对象-OK
+     * PO 转为WebBook对象-OK
      * @param {Model} webModel 数据库模型 
      * @returns WebBook 对象
      */
@@ -366,7 +398,8 @@ class DO {
     }
 
     /**
-     * 删除指定书的ID
+     * 删除书，目前会同时删除Ebook、WebBook
+     * TODO: 删除其它格式的数据 如PDF
      * @param {*} bookId 书ID
      */
     static async DeleteOneBook(bookId) {
@@ -379,7 +412,7 @@ class DO {
         const index = await ebook.getEbookIndex();
 
         const wbook = await ebook.getWebBook();
-        const wbSourceUrl = await wbook.getWebBookIndexSourceURLs();
+        const wbSourceUrl = await wbook?.getWebBookIndexSourceURLs();
         for (let i of index) {
             const eIndex = await i.getWebBookIndex();
             if (eIndex === null) continue;
@@ -390,10 +423,10 @@ class DO {
             await eIndex.destroy();
             await i.destroy();
         }
-        for (let wu of wbSourceUrl) {
+        for (let wu of wbSourceUrl ?? []) {
             await wu.destroy();
         }
-        await wbook.destroy();
+        await wbook?.destroy();
         await ebook.destroy();
     }
 

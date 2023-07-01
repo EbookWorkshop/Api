@@ -3,7 +3,7 @@
  */
 class Chapter {
     constructor({ Title, Content, IndexId, id }) {
-        this.Title = Title;
+        this.Title = Title?.trim();
         /**
          * 当前章节文章内容
          */

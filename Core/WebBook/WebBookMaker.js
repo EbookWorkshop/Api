@@ -273,6 +273,7 @@ class WebBookMaker {
     /**
      * 从目录页初始化一本空书
      * @param {string} indexUrl 
+     * @returns {WebBook}
      */
     InitEmptyFromIndex(indexUrl) {
 
