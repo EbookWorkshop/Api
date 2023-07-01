@@ -39,7 +39,7 @@ class BookMaker {
             ebook.Chapters.set(c.Title.trim(), c.Content);
         }
 
-        Do2Po.EBookObjToModel(ebook);
+        return await Do2Po.EBookObjToModel(ebook);
     }
 
 }

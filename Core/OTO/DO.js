@@ -125,6 +125,8 @@ class DO {
             let result = await poBook.createEbookIndex({ ...i, Content: book.Chapters.get(i.Title) });
             console.log(result);
         }
+
+        return true;
     }
 
     /**

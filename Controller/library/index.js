@@ -120,17 +120,10 @@ module.exports = () => ({
         // console.log(bookInfo);
         let rsl = false;
         if (bookInfo.type === "txt")
-            rsl = BookMaker.AddATxtBook({
+            rsl = await BookMaker.AddATxtBook({
                 ...bookInfo,
                 chapters: bookInfo.chapterList
             });
-
-        // let bookId = ctx.query.bookid;
-        // if (bookId * 1 != bookId) {
-        //     ctx.status = 600;
-        //     new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
-        //     return;
-        // }
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
