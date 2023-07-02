@@ -226,7 +226,7 @@ class WebBookMaker {
 
 
         let _updateProcess = (chapterId, ok, fail, all) => {
-            console.log(chapterId, ok, fail, all)
+            // console.log(chapterId, ok, fail, all)
             em.emit("WebBook.UpdateChapter.Process", myBookId, chapterId, (ok + fail) / all, ok, fail, all);
             if (all == ok + fail) em.emit("WebBook.UpdateChapter.Finish", myBookId, this.myWebBook.BookName, doList, ok, fail);
         }

@@ -1,4 +1,5 @@
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 const EventManager = require("../EventManager");
 
 let PO_MODELS = null;
@@ -156,6 +157,9 @@ class Models {
         return PO_MODELS;
     }
 
+    static get Op() {
+        return Op;
+    }
 }
 
 module.exports = Models;

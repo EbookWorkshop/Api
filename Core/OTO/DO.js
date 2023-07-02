@@ -8,6 +8,8 @@ const WebChapter = require("../../Entity/WebBook/WebChapter");
 
 const PDFBook = require("./../../Entity/PDFBook/PDFBook");
 
+//数据库操作文档 https://www.sequelize.cn/
+
 /**
  * PoToDo、DoToPo
  * 将实体类和数据库类互转
@@ -136,7 +138,7 @@ class DO {
      */
     static async GetEBookById(bookId) {
         const myModels = new Models();
-        let book = await myModels.Ebook.findOne({ where: { id: bookId } });
+        let book = await myModels.Ebook.findByPk(bookId);
         if (book == null) return null;
         return await DO.ModelToEBook(book);
     }
@@ -159,9 +161,51 @@ class DO {
      */
     static async GetEBookChapterById(chapterId) {
         const myModels = new Models();
-        let chapter = await myModels.EbookIndex.findOne({ where: { id: chapterId } });
+        let chapter = await myModels.EbookIndex.findByPk(chapterId);
         if (chapter == null) return null;
         return { ...chapter.dataValues };
+    }
+
+    /**
+     * 获取当前章节的相邻章节ID
+     * @param {*} chapterId 
+     * @returns 
+     */
+    static async GetEBookChapterNext(chapterId) {
+        const myModels = new Models();
+        let chapter = await myModels.EbookIndex.findOne({
+            attributes: ["BookId", "OrderNum"],
+            where: { id: chapterId }
+        });
+        if (chapter == null) return null;
+
+        let { OrderNum, BookId } = chapter.dataValues;
+        let pre = await myModels.EbookIndex.findOne({
+            attributes: ["id"],
+            where: {
+                bookId: BookId,
+                OrderNum: {
+                    [Models.Op.lt]: OrderNum
+                }
+            },
+            order: [
+                ["OrderNum", "DESC"]
+            ]
+        });
+        let next = await myModels.EbookIndex.findOne({
+            attributes: ["id"],
+            where: {
+                bookId: BookId,
+                OrderNum: {
+                    [Models.Op.gt]: OrderNum
+                }
+            },
+            order: [
+                ["OrderNum", "ASC"]
+            ]
+        });
+
+        return { pre, next };
     }
 
     /**
@@ -179,9 +223,7 @@ class DO {
      */
     static async GetWebBookById(bookId) {
         const myModels = new Models();
-        let book = await myModels.WebBook.findOne({
-            where: { BookId: bookId }
-        });
+        let book = await myModels.WebBook.findByPk(bookId);
 
         if (book == null) return null;
 

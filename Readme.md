@@ -20,3 +20,5 @@ wt --maximized -d %cd%\\EBWFrontEnd PowerShell -c npm run dev;split-pane -d %cd%
 ## 调试
 http://localhost:8777/swagger
 
+## 相关文档
+* 数据库查询    https://www.sequelize.cn/

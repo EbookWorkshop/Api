@@ -64,8 +64,8 @@ module.exports = () => ({
      *   get:
      *     tags:
      *       - Library —— 图书馆
-     *     summary: 拿到指定ID的书
-     *     description: 拿到指定ID的书
+     *     summary: 根据章节ID获取章节正文
+     *     description: 根据章节ID获取章节正文
      *     parameters:
      *     - name: chapterid
      *       in: query
@@ -90,6 +90,40 @@ module.exports = () => ({
         }
 
         new ApiResponse(await DO.GetEBookChapterById(chapterId * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/adjacentchapter:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 拿到上下章节的信息
+     *     description: 拿到上一章、下一章的章节ID
+     *     parameters:
+     *     - name: chapterid
+     *       in: query
+     *       required: true
+     *       description: 当前的章节ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /book/adjacentchapter": async (ctx) => {
+        let chapterId = ctx.query.chapterid;
+        if (chapterId * 1 != chapterId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetEBookChapterNext(chapterId * 1)).toCTX(ctx);
     },
 
     /**
