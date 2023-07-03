@@ -1,6 +1,6 @@
 // const swagger = require('./Controller/swagger.js')
 const system = require("./Core/System");
-const router = require('./Controller/router')
+const router = require('./Controller/router');
 const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
@@ -38,7 +38,9 @@ app.use(async (ctx, next) => {
 //注册路由
 app.use(router.routes());
 //启动静态文件服务
-app.use(static("./Data"))
+app.use(static("./Data"));
+
+//app.use(Router.allowedMethods()); TODO: 推荐的处理错误请求方式
 
 system.then((service) => {
     console.log("开始监听：8777");

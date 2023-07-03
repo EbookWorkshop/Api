@@ -125,7 +125,7 @@ class DO {
 
         for (let i of book.Index) {
             let result = await poBook.createEbookIndex({ ...i, Content: book.Chapters.get(i.Title) });
-            console.log(result);
+            // console.log(result);
         }
 
         return true;
