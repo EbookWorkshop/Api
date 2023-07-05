@@ -29,7 +29,7 @@ module.exports = () => ({
      *       - name: fontfamily
      *         in: query
      *         required: false
-     *         description: 预览用的字体名称
+     *         description: 预览用的字体名称——不含后缀时默认加`.ttf`
      *         schema:
      *           type: string
      *     consumes:

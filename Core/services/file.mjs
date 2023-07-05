@@ -32,16 +32,18 @@ export async function ListFile(path, filetype = null) {
 
 /**
  * 在指定目录存储文件
- * @param {{_writeStream:stream}} file HTTP文件对象
+ * @param {} file HTTP文件对象
  * @param {string} filePath 需要存储的文件目录+存储文件名
  */
 export async function AddFile(file, filePath) {
     return new Promise((resolve, reject) => {
         try {
-            // const reader = fs.createReadStream(file.path);
+            const reader = fs.createReadStream(file.filepath);
             const writer = fs.createWriteStream(filePath);
-            file._writeStream.pipe(writer);
-            resolve(true);
+            reader.pipe(writer);
+            writer.on("finish", () => {
+                resolve(true);
+            });
         } catch (err) {
             reject(err);
         }

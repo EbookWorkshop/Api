@@ -68,11 +68,8 @@ export default {
         // 指定保存文件的路径
         let filePath = "./Data/" + "font/" + file.originalFilename;
 
-        AddFile(file, filePath).then((rsl) => {
-            new ApiResponse(rsl).toCTX(ctx);
-        }).catch((err) => {
-            new ApiResponse(err, err.message, 50000).toCTX(ctx);
-        })
+        let rsl = await AddFile(file, filePath);
+        new ApiResponse(rsl).toCTX(ctx);
     },
 
     /**
