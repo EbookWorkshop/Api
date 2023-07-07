@@ -82,13 +82,11 @@ export default {
      *     description: 删除字库里指定的字体文件
      *     parameters:
      *     - name: fontName
-     *       in: body
+     *       in: query
      *       required: true
      *       description: 将要删除字体文件名
      *       schema:
      *         type: string
-     *     consumes:
-     *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
@@ -96,9 +94,11 @@ export default {
      *         description: 参数错误，参数类型错误
      */
     "delete ": async (ctx) => {
-        let fontName = await Server.parseBodyData(ctx);
+        let fontName = ctx.query.fontName;
         let filePath = "./Data/" + "font/";
-        DeleteFile(filePath + fontName).catch((err) => {
+        if (!fontName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
+
+        await DeleteFile(filePath + fontName).catch((err) => {
             new ApiResponse("删除失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
         }).then((reslut) => {
             new ApiResponse(reslut).toCTX(ctx);
