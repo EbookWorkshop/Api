@@ -1,4 +1,5 @@
 const Models = require("./Models");
+const Reviewer = require("./../Utils/RuleReview");
 const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
@@ -49,6 +50,7 @@ class DO {
             let cp = new Chapter({ ...ebookIndex.dataValues });
             // if (cp.Content) 
             ebook.Chapters.set(cp.Title, cp);
+            // await ebook.ReviewChapter(cId);     //加载每一章后自动校阅      //DEBUG: 可能会造成性能损耗
         }
 
         /**
@@ -70,42 +72,44 @@ class DO {
             await ebookModel.save();
         }
 
+        /**
+         * 初始化校阅规则
+         */
         ebook.InitReviewRules = async () => {
             if (ebook.ReviewRules != null) return;
-            ebook.ReviewRules = [];
-            let reviewRules = await ebookModel.getReviewRuleUsings();
-
-            for (let rule of reviewRules) {
-                let rr = await rule.getReviewRule();
-                if (rr) ebook.ReviewRules.push({
-                    Rule: rr.Rule,
-                    Replace: rr.Replace
-                });
-            }
+            ebook.ReviewRules = await Do.GetReviewRules(ebook.bookId);
         }
 
         /**
          * 校正指定章节
-         * @param {*} cId 
+         * @param {*} chapterId
          * @returns 
          */
-        ebook.ReviewChapter = async (cId) => {
-            let iObj = ebook.Index.filter(i => i.IndexId === cId);
-            if (iObj.length <= 0) return null;
-            if (ebook.ReviewRules == null) await ebook.InitReviewRules();
+        ebook.ReviewChapter = async (chapterId) => {
+            let RC = async (cId) => {
+                let iObj = ebook.Index.filter(i => i.IndexId === cId);
+                if (iObj.length <= 0) return null;
+                let curContent = ebook.Chapters.get(iObj[0].Title);
+                if (curContent === undefined) return null;
 
-            let curContent = ebook.Chapters.get(iObj[0].Title);
-            for (let r of ebook.ReviewRules) {
-                let rTarget = r.Replace;
-                if (rTarget.includes("\\")) {//MARK: 被替换字符如含转义符，需要先一步解释，需要这里先进行替换
-                    rTarget = rTarget.replace(/\\n/g, '\n');
-                }
-                curContent.Content = curContent.Content.replace(new RegExp(r.Rule, "g"), rTarget);
+                ebook.Chapters.delete(iObj[0].Title);
+                [curContent.Title, curContent.Content] = Reviewer(ebook.ReviewRules, [curContent.Title, curContent.Content]);
+                ebook.Chapters.set(curContent.Title, curContent);
             }
-            ebook.Chapters.set(iObj[0].Title, curContent);
+
+            if (ebook.ReviewRules == null) await ebook.InitReviewRules();
+            if (chapterId === undefined) {
+                for (let idx of ebook.Index) {
+                    RC(idx.IndexId);
+                }
+            } else {
+                RC(chapterId);
+            }
+
         }
 
         await ebook.ReloadIndex();
+
         return ebook;
     }
 
@@ -163,7 +167,10 @@ class DO {
         const myModels = new Models();
         let chapter = await myModels.EbookIndex.findByPk(chapterId);
         if (chapter == null) return null;
-        return { ...chapter.dataValues };
+        let rules = await DO.GetReviewRules(chapter.BookId);
+        let chapterObj = new Chapter({ ...chapter.dataValues });
+        [chapterObj.Title, chapterObj.Content] = Reviewer(rules, [chapterObj.Title, chapterObj.Content]);
+        return chapterObj;
     }
 
     /**
@@ -312,12 +319,15 @@ class DO {
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: webBook.BookId }, order: ["OrderNum"] });
+            await webBook.InitReviewRules();
             for (let i of eIndexs) {
                 let eI = await i.getWebBookIndex();
 
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues });
                 let urls = await eI?.getWebBookIndexURLs() || [];
                 for (let u of urls) tIdx.URL.push(u.Path);
+
+                [tIdx.WebTitle] = Reviewer(webBook.ReviewRules, [tIdx.Title])
 
                 webBook.Index.push(tIdx);
             }
@@ -493,6 +503,7 @@ class DO {
             for (let c of chapters) {
                 if (pdf.showIndexId.has(c)) continue;
                 await pdf.ReloadChapter(c);
+                await pdf.ReviewChapter(c.IndexId);
                 pdf.showIndexId.add(c);
             }
         }
@@ -512,6 +523,24 @@ class DO {
             bookList.push(new Ebook({ ...b.dataValues }));
         }
         return bookList;
+    }
+
+    static async GetReviewRules(bookid) {
+        let result = [];
+        const myModels = new Models();
+        let reviewRules = await myModels.ReviewRuleUsing.findAll({
+            where: { BookId: bookid }
+        });
+
+        for (let rule of reviewRules) {
+            let rr = await myModels.ReviewRule.findByPk(rule.RuleId)
+            result.push({
+                Rule: rr.Rule,
+                Replace: rr.Replace
+            });
+        }
+
+        return result;
     }
 }
 

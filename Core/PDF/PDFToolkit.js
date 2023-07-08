@@ -48,7 +48,6 @@ function CreateNewDoc(setting, defaultText = null) {
  */
 async function AddChaptersToPdf(pdfBook, pdfDoc) {
     for (let cId of pdfBook.showIndexId.values()) {
-        await pdfBook.ReviewChapter(cId)
         let curContent = pdfBook.GetChapter(cId);
 
         if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
