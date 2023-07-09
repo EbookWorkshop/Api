@@ -77,7 +77,7 @@ class DO {
          */
         ebook.InitReviewRules = async () => {
             if (ebook.ReviewRules != null) return;
-            ebook.ReviewRules = await Do.GetReviewRules(ebook.bookId);
+            ebook.ReviewRules = await DO.GetReviewRules(ebook.BookId);
         }
 
         /**
@@ -541,6 +541,20 @@ class DO {
         }
 
         return result;
+    }
+
+    /**
+     * 更新章节信息
+     * @param {*} chapter 
+     */
+    static async UpdateChapter(chapter) {
+        if (chapter.IndexId * 1 !== chapter.IndexId) return;
+
+        const myModels = new Models();
+        let cid = chapter.IndexId;
+        delete chapter.IndexId;
+        let rsl = await myModels.EbookIndex.update(chapter, { where: { id: cid } });
+        return rsl;
     }
 }
 

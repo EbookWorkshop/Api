@@ -161,4 +161,38 @@ module.exports = () => ({
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
+
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 修改指定章节内容
+     *     description: 根据提供的信息修改章节内容
+     *     parameters:
+     *     - name: chapter
+     *       in: body
+     *       required: true
+     *       description: 章节详情
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /book/chapter": async (ctx) => {
+        let chapter = ctx.request.body;
+        let chapterId = chapter.IndexId;
+        if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.UpdateChapter(chapter)).toCTX(ctx);
+    },
 });
