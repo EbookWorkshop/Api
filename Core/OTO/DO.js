@@ -230,7 +230,9 @@ class DO {
      */
     static async GetWebBookById(bookId) {
         const myModels = new Models();
-        let book = await myModels.WebBook.findByPk(bookId);
+        let book = await myModels.WebBook.findOne({
+            where: { "BookId": bookId }
+        });
 
         if (book == null) return null;
 
@@ -327,7 +329,7 @@ class DO {
                 let urls = await eI?.getWebBookIndexURLs() || [];
                 for (let u of urls) tIdx.URL.push(u.Path);
 
-                [tIdx.WebTitle] = Reviewer(webBook.ReviewRules, [tIdx.Title])
+                [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
 
                 webBook.Index.push(tIdx);
             }
