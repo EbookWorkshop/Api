@@ -307,7 +307,7 @@ class DO {
                 }
                 let ret = await new Models().WebBookIndexSourceURL.create({
                     Path: url,
-                    WebBookId: webBook.BookId
+                    WebBookId: webModel.id  //注意：WebBookIndexSourceURL的外键是 webBook.id，与BookId并不等价
                 });
                 return ret;
             }
@@ -319,7 +319,7 @@ class DO {
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: webBook.BookId }, order: ["OrderNum"] });
-            await webBook.InitReviewRules();
+            await ebookObj.InitReviewRules();       //注意：InitReviewRules定义在 DO.ModelToBookObj 创建的实体上
             for (let i of eIndexs) {
                 let eI = await i.getWebBookIndex();
 
