@@ -244,10 +244,11 @@ class DO {
      */
     static async GetWebBookSourcesById(bookId) {
         const myModels = new Models();
-        let bookSources = await myModels.WebBookIndexSourceURL.findAll({
-            where: { WebBookId: bookId }
+        let webBook = await myModels.WebBook.findOne({
+            where:{BookId:bookId}
         });
-
+        let bookSources = webBook.getWebBookIndexSourceURLs();
+        
         if (bookSources == null) return null;
 
         return await bookSources;
