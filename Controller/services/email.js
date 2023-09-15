@@ -226,6 +226,9 @@ module.exports = () => ({
             where: {
                 Group: KINDLE_INBOX,
                 Name: "address"
+            },
+            defaults: {
+                Value: param.address
             }
         });
 

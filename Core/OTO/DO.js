@@ -247,7 +247,7 @@ class DO {
         let webBook = await myModels.WebBook.findOne({
             where:{BookId:bookId}
         });
-        let bookSources = webBook.getWebBookIndexSourceURLs();
+        let bookSources = webBook?.getWebBookIndexSourceURLs();
         
         if (bookSources == null) return null;
 
