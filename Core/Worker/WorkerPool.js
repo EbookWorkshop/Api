@@ -98,6 +98,7 @@ class WorkerPool extends EventEmitter {
         });
 
         if (_Singleton_WorkerPool == null) _Singleton_WorkerPool = this;
+        em.emit("Debug.Model.Init.Finish","WorkerPool");
     }
 
     /**

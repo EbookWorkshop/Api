@@ -29,6 +29,13 @@ module.exports = (() => {
     em.on("Debug.Puppeteer.OpenUrl", (url) => {
         console.log("开始访问URL:", url)
     });
+    //监控模块装载情况
+    em.on("Debug.Model.Init.Start", (modelName) => {
+        console.log(`[模块载入中…]：\t\t${modelName}`);
+    })
+    em.on("Debug.Model.Init.Finish", (modelName) => {
+        console.log(`[模块载入完成]：\t${modelName}`);
+    })
 
     em.on("Services.EMail.Send.Success", (title, files, mailto, sender) => {
         console.log("邮件发送成功：", title, files, mailto);

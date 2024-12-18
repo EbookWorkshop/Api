@@ -5,6 +5,7 @@ const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
+const myConfig = require("./config").config;
 
 
 const app = new Koa();
@@ -39,7 +40,7 @@ app.use(async (ctx, next) => {
 //注册路由
 app.use(router.routes());
 //启动静态文件服务
-app.use(static("./Data"));
+app.use(static(myConfig.dataPath));
 
 //app.use(Router.allowedMethods()); TODO: 推荐的处理错误请求方式
 

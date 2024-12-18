@@ -1,6 +1,8 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
 const { databasePath } = require("./../../config").config;
+const EventManager = require("./../EventManager");
+const em = new EventManager();
 
 let myDb = null;
 let myModels = null;//new Models(myDb);
@@ -14,6 +16,7 @@ class DB {
         if (myDb == null) {
             myDb = DB.Connect(databasePath);
             myModels = new Models(myDb);
+            em.emit("Debug.Model.Init.Finish", "DatabaseHelper");
         }
         return myDb;
     }

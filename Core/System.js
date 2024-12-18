@@ -13,9 +13,12 @@ if (isDebug) {
 module.exports = new Promise((resolve, reject) => {
     try {
 
-        const wp = new WP();        //启用线程池
-        const db = new DB();        //启用数据库
         const em = new EventManager();    //启用消息管理
+        em.emit("Debug.Model.Init.Start", "WorkerPool");
+        const wp = new WP();        //启用线程池
+        em.emit("Debug.Model.Init.Start", "DatabaseHelper");
+        const db = new DB();        //启用数据库
+        em.emit("Debug.Model.Init.Start", "SocketIO");
         const io = IO;        //
         //koa app？
 

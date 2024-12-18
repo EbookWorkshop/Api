@@ -5,12 +5,12 @@ exports.config = {
      * 书库-产物的存储目录    
      * 路径结尾不含斜线`/`
      */
-    dataPath: "./Data",
+    dataPath: "./../MyLibrary/Data",
 
     /**
      * 数据库存放路径
      */
-    databasePath: "./Data/library/save.sqlite",
+    databasePath: "./../MyLibrary/Data/library/save.sqlite",
 
     /**
      * 输出调试信息，监听debug消息

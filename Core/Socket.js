@@ -8,6 +8,9 @@ let myEM = null;
 class SocketIO {
   constructor(server) {
     if (myIO != null) return myIO;
+    myEM = new EventManager();
+    this.initEM_WebBook();
+
     myIO = socketIO(server, {
       cors: {
         origin: '*',//允许跨域
@@ -25,10 +28,8 @@ class SocketIO {
       })
     });
 
-    myEM = new EventManager();
-    this.initEM_WebBook();
+    myEM.emit("Debug.Model.Init.Finish", "SocketIO");
 
-    // this.initEM_MessageTest();
   }
 
   static GetIO() {
