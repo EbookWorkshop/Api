@@ -38,7 +38,7 @@ class PDFMaker {
                 pdfDoc.end();
 
                 fileStream.on('finish', function () {
-                    new EventManager().emit("PDFBook.CreateBook.Finish", fileInfo);
+                    new EventManager().emit("PDFMaker.CreateBook.Finish", fileInfo);
                     resolve(fileInfo);
                 });
             } catch (e) {

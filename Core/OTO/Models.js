@@ -1,8 +1,7 @@
 const Sequelize = require("sequelize");
-const { Op } = require("sequelize");
 const EventManager = require("../EventManager");
 
-let PO_MODELS = null;
+let PO_MODELS = null;//PO对象
 
 /**
  * # PO 持久对象(Persistant Object)    
@@ -10,7 +9,7 @@ let PO_MODELS = null;
  * __注意；PO中应该不包含任何对数据的操作__
  */
 class Models {
-    constructor(sequelize) {
+    constructor(sequelizeConnect) {
         if (PO_MODELS != null) return PO_MODELS;
         /**
          * EBook表对象
@@ -28,17 +27,17 @@ class Models {
 
 
 
-        this.InitModels(sequelize); //注意，表当前没同步好
+        this.InitModels(sequelizeConnect); //注意，表当前没同步好
 
         PO_MODELS = this;
     }
 
-    async InitModels(sequelize) {
+    async InitModels(sqlConnect) {
         let m = {};
         /**
          * Ebook 部分表
          */
-        m.Ebook = sequelize.define("Ebook", {
+        m.Ebook = sqlConnect.define("Ebook", {
             BookName: { type: Sequelize.STRING(50), allowNull: false },
             Author: { type: Sequelize.STRING(20), allowNull: true },
             FontFamily: { type: Sequelize.STRING(10), allowNull: false, defaultValue: "微软雅黑" },
@@ -46,7 +45,7 @@ class Models {
             CoverImg: { type: Sequelize.STRING(50), allowNull: true },
         });
         //Ebook目录
-        m.EbookIndex = sequelize.define("EbookChapter", {
+        m.EbookIndex = sqlConnect.define("EbookChapter", {
             Title: { type: Sequelize.STRING(50), allowNull: false },                    //章节标题
             Content: { type: Sequelize.TEXT, allowNull: true },                         //章节正文
             OrderNum: { type: Sequelize.INTEGER, allowNull: false },
@@ -64,7 +63,7 @@ class Models {
         /**
          * WebBook 部分
          */
-        m.WebBook = sequelize.define("WebBook", {
+        m.WebBook = sqlConnect.define("WebBook", {
             defaultIndex: { type: Sequelize.INTEGER, defaultValue: 0 },
             WebBookName: { type: Sequelize.STRING(50), allowNull: false },              //网文书名-网文识别合并的唯一标识
             isCheckEnd: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
@@ -74,14 +73,14 @@ class Models {
         m.WebBook.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
         //WebBook来源URL
-        m.WebBookIndexSourceURL = sequelize.define("WebBookIndexSourceURL", {   //书目录页URL
+        m.WebBookIndexSourceURL = sqlConnect.define("WebBookIndexSourceURL", {   //书目录页URL
             Path: { type: Sequelize.STRING(500), allowNull: true }
         });
         m.WebBook.hasMany(m.WebBookIndexSourceURL);
         m.WebBookIndexSourceURL.belongsTo(m.WebBook);
 
         //WebBook目录
-        m.WebBookIndex = sequelize.define("WebBookChapter", {
+        m.WebBookIndex = sqlConnect.define("WebBookChapter", {
             WebTitle: { type: Sequelize.STRING(50), allowNull: false }                  //网文章节标题-网文合并的唯一标识
         });
         m.EbookIndex.hasOne(m.WebBookIndex, { foreignKey: 'IndexId', sourceKey: 'id', as: "WebBookIndex" });
@@ -89,13 +88,13 @@ class Models {
         // m.WebBook.hasMany(m.WebBookIndex, { foreignKey: 'BookId', sourceKey: 'BookId' });
         // m.WebBookIndex.belongsTo(m.WebBook, { foreignKey: 'BookId', targetKey: 'BookId' });
 
-        m.WebBookIndexURL = sequelize.define("WebBookIndexURL", {   //每一章的地址
+        m.WebBookIndexURL = sqlConnect.define("WebBookIndexURL", {   //每一章的地址
             Path: { type: Sequelize.STRING(500), allowNull: false }
         });
         m.WebBookIndex.hasMany(m.WebBookIndexURL, { foreignKey: "WebBookIndexId", sourceKey: "id" });
         m.WebBookIndexURL.belongsTo(m.WebBookIndex, { foreignKey: 'WebBookIndexId', targetKey: "id" });
 
-        m.PDFBook = sequelize.define("PDFBook", {
+        m.PDFBook = sqlConnect.define("PDFBook", {
             PaddingX: { type: Sequelize.INTEGER, allowNull: false },
             PaddingY: { type: Sequelize.INTEGER, allowNull: false },
             PageWidth: { type: Sequelize.INTEGER, allowNull: false },
@@ -105,7 +104,7 @@ class Models {
         m.PDFBook.belongsTo(m.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
         //网站规则部分
-        m.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
+        m.RuleForWeb = sqlConnect.define("RuleForWeb", {   //每一章的地址
             Host: { type: Sequelize.STRING(100), allowNull: false },
             RuleName: { type: Sequelize.STRING(20), allowNull: false },
             Selector: { type: Sequelize.STRING(100), allowNull: false },
@@ -120,7 +119,7 @@ class Models {
         // });
 
         //系统配置项表
-        m.SystemConfig = sequelize.define("SystemConfig", {
+        m.SystemConfig = sqlConnect.define("SystemConfig", {
             Group: { type: Sequelize.STRING(20), allowNull: false, defaultValue: "default" },     //配置分组
             Name: { type: Sequelize.STRING(20), allowNull: false },      //配置名称
             Value: { type: Sequelize.STRING(500), allowNull: false },   //配置值
@@ -129,13 +128,13 @@ class Models {
 
 
         //校阅规则配置表
-        m.ReviewRule = sequelize.define("ReviewRule", {
+        m.ReviewRule = sqlConnect.define("ReviewRule", {
             Name: { type: Sequelize.STRING(20), allowNull: false },      //配置名称
             Rule: { type: Sequelize.STRING(100), allowNull: true },      //查找规则、查找串
             Replace: { type: Sequelize.STRING(20), allowNull: true },      //真实的值类型
         });
         //哪本书在用
-        m.ReviewRuleUsing = sequelize.define("ReviewRuleUsing", {
+        m.ReviewRuleUsing = sqlConnect.define("ReviewRuleUsing", {
         });
         // m.ReviewRuleUsing.hasMany(m.ReviewRule, { foreignKey: 'RuleId', sourceKey: 'id' });
         // m.ReviewRuleUsing.hasMany(m.Ebook, { foreignKey: 'BookId', sourceKey: 'id' });
@@ -146,19 +145,42 @@ class Models {
 
 
 
-        await sequelize.sync();     //同步所有模型
+        await sqlConnect.sync();     //同步所有模型
         for (var n in m) {
             this[n] = m[n];
         }
-        new EventManager().emit("DB.Models.Init");
+        new EventManager().emit("DB.Models.Init",sqlConnect.options.storage);
     }
 
     static GetPO() {
         return PO_MODELS;
     }
 
+    /**
+     * Sequelize的操作符
+     * Op.and：逻辑 AND 操作符，用于组合多个条件，所有条件必须同时满足。
+     * Op.or：逻辑 OR 操作符，用于组合多个条件，至少有一个条件满足即可。
+     * Op.gt：大于（Greater Than）操作符，用于数值比较。
+     * Op.gte：大于等于（Greater Than or Equal）操作符。
+     * Op.lt：小于（Less Than）操作符。
+     * Op.lte：小于等于（Less Than or Equal）操作符。
+     * Op.ne：不等于（Not Equal）操作符。
+     * Op.eq：等于（Equal）操作符。
+     * Op.not：逻辑 NOT 操作符，用于否定某个条件。
+     * Op.between：介于两个值之间（Between）操作符。
+     * Op.notBetween：不介于两个值之间操作符。
+     * Op.in：在给定数组中的值（In）操作符。
+     * Op.notIn：不在给定数组中的值（Not In）操作符。
+     * Op.like：模糊匹配（Like）操作符，用于字符串匹配。
+     * Op.notLike：不模糊匹配（Not Like）操作符。
+     * Op.iLike：不区分大小写的模糊匹配（ILike）操作符，仅限 PostgreSQL。
+     * Op.regexp：正则表达式匹配（Regexp）操作符，仅限 MySQL/PostgreSQL。
+     * Op.notRegexp：不匹配正则表达式（Not Regexp）操作符。
+     * Op.iRegexp：不区分大小写的正则表达式匹配（IRegexp）操作符，仅限 PostgreSQL。
+     * Op.notIRegexp：不区分大小写的不匹配正则表达式（Not IRegexp）操作符。
+     */
     static get Op() {
-        return Op;
+        return Sequelize.Op;
     }
 }
 

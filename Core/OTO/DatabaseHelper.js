@@ -4,8 +4,8 @@ const { databasePath } = require("./../../config");
 const EventManager = require("./../EventManager");
 const em = new EventManager();
 
-let myDb = null;
-let myModels = null;//new Models(myDb);
+let myDBConnnect = null;
+let myModels = null;
 
 
 /**
@@ -13,15 +13,17 @@ let myModels = null;//new Models(myDb);
  */
 class DB {
     constructor() {
-        if (myDb == null) {
-            myDb = DB.Connect(databasePath);
-            myModels = new Models(myDb);
+        if (myDBConnnect == null) {
+            this.myDbPath = null;
+
+            myDBConnnect = DB.Connect(databasePath);
+            myModels = new Models(myDBConnnect);
             em.emit("Debug.Model.Init.Finish", "DatabaseHelper");
         }
-        return myDb;
+        return myDBConnnect;
     }
     static GetDB() {
-        return myDb;
+        return myDBConnnect;
     }
     static Models() {
         return myModels;
@@ -32,17 +34,15 @@ class DB {
      * @returns 
      */
     static Connect(path) {
-        path = path || databasePath;
+        this.myDbPath = path || databasePath;
+
         return new Sequelize({
             dialect: 'sqlite',
-            storage: path,
+            storage: this.myDbPath,
             logging: false,
             //timezone: '+08:00',
         });
     }
-
-
-
 }
 
 module.exports = DB;
