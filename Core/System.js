@@ -3,12 +3,10 @@ const DB = require("./OTO/DatabaseHelper");
 const WP = require("./Worker/WorkerPool");
 const IO = require("./Socket");
 
+const { debug: isDebug } = require("./../config");
 
-const { debug: isDebug } = require("./../config").config;
+if (isDebug) require("./debug");//载入Debug模块
 
-if (isDebug) {
-    const debugEM = require("./debug");//载入Debug模块
-}
 
 module.exports = new Promise((resolve, reject) => {
     try {

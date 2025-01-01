@@ -5,7 +5,7 @@ const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
-const myConfig = require("./config").config;
+const myConfig = require("./config");
 const path = require("path");
 
 

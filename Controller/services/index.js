@@ -22,7 +22,8 @@ module.exports = () => ({
     "get /version": async (ctx) => {
         let result = {
             version: myPackage.version,
-            dependencies: myPackage.dependencies
+            dependencies: myPackage.dependencies,
+            nodeVersion: process.version // 添加这一行来获取Node.js版本
         }
         new ApiResponse(result).toCTX(ctx);
     },

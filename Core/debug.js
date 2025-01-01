@@ -3,8 +3,9 @@ const EventManager = require("../Core/EventManager.js");
 
 
 module.exports = (() => {
-    const em = new EventManager();
+    const { debugSwitcher } = require("./../config");
 
+    const em = new EventManager();
 
     em.on("WebBook.UpdateIndex.Finish", (bookid) => {
         console.log("目录更新完毕！！");
