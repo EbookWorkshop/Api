@@ -2,12 +2,12 @@
  * 管理字体 
  * 试用ESM模式，注意：ESM的模块异步加载，无状态
  */
+import path from "path";
 import ApiResponse from "../../Entity/ApiResponse.js"
 import { ListFile, AddFile, DeleteFile } from "../../Core/services/file.mjs";
-import Server from "./../../Core/Server.js";
+import config from "../../config.js";
 
-// const ApiResponse = require("../../Entity/ApiResponse");
-
+const { fontPath } = config;
 
 //获取静态资源文件
 export default {
@@ -30,7 +30,7 @@ export default {
      */
     "get ": async (ctx) => {
         //传入的相对路径
-        let resPath = "./Data/" + "font";
+        let resPath = fontPath;
         let data = await ListFile(resPath, ["ttf", "fon"]);
         new ApiResponse((data ?? []).map(f => {
             return "/font/" + f;
@@ -66,7 +66,7 @@ export default {
         }
 
         // 指定保存文件的路径
-        let filePath = "./Data/" + "font/" + file.originalFilename;
+        let filePath = path.join(fontPath, file.originalFilename);
 
         let rsl = await AddFile(file, filePath);
         new ApiResponse(rsl).toCTX(ctx);
@@ -95,7 +95,7 @@ export default {
      */
     "delete ": async (ctx) => {
         let fontName = ctx.query.fontName;
-        let filePath = "./Data/" + "font/";
+        let filePath = fontPath;
         if (!fontName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
 
         await DeleteFile(filePath + fontName).catch((err) => {

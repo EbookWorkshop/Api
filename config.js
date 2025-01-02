@@ -1,6 +1,6 @@
 //用的JS文件，不是JSON文件，为了可以写注释
 
-const { initForm } = require("pdfkit");
+const { initForm, font } = require("pdfkit");
 
 module.exports = {
     /**
@@ -13,6 +13,11 @@ module.exports = {
      * 数据库存放路径
      */
     databasePath: "./../MyLibrary/Data/library/save.sqlite",
+
+    /**
+     * 字体存放路径
+     */
+    fontPath: "./../MyLibrary/font",
 
     /**
      * 输出调试信息，监听debug消息

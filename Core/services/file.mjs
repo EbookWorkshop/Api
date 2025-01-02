@@ -2,15 +2,13 @@
  * 通用的文件上传、下载、列出等逻辑
  */
 // const fs = require("fs");
-import exp from "constants";
 import fs from "fs";
-import { resolve } from "path";
-
+import path from "path";
 
 /**
  * 列出指定路径下的文件
  * @param {string} path 需要列出文件的路径 
- * @param {string[] | null} filetype 过滤的文件规则类型
+ * @param {string[] | null} filetype 过滤的文件规则类型/小写字母的后缀名数组
  */
 export async function ListFile(path, filetype = null) {
     // console.log(fs)
@@ -38,8 +36,12 @@ export async function ListFile(path, filetype = null) {
 export async function AddFile(file, filePath) {
     return new Promise((resolve, reject) => {
         try {
+            let savePath = path.normalize(filePath);
+            let dirName = path.dirname(savePath);
+            if (!fs.existsSync(dirName)) fs.mkdirSync(dirName, { recursive: true });
+
             const reader = fs.createReadStream(file.filepath);
-            const writer = fs.createWriteStream(filePath);
+            const writer = fs.createWriteStream(savePath);
             reader.pipe(writer);
             writer.on("finish", () => {
                 resolve(true);
