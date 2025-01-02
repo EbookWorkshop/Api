@@ -1,9 +1,9 @@
 // const stream = require("node:stream")
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
-const { config } = require("./../../config");
+const path = require('path');
+const config = require("./../../config");
 const sharp = require("sharp");     //提供图像格式转换
-
 
 /**
  * 生成一个PDF文件
@@ -27,7 +27,7 @@ function CreateNewDocFile(filepath, setting) {
 function CreateNewDoc(setting, defaultText = null) {
     const doc = new PDFDocument();
     if (!setting.fontFamily.includes(".")) setting.fontFamily += ".ttf";//只有字体名的时候默认加上ttf文件类型
-    doc.font('./Data/font/' + setting.fontFamily);//TODO: 字体文件需要配置
+    doc.font(path.join(config.fontPath, setting.fontFamily));
     doc.fontSize(setting.fontSize);
 
     if (defaultText) {      //如果有文本则直接加入
@@ -83,7 +83,7 @@ async function AddBookCoverToPdf(pdfBook, pdfDoc) {
  * @param {*} pdfDoc 
  */
 async function CreateImageCover(pdfBook, pdfDoc) {
-    const realDir = config.dataPath + pdfBook.CoverImg;
+    const realDir = path.join(config.dataPath, pdfBook.CoverImg);
 
     let imgFile = realDir;
     if (realDir.endsWith(".webp")) {

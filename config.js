@@ -61,6 +61,10 @@ module.exports = {
          * 是否开启书籍章节更新调试
          */
         bookChapter: true,
+        /**
+         * 是否开启书书籍封面抓取调试
+         */
+        saveBookCover: true,
     },
 
 }

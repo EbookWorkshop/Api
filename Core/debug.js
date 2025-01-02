@@ -87,15 +87,16 @@ module.exports = (() => {
     }
 
     //未分类的调试信息
-    em.on("Debug.Log", (message, funName) => {
+    em.on("Debug.Log", (message, funName, ..._) => {
         switch (funName) {
             case "ROUTER": if (!debugSwitcher.router) return; break;
             case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
             case "BOOKCHAPTER": if (!debugSwitcher.bookChapter) return; break;
+            case "WEBBOOKCOVER": if (!debugSwitcher.saveBookCover) return; break;
             default:
                 break;
         }
-        console.info(message);
+        console.info(`[${funName}]${message}`, ..._);
     });
     em.emit("Debug.Log", "🪲🐞🐛已载入Debug模块！！")
 })();

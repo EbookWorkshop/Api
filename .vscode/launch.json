@@ -23,7 +23,7 @@
             "program": "${workspaceFolder}/app.js"
         },
         {
-            "name": "Run Current File",
+            "name": "UnitTest",
             "program": "${file}",
             "request": "launch",
             "skipFiles": [

@@ -74,10 +74,11 @@ function MkPath(dir) {
     if (fs.existsSync(dir)) {
         return true;
     } else {
-        if (MkPath(path.dirname(dir))) {
-            fs.mkdirSync(dir);
-            return true;
-        }
+        fs.mkdirSync(dir, { recursive: true });
+        // if (MkPath(path.dirname(dir))) {
+        //     fs.mkdirSync(dir);
+        //     return true;
+        // }
     }
 }
 

@@ -1,7 +1,7 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 const fs = require("fs");
 const path = require("path");
-const { config } = require("./../../config");
+const config = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
 // const WebIndex = require("./../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../Entity/WebBook/WebChapter");
@@ -94,28 +94,18 @@ class WebBookMaker {
                 let cv = result.get("BookCover")[0];
                 let imgPath = cv.text;
                 if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
-                const coverImgDir = `/library/${this.myWebBook.BookName}/cover`;
-                const realDir = config.dataPath + coverImgDir;
-                // console.log(realDir);
 
-                //判断书目录是否存在，不存在则创建
-                fs.access(realDir, (notExist) => {
-                    if (notExist) {
-                        Server.MkPath(realDir)
-                    }
-                });
-
-                //获取图片
-                console.debug("尝试获取封面图片：", imgPath);
-                const coverImgPath = coverImgDir + "/" + path.basename(imgPath);//图片存储的相对位置
+                const coverImgPath = path.join("/library", this.myWebBook.BookName, cover, coverImgDir, path.basename(imgPath));//图片存储的相对位置
+                const saveImageFilePath = path.join(config.dataPath, coverImgPath);
+                em.emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTask({
                     taskfile: "@/Core/Utils/CacheFile",
                     param: {
                         url: imgPath,
-                        savePath: config.dataPath + coverImgPath
+                        savePath: saveImageFilePath
                     }
                 }, (result, err) => {
-                    // console.debug("封面图片缓存结果：", result, err);
+                    em.emit("Debug.Log", "封面图片缓存结果：", "WEBBOOKCOVER", result, err);
                     if (result) this.myWebBook.SetCoverImg(coverImgPath);
                 });
             }

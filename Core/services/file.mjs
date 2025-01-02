@@ -4,6 +4,7 @@
 // const fs = require("fs");
 import fs from "fs";
 import path from "path";
+import { Stream } from "stream";
 
 /**
  * 列出指定路径下的文件
@@ -40,9 +41,15 @@ export async function AddFile(file, filePath) {
             let dirName = path.dirname(savePath);
             if (!fs.existsSync(dirName)) fs.mkdirSync(dirName, { recursive: true });
 
-            const reader = fs.createReadStream(file.filepath);
             const writer = fs.createWriteStream(savePath);
-            reader.pipe(writer);
+
+            if (file instanceof Stream && file.readable) file.pipe(writer);     //可读流才写入，否则只会存一个空文件
+            else if (file.filepath) {
+                const reader = fs.createReadStream(file.filepath);
+                reader.pipe(writer);
+            } else {
+                reject("保存文件无法处理：未知的文件来源" + filePath);
+            }
             writer.on("finish", () => {
                 resolve(true);
             });

@@ -2,6 +2,9 @@
 const https = require("https");
 let { URL } = require("url");
 const fs = require("fs");
+const EventManager = require("./../../Core/EventManager");
+const em = new EventManager();
+const { AddFile } = require("./../services/file.mjs");          //这里会得到一个node警告（node:16472），因为在CJS模块中引入了ESM模块，但是不影响使用（当前node版本为实验性功能）
 
 /**
  * 缓存照片
@@ -25,21 +28,25 @@ function CacheFile(url, savePath) {
         };
 
         const req = https.request(options, (res) => {
-            try {
-                const fStream = fs.createWriteStream(savePath);
-                res.pipe(fStream);
+            // try {
+            //     const fStream = fs.createWriteStream(savePath);
+            //     res.pipe(fStream);
 
-                fStream.on("finish", () => {
-                    resolve(true);
-                });
-            } catch (err) {
+            //     fStream.on("finish", () => {
+            //         resolve(true);
+            //     });
+            // } catch (err) {
+            //     reject(false, err);
+            // }
+            AddFile(res, savePath).then((res) => {
+                resolve(true);
+            }).catch((err) => {
                 reject(false, err);
-            }
+            });
         });
         req.on('error', (err) => {
-            console.warn("获取图片失败:", url, err)
+            em.emit("Debug.Log", `【线程】缓存文件失败：${url}\n出错来源：${__filename}\n`, "WEBBOOKCOVER", err);
             reject(false, err);
-            // throw err;
         })
         req.end();
     });
