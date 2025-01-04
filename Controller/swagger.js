@@ -5,7 +5,7 @@ const swaggerDefinition = {
     info: {
         title: 'EBook Workshop',
         version: '3.0',
-        description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，{code:20000}用于代表成功，{code:50000}代表执行失败。',
+        description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，{code:20000}用于代表成功，{code:50000}代表服务器执行失败，{code:60000}代表用户引起的失败（如输入错误类型等）。',
     },
     host: 'localhost:8777',//http://localhost:8777/swagger
     basePath: '/'

@@ -4,6 +4,7 @@ const Models = require("./../../Core/OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
+const { where } = require("sequelize");
 
 /**
  * 规则管理器 
@@ -113,6 +114,38 @@ class RuleManager {
             rsl.push(temp)
         }
         return rsl;
+    }
+
+    static async SaveRules(rules) {
+        //全套规则删除并更新
+        const myModels = new Models();
+
+        for (let p of rules) {
+            let oldRule = await myModels.RuleForWeb.findAll({
+                where: {
+                    Host: p.host,
+                    RuleName: p.ruleName
+                }
+            });
+            for(let r of oldRule) r.destroy();
+
+            let rule = {
+                Host: p.host,
+                RuleName: p.ruleName,
+                Selector: p.selector
+            }
+            if (Array.isArray(p.removeSelector) && p.removeSelector.length > 0) {
+                rule.RemoveSelector = p.removeSelector.join(",");
+            }
+            if (p.getContentAction) rule.GetContentAction = p.getContentAction;
+            if (p.getUrlAction) rule.GetUrlAction = p.getUrlAction;
+            if (p.type == "Object" || p.type == "List") rule.Type = p.type;
+            if (p.checkSetting) rule.CheckSetting = p.checkSetting;
+
+            let ret = await myModels.RuleForWeb.create(rule);
+        }
+
+        return true;
     }
 
 }

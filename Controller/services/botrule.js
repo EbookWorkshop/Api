@@ -5,7 +5,8 @@ const Models = require("./../../Core/OTO/Models");
 const Rule = require("./../../Entity/WebBook/Rule");
 const Server = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
-const {VisualizationOfRule} = require("./../../Core/WebBook/RuleVis")
+const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
+const fs = require('fs').promises;
 
 
 module.exports = () => ({
@@ -71,42 +72,7 @@ module.exports = () => ({
         let param = await Server.parseJsonFromBodyData(ctx, ["host", "ruleName", "selector"]);
         if (param == null) return;
 
-        let host = "";
-        let hostCheck = new Set();
-        for (let p of param) {
-            host = p.host;
-            hostCheck.add(p.host);
-        }
-        if (hostCheck.size != 1) {
-            new ApiResponse(null, "发现多套网站的规则，每次更新只能同一套网站。", 50000).toCTX(ctx);
-            return;
-        }
-
-        //全套规则删除并更新
-        const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll({
-            where: {
-                Host: host
-            }
-        });
-        for (let r of rules) r.destroy();
-
-        for (let p of param) {
-            let rule = {
-                Host: p.host,
-                RuleName: p.ruleName,
-                Selector: p.selector
-            }
-            if (Array.isArray(p.removeSelector) && p.removeSelector.length > 0) {
-                rule.RemoveSelector = p.removeSelector.join(",");
-            }
-            if (p.getContentAction) rule.GetContentAction = p.getContentAction;
-            if (p.getUrlAction) rule.GetUrlAction = p.getUrlAction;
-            if (p.type == "Object" || p.type == "List") rule.Type = p.type;
-            if (p.checkSetting) rule.CheckSetting = p.checkSetting;
-
-            let ret = await myModels.RuleForWeb.create(rule);
-        }
+        await RuleManager.SaveRules(param);
 
         new ApiResponse().toCTX(ctx);
 
@@ -318,13 +284,12 @@ module.exports = () => ({
      *     description: 导入指定站点的规则——用于备份，数据迁移等
      *     parameters:
      *     - name: data
-     *       in: body
+     *       in: formData
      *       required: true
-     *       description: 导入的json内容
-     *       schema:
-     *         type: object
+     *       description: 导入的json文件
+     *       type: file
      *     consumes:
-     *       - application/json
+     *       - multipart/form-data
      *     responses:
      *       200:
      *         description: 请求成功
@@ -332,6 +297,27 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /import": async (ctx) => {
-        ctx.body = "TODO"
+        const file = ctx.request.files.data;
+        if (!file) {
+            new ApiResponse(null, "未找到上传的文件", 60000).toCTX(ctx);
+            return;
+        }
+
+
+        try {
+            const data = await fs.readFile(file.filepath, 'utf8');
+            const rules = JSON.parse(data);
+
+            if (!Array.isArray(rules)) {
+                new ApiResponse(null, "文件内容格式错误", 60000).toCTX(ctx);
+                return;
+            }
+
+            let result =await RuleManager.SaveRules(rules);
+
+            new ApiResponse(rules, "设置成功").toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, "文件处理错误：" + error, 50000).toCTX(ctx);
+        }
     }
 });
