@@ -15,7 +15,7 @@ class ApiResponse {
         this.msg = msg || (code === 20000 ? "" : "API未知错误");
         this.code = code;
         this.data = data || null;
-
+        if(typeof(data) === "boolean") this.data = data;
     }
 
     /**

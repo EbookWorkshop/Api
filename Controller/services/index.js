@@ -1,5 +1,6 @@
 const myPackage = require("./../../package.json");
 const ApiResponse = require("../../Entity/ApiResponse");
+const { isSiteAccessible }=require("./../../Core/Utils/IsSiteAccesssible");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -27,4 +28,31 @@ module.exports = () => ({
         }
         new ApiResponse(result).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /services/checkSiteAccessibility:
+     *   get:
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *     summary: 检查站点是否可以访问
+     *     description: 检查站点是否可以访问
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+        "get /checkSiteAccessibility": async (ctx) => {
+            let host = ctx.query.host;
+            new ApiResponse(await isSiteAccessible(host)).toCTX(ctx);
+        },
 });
