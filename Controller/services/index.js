@@ -1,6 +1,6 @@
 const myPackage = require("./../../package.json");
 const ApiResponse = require("../../Entity/ApiResponse");
-const { isSiteAccessible }=require("./../../Core/Utils/IsSiteAccesssible");
+const { isSiteAccessible } = require("./../../Core/Utils/IsSiteAccesssible");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -51,8 +51,10 @@ module.exports = () => ({
      *       600:
      *         description: 参数错误，参数类型错误
      */
-        "get /checkSiteAccessibility": async (ctx) => {
-            let host = ctx.query.host;
-            new ApiResponse(await isSiteAccessible(host)).toCTX(ctx);
-        },
+    "get /checkSiteAccessibility": async (ctx) => {
+        let host = ctx.query.host;
+        await isSiteAccessible(host).then((result) => {
+            new ApiResponse(result.result, result.error, 20000, result.status).toCTX(ctx);
+        });
+    },
 });

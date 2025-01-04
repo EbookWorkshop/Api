@@ -7,17 +7,30 @@ function isSiteAccessible(hostname) {
         // 发送HTTPs请求
         https.get({ hostname, timeout: 5000 }, response => {
             // 只要状态码在200-301之间，就视为成功
-            if (response.statusCode >= 200 && response.statusCode <= 301) {
-                resolve(true);
+            if (response.statusCode >= 200 && response.statusCode <= 302) {
+                resolve({
+                    status: response.statusCode,
+                    result: true
+                });
             } else {
-                resolve(false);
+                resolve({
+                    status: response.statusCode,
+                    result: false
+                });
             }
-        }).on('error', () => {
+        }).on('error', (err) => {
             // 如果请求失败，返回false
-            resolve(false);
+            resolve({
+                status: -500,
+                result: false,
+                error: err
+            });
         }).on('timeout', () => {
             // 如果请求超时，返回false
-            resolve(false);
+            resolve({
+                status: -504,
+                result: false
+            });
         });
     });
 }
