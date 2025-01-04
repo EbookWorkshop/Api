@@ -1,9 +1,10 @@
 const Rule = require("../../Entity/WebBook/Rule");
-const { dataPath } = require("../../config");
+const { dataPath, debug: isDEBUG } = require("../../config");
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
 const EventManager = require("../EventManager");
 const { ExecRule } = require("../WebBook/ExecRule");
+
 
 
 /**
@@ -21,7 +22,7 @@ async function GetDataFromUrl(url, setting) {
         },
         headless: "new",
         slowMo: 233,        //设置放慢每个步骤的毫秒数
-        ignoreDefaultArgs:['--enable-automation'],      //去掉自动化提示-可能对部分反爬策略有帮助
+        ignoreDefaultArgs: ['--enable-automation'],      //去掉自动化提示-可能对部分反爬策略有帮助
     }
     if (isDEBUG) options.headless = false;//设置为有界面，如果为true，即为无界面
     let browser = await puppeteer.launch(options);

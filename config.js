@@ -1,7 +1,4 @@
 //用的JS文件，不是JSON文件，为了可以写注释
-
-const { initForm, font } = require("pdfkit");
-
 module.exports = {
     /**
      * 书库-产物的存储目录    
