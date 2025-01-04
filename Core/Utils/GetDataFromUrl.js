@@ -1,11 +1,11 @@
 const Rule = require("../../Entity/WebBook/Rule");
-const { dataPath, debug: isDEBUG } = require("../../config");
+const { dataPath, debugSwitcher } = require("../../config");
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
 const EventManager = require("../EventManager");
 const { ExecRule } = require("../WebBook/ExecRule");
 
-
+const isDEBUG = debugSwitcher.puppeteer;
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -20,11 +20,14 @@ async function GetDataFromUrl(url, setting) {
             width: 1400,
             height: 900
         },
-        headless: "new",
+        headless: "new",    //默认值new：新无头模式，https://developer.chrome.com/articles/new-headless/
         slowMo: 233,        //设置放慢每个步骤的毫秒数
         ignoreDefaultArgs: ['--enable-automation'],      //去掉自动化提示-可能对部分反爬策略有帮助
     }
-    if (isDEBUG) options.headless = false;//设置为有界面，如果为true，即为无界面
+    if (isDEBUG) {
+        options.headless = false;//设置为有界面，如果为true，即为无界面
+        options.slowMo *= 5;   //放慢5倍
+    }
     let browser = await puppeteer.launch(options);
     let result = new Map();
 
@@ -38,7 +41,7 @@ async function GetDataFromUrl(url, setting) {
         if (isDEBUG) {
             page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
             new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
-            await page.screenshot({ path: `${dataPath}/Debug/a.png` });//截图
+            await page.screenshot({ path: `${dataPath}/../Debug/${Test_Date.now()}.png` });//截图
         }
 
         for (let rule of setting.RuleList) {

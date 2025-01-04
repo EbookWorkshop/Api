@@ -41,7 +41,7 @@ module.exports = {
         /**
          * 是否开启爬虫调试
          */
-        puppeteer: true,
+        puppeteer: false,
         /**
          * 是否开启路由调试
          */
