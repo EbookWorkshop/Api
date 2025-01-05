@@ -80,9 +80,6 @@ const GetDataFromUrllDefaultSetting = {
     RuleList: [],            //待爬取内容规则集合
 };
 
-function CacheFile() {
-
-}
 
 module.exports = {
     TimeOut: 30000,     //ms

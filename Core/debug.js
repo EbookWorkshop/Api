@@ -94,6 +94,7 @@ module.exports = (() => {
             case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
             case "BOOKCHAPTER": if (!debugSwitcher.bookChapter) return; break;
             case "WEBBOOKCOVER": if (!debugSwitcher.saveBookCover) return; break;
+            case "WORKERPOOL": if (!debugSwitcher.workerPool) return; break;
             default:
                 break;
         }
