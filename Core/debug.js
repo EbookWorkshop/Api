@@ -1,9 +1,12 @@
 //主要是辅助除错 开启一些监听
 const EventManager = require("../Core/EventManager.js");
+const SocketHandler = require("../Core/socket.js");
+const { debugSwitcher } = require("./../config");
+const Message = require("../Entity/Message.js");
+const { title } = require("process");
 
 
 module.exports = (() => {
-    const { debugSwitcher } = require("./../config");
     const em = new EventManager();
 
     if (debugSwitcher.database) {
@@ -99,6 +102,7 @@ module.exports = (() => {
                 break;
         }
         console.info(`[${funName}]${message}`, ..._);
+        new SocketHandler().emit("Message.Box.Send", new Message(message, "message", { title: funName, subTitle: "自动转发" }))
     });
     em.emit("Debug.Log", "🪲🐞🐛已载入Debug模块！！")
 })();
