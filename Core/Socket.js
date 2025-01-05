@@ -29,7 +29,6 @@ class SocketIO {
     });
 
     myEM.emit("Debug.Model.Init.Finish", "SocketIO");
-
   }
 
   static GetIO() {
@@ -66,14 +65,6 @@ class SocketIO {
         bookid, bookName, chapterIndexArray, doneNum, failNum
       })
     });
-  }
-
-  initEM_MessageTest() {
-    setInterval(() => {
-      myIO.emit("Notice.Debug", {
-        message: "Socket 通信已建立"
-      })
-    }, 5000)
   }
 }
 
