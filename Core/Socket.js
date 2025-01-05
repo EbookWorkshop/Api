@@ -7,7 +7,8 @@ let myEM = null;
 
 class SocketIO {
   constructor(server) {
-    if (myIO != null) return myIO;
+    if (myIO != null) return this.GetIO("☠️");
+
     myEM = new EventManager();
     this.initEM_WebBook();
 
@@ -29,18 +30,23 @@ class SocketIO {
     });
 
     myEM.emit("Debug.Model.Init.Finish", "SocketIO");
-  }
-
-  static GetIO() {
-    console.assert(myIO !== null, "需要先初始化好Socket服务才能取得对应实例！");//
     return myIO;
   }
 
+  static GetIO(callerFile) {
+    console.assert(myIO !== null, "需要先初始化好Socket服务才能取得对应实例！", callerFile);//
+    return myIO;
+  }
+
+  /**
+   * 初始化爬书相关的消息转发
+   * @returns 
+   */
   initEM_WebBook() {
     if (myEM == null) return;
-    myEM.on("WebBook.UpdateIndex.Finish", (bookid) => {
-      // console.log("目录更新完毕！！");
-    })
+    // myEM.on("WebBook.UpdateIndex.Finish", (bookid) => {
+    //   // console.log("目录更新完毕！！");
+    // })
 
     myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
       myIO.emit("WebBook.Chapter.Update", {

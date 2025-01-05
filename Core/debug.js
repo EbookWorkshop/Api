@@ -1,6 +1,6 @@
 //主要是辅助除错 开启一些监听
 const EventManager = require("../Core/EventManager.js");
-const SocketHandler = require("../Core/socket.js");
+const SocketHandler = require("../Core/Socket.js");
 const { debugSwitcher } = require("./../config");
 const Message = require("../Entity/Message.js");
 const { title } = require("process");
@@ -99,10 +99,11 @@ module.exports = (() => {
             case "WEBBOOKCOVER": if (!debugSwitcher.saveBookCover) return; break;
             case "WORKERPOOL": if (!debugSwitcher.workerPool) return; break;
             default:
+                funName = "⚒️"
                 break;
         }
         console.info(`[${funName}]${message}`, ..._);
-        new SocketHandler().emit("Message.Box.Send", new Message(message, "message", { title: funName, subTitle: "自动转发" }))
+        SocketHandler.GetIO(__filename)?.emit("Message.Box.Send", new Message(message, "message", { title: funName, subTitle: "自动转发" }))
     });
     em.emit("Debug.Log", "🪲🐞🐛已载入Debug模块！！")
 })();

@@ -1,6 +1,6 @@
 const Server = require("./../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
-const SocketIO = require("../../Core/Socket");
+const SocketIO = require("./../../Core/Socket.js");
 const Message = require("../../Entity/Message");
 
 
@@ -51,8 +51,7 @@ module.exports = () => ({
     "post /message": async (ctx) => {
         let param = await Server.parseJsonFromBodyData(ctx);
         if (param == null) return;
-        let socket = new SocketIO();
-        socket.emit("Message.Box.Send", new Message(param.content, param.type, param));
+        SocketIO.GetIO(__filename).emit("Message.Box.Send", new Message(param.content, param.type, param));
 
         new ApiResponse(true).toCTX(ctx);
     },
