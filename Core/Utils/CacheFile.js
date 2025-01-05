@@ -1,7 +1,6 @@
 //缓存、下载文件到服务器指定地址
 const https = require("https");
 let { URL } = require("url");
-const fs = require("fs");
 const EventManager = require("./../../Core/EventManager");
 const em = new EventManager();
 const { AddFile } = require("./../services/file.mjs");          //这里会得到一个node警告（node:16472），因为在CJS模块中引入了ESM模块，但是不影响使用（当前node版本为实验性功能）
@@ -28,28 +27,28 @@ function CacheFile(url, savePath) {
         };
 
         const req = https.request(options, (res) => {
-            // try {
-            //     const fStream = fs.createWriteStream(savePath);
-            //     res.pipe(fStream);
+            if (res.statusCode < 200 || res.statusCode > 302) {
+                let err = new Error(`${url} 返回状态：${res.statusCode} - ${res.statusMessage}`);
+                ErrorHandler(url, err, reject);
+                return;
+            }
 
-            //     fStream.on("finish", () => {
-            //         resolve(true);
-            //     });
-            // } catch (err) {
-            //     reject(false, err);
-            // }
             AddFile(res, savePath).then((res) => {
                 resolve(true);
             }).catch((err) => {
-                reject(false, err);
+                ErrorHandler(url, err, reject);
             });
         });
         req.on('error', (err) => {
-            em.emit("Debug.Log", `【线程】缓存文件失败：${url}\n出错来源：${__filename}\n`, "WEBBOOKCOVER", err);
-            reject(false, err);
+            ErrorHandler(url, err, reject);
         })
         req.end();
     });
+}
+
+function ErrorHandler(url, err, reject) {
+    em.emit("Debug.Log", `【线程】缓存文件失败：${url}\n出错来源：${__filename}\n`, "WEBBOOKCOVER", err);
+    reject({ result: false, err });
 }
 
 /**
