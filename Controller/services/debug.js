@@ -3,9 +3,6 @@ const ApiResponse = require("../../Entity/ApiResponse");
 const SocketIO = require("./../../Core/Socket.js");
 const Message = require("../../Entity/Message");
 
-
-
-//获取静态资源文件
 module.exports = () => ({
     /**
      * @swagger
