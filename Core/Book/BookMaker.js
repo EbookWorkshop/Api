@@ -19,8 +19,6 @@ class BookMaker {
     static async AddATxtBook({
         bookName, chapters, author, conver
     }) {
-        console.log("准备添加：", bookName, chapters);
-
         // let book = await Do2Po.GetEBookByName(bookName);
         // if (book != null) Do2Po.DeleteOneBook(book.BookId);//已有同名的书先删除
 

@@ -12,14 +12,14 @@ const PDFBook = require("./../../Entity/PDFBook/PDFBook");
 //数据库操作文档 https://www.sequelize.cn/
 
 /**
- * PoToDo、DoToPo
+ * # PoToDo、DoToPo
  * 将实体类和数据库类互转
  */
 class DO {
     constructor() { }
 
     /**
-     * Po to Do
+     * # Po to Do
      * @param {*} ebookModel PO
      * @param {Ebook|WebBook|PDFBook} BOOKTYPE 需要创建的类，如`Ebook`、`WebBook`、`PDFBook`
      * @returns {BOOKTYPE} 
@@ -225,6 +225,25 @@ class DO {
     }
 
     /**
+     * 取得网文列表
+     * @returns 网文对象
+     */
+    static async GetWebBookList() {
+        const myModels = new Models();
+        let bookListModels = await myModels.WebBook.findAll({
+            include: myModels.Ebook,            //关联查询 webbook join ebook
+            order: [["id", "DESC"]]
+        });
+
+        let bookList = [];
+        for (let b of bookListModels) {
+            // console.log(...b.Ebook.dataValues, ...b.dataValues)
+            bookList.push(new WebBook({ ...b.Ebook.dataValues, ...b.dataValues }));
+        }
+        return bookList;
+    }
+
+    /**
      * 根据ID获得对应的WebBook对象
      * @param {int} bookId 书的ID
      */
@@ -245,10 +264,10 @@ class DO {
     static async GetWebBookSourcesById(bookId) {
         const myModels = new Models();
         let webBook = await myModels.WebBook.findOne({
-            where:{BookId:bookId}
+            where: { BookId: bookId }
         });
         let bookSources = webBook?.getWebBookIndexSourceURLs();
-        
+
         if (bookSources == null) return null;
 
         return await bookSources;
@@ -284,7 +303,7 @@ class DO {
     /**
      * PO 转为WebBook对象-OK
      * @param {Model} webModel 数据库模型 
-     * @returns WebBook 对象
+     * @returns {WebBook} WebBook对象
      */
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();

@@ -1,6 +1,3 @@
-let IndexOptions = require("./IndexOptions");
-let ChapterOptions = require("./ChapterOptions");
-
 let Ebook = require("../Ebook/Ebook");
 
 /**

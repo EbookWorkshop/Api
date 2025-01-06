@@ -8,6 +8,25 @@ const ApiResponse = require("./../../Entity/ApiResponse");
 module.exports = () => ({
     /**
      * @swagger
+     * /library/webbook/list:
+     *   get:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 拿到网文列表
+     *     description: 拿到所有网文
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /list": async (ctx) => {
+        new ApiResponse(await DO.GetWebBookList()).toCTX(ctx);
+    },
+    /**
+     * @swagger
      * /library/webbook:
      *   get:
      *     tags:

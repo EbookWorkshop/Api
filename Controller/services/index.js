@@ -1,6 +1,9 @@
+const fs = require("fs");
+const path = require("path")
 const myPackage = require("./../../package.json");
 const ApiResponse = require("../../Entity/ApiResponse");
 const { isSiteAccessible } = require("./../../Core/Utils/IsSiteAccesssible");
+const { dataPath, databasePath } = require("../../config");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -24,7 +27,9 @@ module.exports = () => ({
         let result = {
             version: myPackage.version,
             dependencies: myPackage.dependencies,
-            nodeVersion: process.version // 添加这一行来获取Node.js版本
+            nodeVersion: process.version, // 添加这一行来获取Node.js版本
+            dataPath: path.resolve(dataPath),
+            databaseSize: fs.statSync(databasePath).size,
         }
         new ApiResponse(result).toCTX(ctx);
     },

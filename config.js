@@ -4,12 +4,12 @@ module.exports = {
      * 书库-产物的存储目录    
      * 路径结尾不含斜线`/`
      */
-    dataPath: "./../MyLibrary/Data",
+    dataPath: "./../MyLibrary",
 
     /**
      * 数据库存放路径
      */
-    databasePath: "./../MyLibrary/Data/library/save.sqlite",
+    databasePath: "./../MyLibrary/Data/save.sqlite",
 
     /**
      * 字体存放路径
