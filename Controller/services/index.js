@@ -24,12 +24,21 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /version": async (ctx) => {
+        let outdated = {};
+        try {
+            let fPath = path.resolve("./Entity/outdated.json");
+            if (fs.existsSync(fPath)) {
+                outdated = JSON.parse(fs.readFileSync(fPath, "utf8"));
+            }
+        } catch (_) { }
+
         let result = {
             version: myPackage.version,
             dependencies: myPackage.dependencies,
             nodeVersion: process.version, // 添加这一行来获取Node.js版本
             dataPath: path.resolve(dataPath),
             databaseSize: fs.statSync(databasePath).size,
+            outdatedPackages: outdated
         }
         new ApiResponse(result).toCTX(ctx);
     },

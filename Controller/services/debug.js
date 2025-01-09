@@ -52,4 +52,24 @@ module.exports = () => ({
 
         new ApiResponse(true).toCTX(ctx);
     },
+
+    /**
+     * @swagger
+     * /services/debug/test:
+     *   get:
+     *     tags:
+     *       - Services - 基础 —— 系统服务：调试
+     *     summary: 临时测试入口
+     *     description: 临时测试系统功能
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /test": async (ctx) => {
+
+    },
 });

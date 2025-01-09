@@ -25,6 +25,8 @@ module.exports = new Promise((resolve, reject) => {
             resolve({
                 wp, db, em, io
             });
+
+            wp.RunTask({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
         });
     } catch (err) {
         reject(err);

@@ -24,8 +24,7 @@ class WorkerPoolTaskInfo extends AsyncResource {
      * @param {*} result 回调的结果
      */
     Done(err, result) {
-        // console.log("线程结束的回调", result, err);
-        this.runInAsyncScope(this.callback, null, result, err);
+        if (this.callback) this.runInAsyncScope(this.callback, null, result, err);
         this.emitDestroy();  // `TaskInfo`s are used only once.
     }
 }
