@@ -5,7 +5,6 @@ const { Worker } = require('worker_threads');
 const EventManager = require("./../EventManager");
 const em = new EventManager();
 
-const kCallback = Symbol('kCallback');
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskParam = Symbol('kTaskParam');
 const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
@@ -169,7 +168,8 @@ class WorkerPool extends EventEmitter {
 
     /**
      * 启用一个线程，
-     * @param {{taskfile,param,taskType,maxThreadNum}} taskParam ```js
+     * @param {{taskfile,param,taskType,maxThreadNum}} taskParam 
+     * ```js
         {
             taskfile,   //模块文件地址，可以用 ‘@’ 代表根目录。
             param,      //线程执行的传入参数，要求为可序列化的内容
@@ -185,7 +185,7 @@ class WorkerPool extends EventEmitter {
         //总线程已满
         if (this.freeWorkers.length === 0) {
             this.WaitingTask(taskParam, callback);
-            em.emit("Debug.Log", "已达到总最大线程数，需要等待资源","WORKERPOOL");
+            em.emit("Debug.Log", "已达到总最大线程数，需要等待资源", "WORKERPOOL");
             if (this.maxThreadsNum > this.workers.length) this.AddNewWorker();
             return;
         }
@@ -195,7 +195,7 @@ class WorkerPool extends EventEmitter {
             //按类型限制的线程已满
             if (++curTypeNum > taskParam.maxThreadNum) {
                 this.WaitingTask(taskParam, callback);
-                em.emit("Debug.Log", "已达到当前类别的最大线程数，需要等待资源","WORKERPOOL", taskParam.taskType);
+                em.emit("Debug.Log", "已达到当前类别的最大线程数，需要等待资源", "WORKERPOOL", taskParam.taskType);
                 return;
             }
             this.runningThreadCountByType.set(taskParam.taskType, curTypeNum);
@@ -212,11 +212,32 @@ class WorkerPool extends EventEmitter {
         });
 
         worker[kTaskParam] = taskParam;
-        worker[kCallback] = callback;
         worker[kTaskCallback] = new WorkerPoolTaskInfo(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.
 
 
         worker.postMessage(taskParam);      //发到线程上运行
+    }
+
+    /**
+     * 以同步形式启用一个线程
+     * @param {{taskfile,param,taskType,maxThreadNum}} taskParam 
+     * ```js
+        {
+            taskfile,   //模块文件地址，可以用 ‘@’ 代表根目录。
+            param,      //线程执行的传入参数，要求为可序列化的内容
+            taskType,   //可选，按类别限制线程最大数控制时，用于区别线程类别
+            maxThreadNum//可选，当taskType不为空时，用于限制指定类别的线程最大数量。
+        }
+     *
+     * ```
+     */
+    RunTaskAsync(taskParam) {
+        return new Promise((resolve, reject) => {
+            this.RunTask(taskParam, (result, error) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
     }
 
     /**
