@@ -313,5 +313,36 @@ module.exports = () => ({
 
         new ApiResponse(await DO.GetWebBookSourcesById(bookId * 1)).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /library/webbook/chapter/sources:
+     *   get:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 拿到指定章节的来源地址
+     *     description: 拿到指定章节的网页来源的地址
+     *     parameters:
+     *     - name: chapterid
+     *       in: query
+     *       required: true
+     *       description: 章节ID
+     *       schema:
+     *         type: integer
+     *         format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "get /chapter/sources": async (ctx) => {
+        let chapterid = ctx.query.chapterid;
+        if (chapterid * 1 != chapterid) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetWebBookChapterSourcesById(chapterid * 1)).toCTX(ctx);
+    },
 
 });

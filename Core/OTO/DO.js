@@ -274,6 +274,22 @@ class DO {
     }
 
     /**
+     * 根据章节ID获取对应的来源地址
+     * @param {*} chapterId 章节ID
+     */
+    static async GetWebBookChapterSourcesById(chapterId) {
+        const myModels = new Models();
+        let webBook = await myModels.WebBookIndex.findOne({
+            include: myModels.WebBookIndexURL,
+            where: { IndexId: chapterId }
+        });
+        if (webBook == null) return null;
+        let webBookIndex = await webBook;
+
+        return webBookIndex.WebBookIndexURLs;
+    }
+
+    /**
      * 根据书名找到对应的电子书配置
      * @param {string} bookName 书名/网文的唯一书名
      * @returns WebBook
