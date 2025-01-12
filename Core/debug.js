@@ -85,8 +85,10 @@ module.exports = (() => {
         });
         em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, Task, err }) => {
             console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:运行出错：\t\t${Task}\n`);
-            console.error(err);
-            console.log("-- -- -- -- -- --")
+            if (!err.message.startsWith("Command failed: npm outdated -json")) {
+                console.error(err);
+                console.log("-- -- -- -- -- --")
+            }
         });
     }
 

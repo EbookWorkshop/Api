@@ -1,8 +1,6 @@
 const { CreateNewDoc } = require("./../../Core/PDF/PDFToolkit");
-const ApiResponse = require('../../Entity/ApiResponse');
-const { Transform, Duplex, pipeline, Writable } = require("node:stream");
+const DO = require("../../Core/OTO/DO");
 
-const fs = require("node:fs")
 
 module.exports = () => ({
     /**
@@ -42,15 +40,21 @@ module.exports = () => ({
      */
     "get /view": async (ctx) => {
         const param = ctx.request?.query;
-        if (!param.content) return new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
-
         ctx.set('Content-Type', "application/pdf");
+        let content = param.content;
+        if (!param.content && !param.chapterId) {
+            content = "请求参数错误";
+        }
+        if (param.chapterId) {
+            let chapter = await DO.GetEBookChapterById(param.chapterId * 1);
+            content =chapter.Title +"\n\n"+ chapter.Content;
+        }
         ctx.status = 200;
 
         let pdf = CreateNewDoc({        //只有开头一半 报错：在end之后继续写入
             fontFamily: param.fontfamily || "Alibaba-PuHuiTi-Medium",
             fontSize: param.fontsize || 26,
-        }, param.content);
+        }, content);
 
         ctx.body = pdf;
     },
