@@ -1,6 +1,5 @@
 //与服务器相关的通用方法都放这
 const fs = require("fs");
-const path = require("path");
 const ApiResponse = require('../Entity/ApiResponse');
 
 /**

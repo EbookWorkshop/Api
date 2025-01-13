@@ -1,4 +1,4 @@
-const router = require('koa-router')()
+const Router = require('koa-router')
 // const { loadavg } = require('os');
 const path = require('path')
 const fs = require('fs');
@@ -6,6 +6,7 @@ const fs = require('fs');
 const EventManager = require("./../Core/EventManager");
 const ApiResponse = require("./../Entity/ApiResponse");
 const em = new EventManager();
+const router = new Router();
 
 /**
  * 路由模块装载器
