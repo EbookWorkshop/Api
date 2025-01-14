@@ -22,7 +22,7 @@ class Rule {
          */
         this.GetContentAction = "";
         /**
-         * 获取地址的方法
+         * 获取地址的方法 如 attr/innerText
          */
         this.GetUrlAction = "";
 

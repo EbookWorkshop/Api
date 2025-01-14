@@ -112,7 +112,7 @@ class Models {
             GetContentAction: { type: Sequelize.STRING(100), allowNull: true },
             GetUrlAction: { type: Sequelize.STRING(100), allowNull: true },
             Type: { type: Sequelize.STRING(100), allowNull: false, defaultValue: "Object" },
-            CheckSetting: { type: Sequelize.STRING(100), allowNull: true },
+            CheckSetting: { type: Sequelize.STRING(100), allowNull: true },         //用于进一步校验的配置
         });
 
         // this.RuleForWeb = sequelize.define("RuleForWeb", {   //每一章的地址
