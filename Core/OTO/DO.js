@@ -167,9 +167,11 @@ class DO {
         const myModels = new Models();
         let chapter = await myModels.EbookIndex.findByPk(chapterId);
         if (chapter == null) return null;
+        let book = await chapter.getEbook();
         let rules = await DO.GetReviewRules(chapter.BookId);
         let chapterObj = new Chapter({ ...chapter.dataValues });
         [chapterObj.Title, chapterObj.Content] = Reviewer(rules, [chapterObj.Title, chapterObj.Content]);
+        chapterObj.Book = book.dataValues;
         return chapterObj;
     }
 

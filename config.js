@@ -9,7 +9,7 @@ module.exports = {
     /**
      * 数据库存放路径
      */
-    databasePath: "./../MyLibrary/Data/save.sqlite",
+    databasePath: "./../MyLibrary/Data/latest.sqlite",
 
     /**
      * 字体存放路径
