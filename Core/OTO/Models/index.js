@@ -19,6 +19,8 @@ class Models {
         PO_MODELS = this;
 
         AutoInit(sequelizeConnect);
+
+        return this;
     }
 
     static GetPO() {
@@ -72,7 +74,11 @@ function AutoInit(sqlConnect) {
         }
 
         Relational(PO_MODELS);
-        em.emit("DB.Models.Init", sqlConnect.options.storage);
+
+        //同步所有模型
+        sqlConnect.sync().then(result => {
+            em.emit("DB.Models.Init", sqlConnect.options.storage, result);
+        })
     }).catch(err => {
         em.emit("Debug.Log", "数据库初始化失败！", " DATABASE", err);
     });

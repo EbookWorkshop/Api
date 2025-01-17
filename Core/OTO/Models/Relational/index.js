@@ -31,11 +31,17 @@ module.exports = function (models) {
     models.Ebook.hasOne(models.PDFBook, { foreignKey: 'BookId', sourceKey: 'id' });
     models.PDFBook.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
-    // ReviewRule <-- --> ReviewRuleUsing
+    // ReviewRule <-- --> ReviewRuleUsing <-- --> Ebook
     models.ReviewRule.hasMany(models.ReviewRuleUsing, { foreignKey: 'RuleId', sourceKey: 'id' });
     models.ReviewRuleUsing.belongsTo(models.ReviewRule, { foreignKey: 'RuleId', targetKey: 'id' });
-    
-    // Ebook <-- --> ReviewRuleUsing
-    models.Ebook.hasMany(models.ReviewRuleUsing, { foreignKey: 'BookId', sourceKey: 'id' });
     models.ReviewRuleUsing.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
+    models.Ebook.hasMany(models.ReviewRuleUsing, { foreignKey: 'BookId', sourceKey: 'id' });
+    
+
+   // Ebook <-- --> EBookTag <-- --> Tag
+   models.Ebook.hasMany(models.EbookTag, { foreignKey: 'BookId', sourceKey: 'id' });
+   models.EbookTag.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
+   models.EbookTag.belongsTo(models.Tag, { foreignKey: 'TagId', targetKey: 'id' });
+   models.Tag.hasMany(models.EbookTag, { foreignKey: 'TagId', sourceKey: 'id' });
+
 }
