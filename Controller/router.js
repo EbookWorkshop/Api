@@ -32,7 +32,7 @@ async function load(dir, fatherRouter, cb_loader) {
         try {
             if (isESM) {
                 import(`${dir}/${curfilename}`).then(routes => {//ESM模块只能用相对路径加载
-                    cb_loader(curfilename.replace(".mjs",""), fatherRouter, routes.default);
+                    cb_loader(curfilename.replace(".mjs", ""), fatherRouter, routes.default);
                 })
             } else {    //isCJS
                 const routes = require(routerPath);        //实际加载模块
@@ -56,19 +56,18 @@ async function load(dir, fatherRouter, cb_loader) {
  * @param {function|object} routes require之后的模块内容
  */
 function loader(filename, fatherRouter, routes) {
-    const prefix = fatherRouter !== "" ? `/${fatherRouter}/${filename}` : `/${filename}`;      //控制器文件名为一级路由
+    const prefix = path.posix.join('/', fatherRouter, filename);      //控制器文件名为一级路由
 
     if (typeof (routes) === "function") //模块文件导出为function形式的处理
         routes = routes();
-    // else
-    //     console.log(filename, typeof (routes), routes);//`module.exports = {}`这样导出的模块会去到这里
 
     Object.keys(routes).forEach(key => {
-        const [method, path] = key.split(' ');
+        const [method, rPath] = key.split(' ');
         // 注册路由
         let mType = `[${method.toUpperCase()}]`.padStart(10, " ");
-        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(prefix + path).padEnd(40, " ")}\t${__filename}`,"ROUTER");
-        router[method.toLowerCase()](prefix + path, (ctx) => {
+        let realPath = path.posix.join(prefix, rPath)
+        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(realPath).padEnd(40, " ")}\t/Controller/${fatherRouter ? fatherRouter + "/" : ""}${filename}`, "ROUTER");
+        router[method.toLowerCase()](realPath, (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
 
             //在最顶层捕获错误，以防出错后程序中断

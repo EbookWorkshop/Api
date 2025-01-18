@@ -33,7 +33,7 @@ module.exports = () => ({
      *       200:
      *         description: 成功
     */
-    "get .json": async (ctx) => {
+    "get ../swagger.json": async (ctx) => {
         ctx.body = swaggerSpec;
     },
 
@@ -87,7 +87,7 @@ module.exports = () => ({
 </html>`;
     },
 
-    "get -ui-dist":async (ctx)=>{
+    "get ../swagger-ui-dist":async (ctx)=>{
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>

@@ -50,7 +50,6 @@ module.exports = () => ({
     "get /book": async (ctx) => {
         let bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
-            ctx.status = 600;
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
@@ -182,7 +181,7 @@ module.exports = () => ({
      *       200:
      *         description: 请求成功
      */
-    "post /emptyBook": async (ctx) => {
+    "post /emptybook": async (ctx) => {
         let bookInfo = ctx.request.body;
         let rsl = false;
         if (bookInfo.type === "txt")

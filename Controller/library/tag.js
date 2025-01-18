@@ -6,6 +6,38 @@ const ApiResponse = require('../../Entity/ApiResponse');
 module.exports = () => ({
     /**
      * @swagger
+     * /library/ebooktag:
+     *   get:
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *     summary: 取得某书的标签
+     *     description: 取得指定书的所有标签
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取标签的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "get /../ebooktag": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        let tags = await DO.GetTagById(bookId);
+        new ApiResponse(tags).toCTX(ctx);
+    },
+    /**
+     * @swagger
      * /library/tag:
      *   post:
      *     tags:
@@ -42,6 +74,6 @@ module.exports = () => ({
         tagText = tagText?.trim();
         if (tagText == "") new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx);
 
-        
+
     },
 });
