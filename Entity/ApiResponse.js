@@ -15,7 +15,7 @@ class ApiResponse {
         this.msg = msg || (code === 20000 ? "" : "API未知错误");
         this.code = code;
         this.data = data || null;
-        if(typeof(data) === "boolean") this.data = data;
+        if (typeof (data) === "boolean") this.data = data;
     }
 
     /**
@@ -36,7 +36,6 @@ class ApiResponse {
      * @param {*} ctx 
      */
     toCTX(ctx) {
-        // ctx.status = this.code / 100;
         if (ctx.status == 404) {
             ctx.status = 200;//处理已成功拿到数据但接口状态是404的特殊情况
         } else if (ctx.status != 200) {
@@ -48,8 +47,7 @@ class ApiResponse {
             }
 
             ctx.status = 200;//前端需要全部返回200 才能正确显示提示信息
-        } else if (ctx.status == 200 && this.code != 20000) {
-            this.code = 20000;//以防哪个API忘了设置Code 为20000了
+            //所以实际的http状态码会*100放到返回结果的code中
         }
         ctx.body = this.getJSONString();
     }

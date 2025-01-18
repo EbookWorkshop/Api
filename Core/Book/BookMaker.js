@@ -19,8 +19,6 @@ class BookMaker {
     static async AddATxtBook({
         bookName, chapters, author, conver
     }) {
-        // let book = await Do2Po.GetEBookByName(bookName);
-        // if (book != null) Do2Po.DeleteOneBook(book.BookId);//已有同名的书先删除
 
         let ebook = new Ebook({
             BookName: bookName,
@@ -40,5 +38,24 @@ class BookMaker {
         return await Do2Po.EBookObjToModel(ebook);
     }
 
+    /**
+    * 创建一本空的书
+    * @param {{
+    * bookName:string,
+    * author:string,
+    * conver:string
+    * }} book 书的配置
+    */
+    static async CreateEmptyBook({
+        bookName, author, conver
+    }) {
+        let ebook = new Ebook({
+            BookName: bookName,
+            Author: author,
+            CoverImg: conver || "#212f30",//灰色封面
+        });
+
+        return await Do2Po.EBookObjToModel(ebook);
+    }
 }
 module.exports = BookMaker;

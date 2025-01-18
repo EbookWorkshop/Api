@@ -9,7 +9,7 @@ let PO_MODELS = null;//PO对象
 
 /**
  * # PO 持久对象(Persistant Object)    
- * 对应数据库中某个表中的一条记录，一个表就是一个类,每张表的字段就是类中的一个属性    
+ * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
  * __注意；PO中应该不包含任何对数据的操作__
  */
 class Models {
@@ -22,7 +22,12 @@ class Models {
 
         return this;
     }
-
+    
+    /**
+     * # PO 持久对象(Persistant Object)    
+     * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
+     * __注意；PO中应该不包含任何对数据的操作__
+     */
     static GetPO() {
         return PO_MODELS;
     }

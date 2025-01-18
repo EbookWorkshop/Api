@@ -31,9 +31,10 @@ function parseBodyData(ctx) {
 
 /**
  * 从请求解释出json，检测必要的参数
+ * (已处理缺失参数的拦截)
  * @param {*} ctx 上下文
  * @param {Array} requireCheck 必填检查
- * @returns 解释后的结果
+ * @returns 解释后的参数 null为参数校验不通过，需要停止响应
  */
 async function parseJsonFromBodyData(ctx, requireCheck = []) {
     let param = await parseBodyData(ctx);
@@ -57,8 +58,8 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
         } else {
             pmCheck(param);
         }
-    } catch (err) {
-        new ApiResponse(err, err.message, 60000).toCTX(ctx);
+    } catch (err) {//throw 接到的err是一串文本
+        new ApiResponse(param, err.message || err, 60000).toCTX(ctx);
         return null;
     }
     return param;

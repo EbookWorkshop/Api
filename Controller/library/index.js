@@ -161,6 +161,37 @@ module.exports = () => ({
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /library/emptyBook:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 添加一本空书
+     *     description: 加入一本空书，不含任何章节
+     *     parameters:
+     *     - name: book
+     *       in: body
+     *       required: true
+     *       description: 书配置
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /emptyBook": async (ctx) => {
+        let bookInfo = ctx.request.body;
+        let rsl = false;
+        if (bookInfo.type === "txt")
+            rsl = await BookMaker.CreateEmptyBook({
+                ...bookInfo
+            });
+
+        ApiResponse.GetResult(rsl).toCTX(ctx);
+    },
 
     /**
      * @swagger
