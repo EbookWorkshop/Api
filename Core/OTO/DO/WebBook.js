@@ -1,5 +1,9 @@
 const DO = require("./index");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
+const WebIndex = require("./../../../Entity/WebBook/WebIndex");
+const WebChapter = require("./../../../Entity/WebBook/WebChapter");
+// const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
+// const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
 
 
 class OTO_WebBook {

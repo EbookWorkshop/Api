@@ -3,7 +3,6 @@ const EventManager = require("../Core/EventManager.js");
 const SocketHandler = require("../Core/Socket.js");
 const { debugSwitcher } = require("./../config");
 const Message = require("../Entity/Message.js");
-const { title } = require("process");
 
 
 module.exports = (() => {

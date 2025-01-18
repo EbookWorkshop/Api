@@ -1,5 +1,6 @@
-const DO = require("./index");
-const Reviewer = require("./../../Utils/RuleReview");
+// const DO = require("./index");
+// const Rule = require("./../../../Entity/WebBook/Rule");
+const Models = require("./../Models");
 
 
 class OTO_PDF {

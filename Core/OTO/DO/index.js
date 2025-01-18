@@ -1,7 +1,9 @@
 const { readdir } = require('node:fs/promises');
 const path = require("path");
 const EventManager = require("../../EventManager");
-
+const Models = require("./../Models");
+const Index = require("./../../../Entity/Ebook/Index");
+const Chapter = require("./../../../Entity/Ebook/Chapter");
 
 //数据库操作文档 https://www.sequelize.cn/
 
@@ -160,15 +162,12 @@ AutoInit();
  * 自动加载/加载当前文件夹里的*.js文件
  */
 function AutoInit() {
-    console.log("引用了DO")
     if (DO.HAS_INIT) return;
-    console.log("加载所有OTO方法")
     const em = new EventManager();
     readdir(__dirname).then(fileList => {
         // console.log(result);
 
         const notIncludeMethod = Object.getOwnPropertyNames(MethodNotInclude);
-        console.log(notIncludeMethod)
 
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
