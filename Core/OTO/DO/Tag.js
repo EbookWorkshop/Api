@@ -19,9 +19,46 @@ class OTO_TAG {
             }
         });
 
-        return tags.map(({ id, Tag }) => ({ id, Text: Tag.Text, Color: Tag.Color }));
+        return tags.map(({ TagId: id, Tag }) => ({ id, Text: Tag.Text, Color: Tag.Color }));
     }
 
+    static async AddTagForBook(bookId, tagText) {
+        const myModels = Models.GetPO();
+        //看看是否已有的Tag
+        let [tag] = await myModels.Tag.findOrCreate({
+            where: {
+                Text: tagText
+            }
+        });
+
+        let [_, result] = await myModels.EbookTag.findOrCreate({
+            where: {
+                BookId: bookId, TagId: tag.id
+            }
+        });
+
+        return [tag, result];
+    }
+
+    /**
+     * 删除某书的标签
+     * @param {Number} bookId 
+     * @param {Number} tagId 
+     */
+    static async RemoveTagOnBook(bookId, tagId) {
+        const myModels = Models.GetPO();
+        let result = await myModels.EbookTag.findAll({
+            where: {
+                BookId: bookId,
+                TagId: tagId
+            }
+        });
+        result.forEach(element => {
+            element.destroy();
+        });
+
+        return true;
+    }
 }
 
 

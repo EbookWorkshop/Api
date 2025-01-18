@@ -72,8 +72,53 @@ module.exports = () => ({
         var bookid = param.bookId;      //标记的书
         var tagText = param.tagText;    //标记文本
         tagText = tagText?.trim();
-        if (tagText == "") new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx);
+        if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
 
+        let [data, result] = await DO.AddTagForBook(bookid, tagText);
 
+        new ApiResponse(data, null, result).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /library/tag:
+     *   delete:
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *     summary: 取消某书的标签
+     *     description: 给某书取消一个标签
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需删除标签的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     - name: tagid
+     *       in: query
+     *       required: true
+     *       description: 删除的标签Id
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete ": async (ctx) => {
+
+        var bookid = ctx.query.bookid * 1;      //标记的书
+        var tagid = ctx.query.tagid * 1;      //需取消的标签Id
+        if (!bookid || !tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
+
+        let result = await DO.RemoveTagOnBook(bookid, tagid);
+
+        new ApiResponse(null, null, result).toCTX(ctx);
+    },
+
+
+
+
 });
