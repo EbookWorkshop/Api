@@ -1,4 +1,4 @@
-const DO = require("./../../Core/OTO/DO.js");
+const DO = require("./../../Core/OTO/DO");
 
 const Server = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');

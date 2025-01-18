@@ -1,4 +1,4 @@
-const DO = require("./../../Core/OTO/DO.js");
+const DO = require("./../../Core/OTO/DO");
 
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const Server = require("./../../Core/Server");

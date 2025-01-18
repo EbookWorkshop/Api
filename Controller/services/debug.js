@@ -70,6 +70,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /test": async (ctx) => {
-
+        let DO = require("../../Core/OTO/DO");
+        console.log(Object.getOwnPropertyNames(DO));
     },
 });

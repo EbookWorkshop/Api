@@ -85,7 +85,7 @@ function AutoInit(sqlConnect) {
             em.emit("DB.Models.Init", sqlConnect.options.storage, result);
         })
     }).catch(err => {
-        em.emit("Debug.Log", "数据库初始化失败！", " DATABASE", err);
+        em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", err);
     });
 
 }
