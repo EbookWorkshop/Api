@@ -117,7 +117,26 @@ module.exports = () => ({
 
         new ApiResponse(null, null, result).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /library/tag/list:
+     *   get:
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *     summary: 取得有记录的标签
+     *     description: 标签如果有关联书籍，则会返回
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "get /list": async (ctx) => {
 
+        let tags = await DO.GetTagList();
+        console.log(tags);
+        new ApiResponse(tags).toCTX(ctx);
+    },
 
 
 

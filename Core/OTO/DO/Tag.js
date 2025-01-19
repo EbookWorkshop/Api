@@ -59,6 +59,36 @@ class OTO_TAG {
 
         return true;
     }
+
+    /**
+     * 找到所有的标签
+     * @returns 
+     */
+    static async GetTagList() {
+        const myModels = Models.GetPO();
+        const data = await myModels.Tag.findAll({
+            include: [{
+                model: myModels.EbookTag,
+                required: true,
+                where: {
+                    BookId: {
+                        [Models.Op.ne]: null
+                    }
+                }
+            }]
+        });
+
+        let result = data.map((t) => {
+            let tag = {
+                id: t.id,
+                Text: t.Text,
+                Color: t.Color,
+                Count: t.EBookTags.length
+            };
+            return tag;
+        })
+        return result;
+    }
 }
 
 

@@ -11,9 +11,20 @@ class OTO_Ebook {
     /**
      * 获取图书列表
      */
-    static async GetBookList() {
+    static async GetBookList(tagid) {
         const myModels = new Models();
-        let bookListModels = await myModels.Ebook.findAll({ order: [["id", "DESC"]] });
+        let bookListModels;
+        let param = { order: [["id", "DESC"]] }
+        if (tagid > 0) {
+            param.include = [{
+                model: myModels.EbookTag,
+                require: false,
+                where: {
+                    TagId: tagid
+                }
+            }];
+        }
+        bookListModels = await myModels.Ebook.findAll(param);
         let bookList = [];
         for (let b of bookListModels) {
             bookList.push(new Ebook({ ...b.dataValues }));

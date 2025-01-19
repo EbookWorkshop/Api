@@ -11,6 +11,14 @@ module.exports = () => ({
      *       - Library —— 图书馆
      *     summary: 拿到所有书的信息
      *     description: 拿到所有书的信息
+     *     parameters:
+     *     - name: tagid
+     *       in: query
+     *       required: false
+     *       description: 标签ID
+     *       schema:
+     *         type: integer
+     *         format: int64
      *     consumes:
      *       - application/json
      *     responses:
@@ -20,7 +28,8 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /booklist": async (ctx) => {
-        new ApiResponse(await DO.GetBookList()).toCTX(ctx);
+        let tagid = ctx.query.tagid * 1;
+        new ApiResponse(await DO.GetBookList(tagid)).toCTX(ctx);
     },
 
     /**
