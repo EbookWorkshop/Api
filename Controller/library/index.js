@@ -171,7 +171,7 @@ module.exports = () => ({
     },
     /**
      * @swagger
-     * /library/emptyBook:
+     * /library/emptybook:
      *   post:
      *     tags:
      *       - Library —— 图书馆
