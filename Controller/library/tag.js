@@ -109,6 +109,44 @@ module.exports = () => ({
      */
     "delete ": async (ctx) => {
 
+        var tagid = ctx.query.tagid * 1;
+        if (!tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
+
+        let result = await DO.DeleteTag(tagid);
+
+        new ApiResponse(null, null, result).toCTX(ctx);
+    },
+    /**
+     * @swagger
+     * /library/tagonbook:
+     *   delete:
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *     summary: 取消某书的标签
+     *     description: 给某书取消一个标签
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需删除标签的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     - name: tagid
+     *       in: query
+     *       required: true
+     *       description: 删除的标签Id
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete /../tagonbook": async (ctx) => {
+
         var bookid = ctx.query.bookid * 1;      //标记的书
         var tagid = ctx.query.tagid * 1;      //需取消的标签Id
         if (!bookid || !tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
@@ -132,9 +170,8 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "get /list": async (ctx) => {
-
-        let tags = await DO.GetTagList();
-        console.log(tags);
+        let tagid = ctx.query.hasbook * 1;
+        let tags = await DO.GetTagList(tagid > 0);
         new ApiResponse(tags).toCTX(ctx);
     },
 

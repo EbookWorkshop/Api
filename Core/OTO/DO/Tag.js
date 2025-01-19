@@ -61,22 +61,41 @@ class OTO_TAG {
     }
 
     /**
+     * 删除某标签
+     * @param {Number} tagId 
+     */
+    static async DeleteTag(tagId) {
+        const myModels = Models.GetPO();
+        await myModels.EbookTag.destroy({
+            where: {
+                TagId: tagId
+            }
+        });
+        let result = await myModels.Tag.destroy({
+            where: {
+                id: tagId
+            }
+        });
+        
+        return true;
+    }
+
+    /**
      * 找到所有的标签
+     * @param {*} isHasBook 是否需要包含书
      * @returns 
      */
-    static async GetTagList() {
+    static async GetTagList(isHasBook) {
         const myModels = Models.GetPO();
-        const data = await myModels.Tag.findAll({
-            include: [{
-                model: myModels.EbookTag,
-                required: true,
-                where: {
-                    BookId: {
-                        [Models.Op.ne]: null
-                    }
-                }
-            }]
-        });
+        let hasBook = isHasBook ? {
+            model: myModels.EbookTag,
+            required: true,
+            where: { BookId: { [Models.Op.ne]: null } }
+        } : {
+            model: myModels.EbookTag,
+            required: false
+        };
+        const data = await myModels.Tag.findAll({ include: [hasBook] });
 
         let result = data.map((t) => {
             let tag = {
