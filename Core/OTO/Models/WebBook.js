@@ -1,4 +1,4 @@
-const Sequelize = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 /**
  * Webbook
@@ -10,12 +10,12 @@ const Sequelize = require("sequelize");
 module.exports = function (sqlConnect) {
     return sqlConnect.define("WebBook", {
         //默认用哪个网址——用于多来源的情景//需要改造
-        defaultIndex: { type: Sequelize.INTEGER, defaultValue: 0 },
+        defaultIndex: { type: DataTypes.INTEGER, defaultValue: 0 },
         //网文书名-网文识别合并的唯一标识   (不要改名)
-        WebBookName: { type: Sequelize.STRING(50), allowNull: false },
+        WebBookName: { type: DataTypes.STRING(50), allowNull: false },
         //是否检查文章正常结束
-        isCheckEnd: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
+        isCheckEnd: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
         //是否检查章节重复
-        isCheckRepeat: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
+        isCheckRepeat: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     });
 }

@@ -1,4 +1,4 @@
-const Sequelize = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 /**
  * Ebook目录    
@@ -10,15 +10,15 @@ const Sequelize = require("sequelize");
 module.exports = function (sqlConnect) {
     return sqlConnect.define("EbookChapter", {
         //章节标题
-        Title: { type: Sequelize.STRING(50), allowNull: false },
+        Title: { type: DataTypes.STRING(50), allowNull: false },
         //章节正文
-        Content: { type: Sequelize.TEXT, allowNull: true },
+        Content: { type: DataTypes.TEXT, allowNull: true },
         /**
          * 排序号
          */
-        OrderNum: { type: Sequelize.INTEGER, allowNull: false },
+        OrderNum: { type: DataTypes.INTEGER, allowNull: false },
         HasContent: {
-            type: Sequelize.VIRTUAL,        //虚拟字段
+            type: DataTypes.VIRTUAL,        //虚拟字段
             get() {
                 return this.getDataValue("Content")?.length > 0;
             }
