@@ -22,12 +22,6 @@ class DB {
         }
         return myDBConnnect;
     }
-    static GetDB() {
-        return myDBConnnect;
-    }
-    static Models() {
-        return myModels;
-    }
 
     /**
      * 建⽴连接
@@ -41,6 +35,12 @@ class DB {
             storage: this.myDbPath,
             logging: false,
             //timezone: '+08:00',
+            pool: {
+                max: 5,
+                min: 0,
+                acquire: 30000,
+                idle: 10000
+            }
         });
     }
 }

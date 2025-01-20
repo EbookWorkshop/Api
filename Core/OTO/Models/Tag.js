@@ -1,4 +1,4 @@
-const Sequelize = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 /**
  * 标签
@@ -7,7 +7,7 @@ const Sequelize = require("sequelize");
  */
 module.exports = function (sqlConnect) {
     return sqlConnect.define("Tag", {
-        Text: { type: Sequelize.STRING(20), allowNull: false },
-        Color: { type: Sequelize.STRING(10), allowNull: true },
+        Text: { type: DataTypes.STRING(20), allowNull: false },
+        Color: { type: DataTypes.STRING(10), allowNull: true },
     });
 }

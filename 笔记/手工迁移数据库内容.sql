@@ -16,4 +16,6 @@ INSERT into  WebBookIndexURLs( id,Path,createdAt,updatedAt,WebBookIndexId )
  select b.id,b.Path,b.createdAt,b.updatedAt,b.WebBookIndexId from old.WebBookIndexURLs b
  INNER JOIN old.WebBookChapters a on a.id = b.WebBookIndexId
  
+INSERT into  Tags select * from old.Tags;
+INSERT into  EBookTags select * from old.EBookTags;
 
