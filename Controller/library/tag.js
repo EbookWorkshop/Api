@@ -81,19 +81,57 @@ module.exports = () => ({
     /**
      * @swagger
      * /library/tag:
+     *   patch:
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *     summary: 修改某标签
+     *     description: 修改现有的一个标签
+     *     parameters:
+     *       - in: body
+     *         name: tagInfo
+     *         description: 标签信息
+     *         schema:
+     *           type: object
+     *           required:
+     *             - tagId
+     *           properties:
+     *             tagId:
+     *               type: integer
+     *               format: int32
+     *             tagText:
+     *               type: string
+     *             color:
+     *               type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "patch ": async (ctx) => {
+        let param = await Server.parseJsonFromBodyData(ctx, ["tagId"]);
+        if (!param) return;
+
+        // TODO: 完成修改书签API
+
+        // var bookid = param.bookId;      //标记的书
+        // var tagText = param.tagText;    //标记文本
+        // tagText = tagText?.trim();
+        // if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
+
+        // let [data, result] = await DO.AddTagForBook(bookid, tagText);
+
+        // new ApiResponse(data, null, result).toCTX(ctx);
+    },
+    /**
+     * @swagger
+     * /library/tag:
      *   delete:
      *     tags:
      *       - Library - Tag —— 图书馆管理
-     *     summary: 取消某书的标签
-     *     description: 给某书取消一个标签
+     *     summary: 删除某个书签
+     *     description: 删除某个书签，并删除所有书的关联记录
      *     parameters:
-     *     - name: bookid
-     *       in: query
-     *       required: true
-     *       description: 需删除标签的书ID
-     *       schema:
-     *         type: integer
-     *         format: int64
      *     - name: tagid
      *       in: query
      *       required: true
@@ -108,14 +146,14 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete ": async (ctx) => {
-
         var tagid = ctx.query.tagid * 1;
         if (!tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.DeleteTag(tagid);
-
         new ApiResponse(null, null, result).toCTX(ctx);
     },
+
+
     /**
      * @swagger
      * /library/tagonbook:
@@ -135,7 +173,7 @@ module.exports = () => ({
      *     - name: tagid
      *       in: query
      *       required: true
-     *       description: 删除的标签Id
+     *       description: 需取消标记的标签ID
      *       schema:
      *         type: integer
      *         format: int64
@@ -146,13 +184,11 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete /../tagonbook": async (ctx) => {
-
         var bookid = ctx.query.bookid * 1;      //标记的书
         var tagid = ctx.query.tagid * 1;      //需取消的标签Id
         if (!bookid || !tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.RemoveTagOnBook(bookid, tagid);
-
         new ApiResponse(null, null, result).toCTX(ctx);
     },
     /**
@@ -161,8 +197,16 @@ module.exports = () => ({
      *   get:
      *     tags:
      *       - Library - Tag —— 图书馆管理
-     *     summary: 取得有记录的标签
-     *     description: 标签如果有关联书籍，则会返回
+     *     summary: 获取标签列表
+     *     description: 获取标签列表，可以是全部标签，或只获取有标记到书上的标签
+     *     parameters:
+     *     - name: hasbook
+     *       in: query
+     *       required: false
+     *       description: 这个书签是否需要有书引用
+     *       schema:
+     *         type: integer
+     *         format: int64
      *     consumes:
      *       - application/json
      *     responses:

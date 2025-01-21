@@ -82,7 +82,7 @@ class OTO_TAG {
 
     /**
      * 找到所有的标签
-     * @param {*} isHasBook 是否需要包含书
+     * @param {*} isHasBook 这个书签是否需要有书引用
      * @returns 
      */
     static async GetTagList(isHasBook) {
