@@ -159,7 +159,7 @@ module.exports = () => ({
      */
     "post /book": async (ctx) => {
         let bookInfo = ctx.request.body;
-        // console.log(bookInfo);
+
         let rsl = false;
         if (bookInfo.type === "txt")
             rsl = await BookMaker.AddATxtBook({
@@ -225,7 +225,14 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /book/chapter": async (ctx) => {
-        let chapter = ctx.request.body;
+        // let chapter = ctx.request.body;
+        // let chapterId = chapter.IndexId;
+        // if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
+        //     new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+        //     return;
+        // }
+
+        let chapter = await Server.parseJsonFromBodyData(ctx);
         let chapterId = chapter.IndexId;
         if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);

@@ -1,13 +1,12 @@
-// const swagger = require('./Controller/swagger.js')
-const system = require("./Core/System");
-const router = require('./Controller/router');
 const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
 const myConfig = require("./config");
 const path = require("path");
-
+const system = require("./Core/System");
+const router = require('./Controller/router');
+const EventManager = require("./Core/EventManager");
 
 const app = new Koa();
 
@@ -29,7 +28,8 @@ app.use(koaSwagger({
 
 app.on("error", (err, ctx) => {
     if (ctx) CtxSetAllowHead(ctx);  //处理500错误到前端时会有跨域拦截
-    console.error("KOA ERR: ", err);
+    let em = new EventManager();
+    em.emit("Debug.Log", err?.message || err, "KOAERR", err);
 })
 
 //设置跨域
