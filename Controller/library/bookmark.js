@@ -60,7 +60,11 @@ module.exports = () => ({
         let param = await Server.parseJsonFromBodyData(ctx, ["chapterid"]);
         if (!param) return;
 
-        new ApiResponse(await DO.AddBookmark(param.chapterid * 1)).toCTX(ctx);
+        await DO.AddBookmark(param.chapterid * 1).then(bookmark => {
+            new ApiResponse(bookmark).toCTX(ctx);
+        }).catch(err => {
+            new ApiResponse(err, "保存书签失败", 50000).toCTX(ctx);
+        })
     },
 
     /**
