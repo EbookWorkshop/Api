@@ -1,5 +1,6 @@
 const DO = require("../../Core/OTO/DO");
 const ApiResponse = require("./../../Entity/ApiResponse");
+const Server = require("./../../Core/Server");
 
 module.exports = () => ({
     /**
@@ -24,7 +25,7 @@ module.exports = () => ({
      *       200:
      *         description: 请求成功
      */
-    "get /bookmark": async (ctx) => {
+    "get ": async (ctx) => {
         let bookid = ctx.query.bookid * 1;//允许空
 
         new ApiResponse(await DO.GetBookmark(bookid * 1)).toCTX(ctx);
@@ -39,20 +40,23 @@ module.exports = () => ({
      *     summary: 添加书签
      *     description: 添加书签
      *     parameters:
-     *     - name: chapterid
-     *       in: query
-     *       required: true
-     *       description: 给当前章节添加书签
-     *       schema:
-     *         type: integer
-     *         format: int64
+     *       - in: body
+     *         name: bookmark
+     *         description: 发邮件的邮箱账户
+     *         schema:
+     *             type: object
+     *             required:
+     *               - chapterid
+     *             properties:
+     *               chapterid:
+     *                 type: number
      *     consumes:
      *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
      */
-    "post /bookmark": async (ctx) => {
+    "post ": async (ctx) => {
         let param = await Server.parseJsonFromBodyData(ctx, ["chapterid"]);
         if (!param) return;
 

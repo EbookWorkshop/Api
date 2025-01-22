@@ -1,4 +1,3 @@
-const { where } = require("sequelize");
 const Models = require("./../Models");
 // const DO = require("./index");
 // const PDFBook = require("./../../../Entity/PDFBook/PDFBook");

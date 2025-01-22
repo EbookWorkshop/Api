@@ -1,4 +1,3 @@
-const Index = require("../../../Entity/Ebook/Index");
 const Models = require("./../Models");
 
 
