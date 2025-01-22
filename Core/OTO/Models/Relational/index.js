@@ -45,5 +45,5 @@ module.exports = function (models) {
     models.Tag.hasMany(models.EbookTag, { foreignKey: 'TagId', sourceKey: 'id' });
 
     // EbookIndex <-- --> Bookmark
-    models.EbookIndex.hasMany(models.Bookmark, { foreignKey: 'IndexId', sourceKey: 'id', as: "EbookIndex" });
+    models.EbookIndex.hasOne(models.Bookmark, { foreignKey: { name: 'IndexId', unique: true }, sourceKey: 'id', as: "EbookIndex" });
 }
