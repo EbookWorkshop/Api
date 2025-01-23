@@ -4,16 +4,34 @@ const Models = require("./../Models");
 class OTO_BOOKMARK {
 
     /**
-     * 创建一个BOOKMARK对象
+     * 取得书签列表
      * @param {int} bookId 书的ID
      */
     static async GetBookmark(bookId) {
         const myModels = new Models();
 
         let whereParam = bookId > 0 ? { where: { BookId: bookId } } : {};
-        let bookmark = await myModels.Bookmark.findAll(whereParam);
 
-        return bookmark;
+        let bookmark = await myModels.Bookmark.findAll({
+            ...whereParam,
+            include: [{
+                model: myModels.EbookIndex,
+                as: 'EbookChapter',
+                attributes: ['Title'],
+                include: [{
+                    model: myModels.Ebook,
+                    attributes: ['BookName'],
+                    as: 'Ebook'
+                }]
+            }]
+        });
+        return bookmark.map(b => {
+            return {
+                id: b.id,
+                BookName: b.EbookChapter?.Ebook?.BookName,
+                Title: b.EbookChapter?.Title,
+            };
+        });
     }
 
     /**

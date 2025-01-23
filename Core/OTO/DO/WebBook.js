@@ -227,7 +227,7 @@ class OTO_WebBook {
                 where: { WebTitle: title },
                 include: {
                     model: myModels.EbookIndex,
-                    as: "EbookIndex",
+                    as: "EbookChapter",//TODO: 检查这个返回数据是否正确
                     where: { BookId: webBook.BookId }
                 },
             });

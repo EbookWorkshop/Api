@@ -46,4 +46,5 @@ module.exports = function (models) {
 
     // EbookIndex <-- --> Bookmark
     models.EbookIndex.hasOne(models.Bookmark, { foreignKey: { name: 'IndexId', unique: true }, sourceKey: 'id', as: "EbookIndex" });
+    models.Bookmark.belongsTo(models.EbookIndex, { foreignKey: "IndexId" });
 }
