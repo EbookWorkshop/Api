@@ -21,6 +21,33 @@ class OTO_TAG {
         return tags.map(({ TagId: id, Tag }) => ({ id, Text: Tag.Text, Color: Tag.Color }));
     }
 
+    static async CreateTag(tagText, color) {
+        const myModels = Models.GetPO();
+        let [tag, created] = await myModels.Tag.findOrCreate({
+            where: {
+                Text: tagText
+            },
+            defaults: {
+                Text: tagText,
+                Color: color
+            }
+        });
+
+        if (!created) {
+            tag.Text = tagText;
+            tag.Color = color;
+            await tag.save();
+        }
+
+        return tag;
+    }
+
+    /**
+     * 在某书加入标签
+     * @param {*} bookId 需要加标签的书ID
+     * @param {*} tagText 标签文本
+     * @returns 
+     */
     static async AddTagForBook(bookId, tagText) {
         const myModels = Models.GetPO();
         //看看是否已有的Tag
@@ -75,8 +102,28 @@ class OTO_TAG {
                 id: tagId
             }
         });
-        
+
         return true;
+    }
+
+    /**
+     * 更新标签
+     * @param {*} tagId 标签ID
+     * @param {*} tagText 标签文本
+     * @param {*} color 标签颜色
+     * @returns {number} 更新数量
+     */
+    static async UpdateTag(tagId, tagText, color) {
+        const myModels = Models.GetPO();
+        let [count] = await myModels.Tag.update({
+            Text: tagText,
+            Color: color
+        }, {
+            where: {
+                id: tagId
+            }
+        });
+        return count;
     }
 
     /**

@@ -51,13 +51,14 @@ module.exports = () => ({
      *         schema:
      *           type: object
      *           required:
-     *             - bookId
      *             - tagText
      *           properties:
      *             bookId:
      *               type: integer
      *               format: int32
      *             tagText:
+     *               type: string
+     *             color:
      *               type: string
      *     consumes:
      *       - application/json
@@ -66,17 +67,20 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "post ": async (ctx) => {
-        let param = await parseJsonFromBodyData(ctx, ["bookId", "tagText"]);
+        let param = await parseJsonFromBodyData(ctx, ["tagText"]);
         if (!param) return;
-
         var bookid = param.bookId;      //标记的书
         var tagText = param.tagText;    //标记文本
         tagText = tagText?.trim();
         if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
 
-        let [data, result] = await DO.AddTagForBook(bookid, tagText);
-
-        new ApiResponse(data, null, result).toCTX(ctx);
+        if (bookid) {
+            let [data, result] = await DO.AddTagForBook(bookid, tagText);
+            new ApiResponse(data, null, result).toCTX(ctx);
+        } else {
+            let data = await DO.CreateTag(tagText, param.color);
+            new ApiResponse(data).toCTX(ctx);
+        }
     },
     /**
      * @swagger
@@ -112,17 +116,15 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["tagId"]);
         if (!param) return;
 
-        // TODO: 完成修改书签API
+        if (param.tagId == 0) {
+            new ApiResponse(null, `参数错误，缺失ID`, 60000).toCTX(ctx);
+        }
 
-        // var bookid = param.bookId;      //标记的书
-        // var tagText = param.tagText;    //标记文本
-        // tagText = tagText?.trim();
-        // if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
-
-        // let [data, result] = await DO.AddTagForBook(bookid, tagText);
-
-        // new ApiResponse(data, null, result).toCTX(ctx);
+        await DO.UpdateTag(param.tagId, param.tagText, param.color).then((result) => {
+            new ApiResponse(result, result > 0 ? "成功" : "没有可更新数据", result > 0).toCTX(ctx);
+        });
     },
+
     /**
      * @swagger
      * /library/tag:

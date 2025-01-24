@@ -31,6 +31,7 @@ class OTO_BOOKMARK {
                 createdAt: b.createdAt,
                 BookName: b.EbookChapter?.Ebook?.BookName,
                 Title: b.EbookChapter?.Title,
+                ChapterId: b.IndexId
             };
         });
     }
