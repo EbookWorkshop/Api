@@ -1,7 +1,7 @@
 const DO = require("./../../Core/OTO/DO");
 
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
 const { SendAMail } = require("./../../Core/services/email")
 
@@ -42,7 +42,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
+        let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
         var bookid = param.bookId;
         let ebook = await DO.GetPDFById(bookid);

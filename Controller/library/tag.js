@@ -1,6 +1,6 @@
 const DO = require("./../../Core/OTO/DO");
 
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
 
 module.exports = () => ({
@@ -66,7 +66,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["bookId", "tagText"]);
+        let param = await parseJsonFromBodyData(ctx, ["bookId", "tagText"]);
         if (!param) return;
 
         var bookid = param.bookId;      //标记的书
@@ -109,7 +109,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "patch ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["tagId"]);
+        let param = await parseJsonFromBodyData(ctx, ["tagId"]);
         if (!param) return;
 
         // TODO: 完成修改书签API

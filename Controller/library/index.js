@@ -1,6 +1,7 @@
 const DO = require("../../Core/OTO/DO");
 const BookMaker = require('../../Core/Book/BookMaker');
 const ApiResponse = require("./../../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 
 module.exports = () => ({
     /**
@@ -232,7 +233,7 @@ module.exports = () => ({
         //     return;
         // }
 
-        let chapter = await Server.parseJsonFromBodyData(ctx);
+        let chapter = await parseJsonFromBodyData(ctx);
         let chapterId = chapter.IndexId;
         if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);

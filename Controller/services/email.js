@@ -1,5 +1,5 @@
 //发邮件 邮箱管理
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
 const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email")
@@ -46,7 +46,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /send": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["files"]);
+        let param = await parseJsonFromBodyData(ctx, ["files"]);
         if (param == null) return;
 
         await SendAMail(param).then(result => {
@@ -89,7 +89,7 @@ module.exports = () => ({
     "post /account": async (ctx) => {
         let backRsl = new ApiResponse();
 
-        let param = await Server.parseJsonFromBodyData(ctx, ["address", "password"]);
+        let param = await parseJsonFromBodyData(ctx, ["address", "password"]);
         if (param == null) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
@@ -213,8 +213,8 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /inbox": async (ctx) => {
-        let backRsl = new ApiResponse();
-        let param = await Server.parseJsonFromBodyData(ctx, ["address"]);
+        // let backRsl = new ApiResponse();
+        let param = await parseJsonFromBodyData(ctx, ["address"]);
         if (param == null) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;

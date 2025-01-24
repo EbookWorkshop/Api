@@ -1,8 +1,8 @@
 //爬站规则
 
 const Models = require("../../Core/OTO/Models");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 
-const Server = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 
@@ -61,7 +61,7 @@ module.exports = () => ({
     *         description: 参数错误，参数类型错误
     */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["name", "rule"]);
+        let param = await parseJsonFromBodyData(ctx, ["name", "rule"]);
         if (param == null) return;
 
         const myModels = new Models();

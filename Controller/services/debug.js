@@ -1,4 +1,4 @@
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 const SocketIO = require("./../../Core/Socket.js");
 const Message = require("../../Entity/Message");
@@ -46,7 +46,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "post /message": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx);
+        let param = await parseJsonFromBodyData(ctx);
         if (param == null) return;
         SocketIO.GetIO(__filename).emit("Message.Box.Send", new Message(param.content, param.type, param));
 

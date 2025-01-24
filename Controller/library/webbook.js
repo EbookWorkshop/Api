@@ -1,6 +1,6 @@
 const DO = require("../../Core/OTO/DO");
 const WebBookMaker = require("./../../Core/WebBook/WebBookMaker");
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData, parseBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 
 
@@ -83,7 +83,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let bookUrl = await Server.parseBodyData(ctx);
+        let bookUrl = await parseBodyData(ctx);
 
         let wbm = new WebBookMaker(bookUrl);
         await wbm.UpdateIndex()
@@ -169,7 +169,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "patch /updatechapter": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
+        let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
         let b = await DO.GetWebBookById(param.bookId);
 
@@ -228,7 +228,7 @@ module.exports = () => ({
      *         description: 接口执行出错
      */
     "post /addnewsource": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["bookId", "url"]);
+        let param = await parseJsonFromBodyData(ctx, ["bookId", "url"]);
         let b = await DO.GetWebBookById(param.bookId);
         await b.AddIndexUrl(param.url, true)
             .then(result => {
@@ -266,7 +266,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "patch /mergeindex": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["bookId"]);
+        let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
         let wbm = new WebBookMaker(param.bookId);
         await wbm.loadFromDB;

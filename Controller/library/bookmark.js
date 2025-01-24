@@ -1,6 +1,6 @@
 const DO = require("../../Core/OTO/DO");
 const ApiResponse = require("./../../Entity/ApiResponse");
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 
 module.exports = () => ({
     /**
@@ -57,7 +57,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["chapterid"]);
+        let param = await parseJsonFromBodyData(ctx, ["chapterid"]);
         if (!param) return;
 
         await DO.AddBookmark(param.chapterid * 1).then(bookmark => {

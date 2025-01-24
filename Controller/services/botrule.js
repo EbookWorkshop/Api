@@ -3,7 +3,7 @@
 const RuleManager = require("../../Core/WebBook/RuleManager");
 const Models = require("./../../Core/OTO/Models");
 const Rule = require("./../../Entity/WebBook/Rule");
-const Server = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
 const fs = require('fs').promises;
@@ -69,7 +69,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["host", "ruleName", "selector"]);
+        let param = await parseJsonFromBodyData(ctx, ["host", "ruleName", "selector"]);
         if (param == null) return;
 
         await RuleManager.SaveRules(param);
@@ -224,7 +224,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /vis": async (ctx) => {
-        let param = await Server.parseJsonFromBodyData(ctx, ["testUrl", "selector"]);
+        let param = await parseJsonFromBodyData(ctx, ["testUrl", "selector"]);
         if (param == null) return;
 
         let rule = new Rule(param.ruleName);
@@ -313,7 +313,7 @@ module.exports = () => ({
                 return;
             }
 
-            let result =await RuleManager.SaveRules(rules);
+            let result = await RuleManager.SaveRules(rules);
 
             new ApiResponse(rules, "设置成功").toCTX(ctx);
         } catch (error) {
