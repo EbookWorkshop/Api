@@ -12,8 +12,6 @@ const DO = require("./../OTO/DO");
 const WorkerPool = require("./../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
 
-const Server = require("./../Server");
-
 /**
  * WebBook - DTO
  */
@@ -98,15 +96,17 @@ class WebBookMaker {
                 const coverImgPath = path.join("/library", this.myWebBook.BookName, "cover", path.basename(imgPath));//图片存储的相对位置
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
-                wPool.RunTask({
+                wPool.RunTaskAsync({
                     taskfile: "@/Core/Utils/CacheFile",
                     param: {
                         url: imgPath,
                         savePath: saveImageFilePath
                     }
-                }, (result, err) => {
-                    new EventManager().emit("Debug.Log", "封面图片缓存结果：", "WEBBOOKCOVER", result, err);
-                    if (result) this.myWebBook.SetCoverImg(coverImgPath);
+                }).then((result) => {
+                    new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
+                    this.myWebBook.SetCoverImg(coverImgPath);
+                }).catch(err => {
+                    new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", err);
                 });
             }
 
@@ -169,11 +169,25 @@ class WebBookMaker {
 
             let chap = new WebChapter(curIndex);
             if (result.has("CapterTitle")) {
-                chap.Title = result.get("CapterTitle")[0].text;
+                let cTitleResult = result.get("CapterTitle")[0];
+                if (!cTitleResult.text) {
+                    let errAdd = "";
+                    if (!cTitleResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节标题失败"+errAdd, jobId);
+                    return;
+                }
+                chap.Title = cTitleResult.text;
             }
 
             if (result.has("Content")) {
-                chap.Content = result.get("Content")[0].text;
+                let cContentResult = result.get("Content")[0];
+                if (!cContentResult.text) {
+                    let errAdd = "";
+                    if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节内容失败"+errAdd, jobId);
+                    return;
+                }
+                chap.Content = cContentResult.text;
             }
 
             //下一页

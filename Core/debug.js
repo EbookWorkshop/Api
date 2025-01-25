@@ -83,10 +83,11 @@ module.exports = (() => {
             console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已完成任务:\t\t${Task}\n`);
         });
         em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, Task, err }) => {
-            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:运行出错：\t\t${Task}\n`);
+            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:出错任务：\t\t${Task}\n`);
             if (!err.message.startsWith("Command failed: npm outdated -json")) {
+                console.log("-- -- -- 线程内部错误信息开始 -- -- --")
                 console.error(err);
-                console.log("-- -- -- -- -- --")
+                console.log("-- -- -- 线程内部错误信息结束 -- -- --")
             }
         });
     }

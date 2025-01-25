@@ -49,7 +49,7 @@ class SocketIO {
     // })
 
     myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
-      myIO.emit("WebBook.Chapter.Update", {
+      myIO.emit(`WebBook.Chapter.Update.${bookid}`, {
         status: true,
         title,
         chapterId: cId,
@@ -58,18 +58,16 @@ class SocketIO {
     });
 
     myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
-      myIO.emit("WebBook.UpdateOneChapter.Error", { bookid, chapterId, err: { name: err.name, message: err.message } });
+      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message } });
       if (jobId) myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务进程
     })
 
     myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
-      myIO.emit("WebBook.UpdateChapter.Process", { bookid, chapterId, rate, ok, fail, all })
+      myIO.emit(`WebBook.UpdateChapter.Process.${bookid}`, { bookid, chapterId, rate, ok, fail, all })
     });
 
     myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
-      myIO.emit("WebBook.UpdateChapter.Finish", {
-        bookid, bookName, chapterIndexArray, doneNum, failNum
-      })
+      myIO.emit(`WebBook.UpdateChapter.Finish.${bookid}`, { bookid, bookName, chapterIndexArray, doneNum, failNum });
     });
   }
 }

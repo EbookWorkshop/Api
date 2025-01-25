@@ -109,32 +109,7 @@ class WorkerPool extends EventEmitter {
      */
     AddNewWorker() {
         const worker = new Worker(path.resolve(__dirname, 'WorkerRunner.js'));
-        worker.on('message', (result) => {      //执行后主线程监听结果
-
-            let taskParam = worker[kTaskParam];
-            worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
-            worker[kTaskCallback] = null;
-            worker[kTaskParam] = null;
-
-            this.freeWorkers.push(worker);
-            this.emit(kWorkerFreedEvent, taskParam.taskType);
-
-            //限制总数类的线程数量释放
-            if (taskParam.taskType && taskParam.maxThreadNum > 0) {
-                let curNum = this.runningThreadCountByType.get(taskParam.taskType) || 1;
-                this.runningThreadCountByType.set(taskParam.taskType, curNum - 1);
-            }
-
-            em.emit("WorkerPool.Worker.Done", {
-                MaxThread: this.maxThreadsNum,
-                NowWorker: this.workers.length,
-                FreeWorker: this.freeWorkers.length,
-                Task: taskParam.taskfile,
-                Id: this.workers.indexOf(worker)
-            });
-        });
-
-        worker.on('error', (err) => {
+        const handleError = (err) => {
             //若有回调的话，将错误发到回调上
             if (worker[kTaskCallback])
                 worker[kTaskCallback].Done(err, null);      //出错时的回调
@@ -164,7 +139,35 @@ class WorkerPool extends EventEmitter {
                 Task: taskParam.taskfile,
                 err: err
             });
+        };
+
+        worker.on('message', (result) => {      //执行后主线程监听结果
+            if (result.type === "error") return handleError(result.err);//线程捕获的错误
+
+            let taskParam = worker[kTaskParam];
+            worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
+            worker[kTaskCallback] = null;
+            worker[kTaskParam] = null;
+
+            this.freeWorkers.push(worker);
+            this.emit(kWorkerFreedEvent, taskParam.taskType);
+
+            //限制总数类的线程数量释放
+            if (taskParam.taskType && taskParam.maxThreadNum > 0) {
+                let curNum = this.runningThreadCountByType.get(taskParam.taskType) || 1;
+                this.runningThreadCountByType.set(taskParam.taskType, curNum - 1);
+            }
+
+            em.emit("WorkerPool.Worker.Done", {
+                MaxThread: this.maxThreadsNum,
+                NowWorker: this.workers.length,
+                FreeWorker: this.freeWorkers.length,
+                Task: taskParam.taskfile,
+                Id: this.workers.indexOf(worker)
+            });
         });
+
+        worker.on('error', handleError);
         this.workers.push(worker);
         this.freeWorkers.push(worker);
         this.emit(kWorkerFreedEvent);
@@ -223,7 +226,7 @@ class WorkerPool extends EventEmitter {
     }
 
     /**
-     * 以同步形式启用一个线程
+     * 以异步形式启用一个线程
      * @param {{taskfile,param,taskType,maxThreadNum}} taskParam 
      * ```js
         {

@@ -5,7 +5,7 @@
  */
 
 
-
+//# 注意：当前将在线程中执行，直接使用单实例的模块将导致再次创建实例
 
 const { parentPort } = require('worker_threads');
 parentPort.on('message', (task) => {
@@ -15,13 +15,12 @@ parentPort.on('message', (task) => {
 
         let { RunTask } = require(GetRealFilePath(taskfile));        //取得需要在线程运行的文件
         result = RunTask(param);
-        // console.debug("线程已取得结果：", result);//注意返回值需要可序列化
 
         if (result instanceof Promise) {
             result.then((rsl) => {
                 parentPort.postMessage(rsl);
             }).catch(err => {
-                throw(err);
+                parentPort.postMessage({ type: "error", err });
             })
         } else {
             parentPort.postMessage(result);//执行完成，往主线程发送结果

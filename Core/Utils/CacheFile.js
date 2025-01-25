@@ -1,9 +1,9 @@
 //缓存、下载文件到服务器指定地址
 const https = require("https");
 let { URL } = require("url");
-const EventManager = require("./../../Core/EventManager");
-const em = new EventManager();
+console.info("----------  下列警告忽略  ------------")
 const { AddFile } = require("./../services/file.mjs");          //这里会得到一个node警告（node:16472），因为在CJS模块中引入了ESM模块，但是不影响使用（当前node版本为实验性功能）
+console.info("----------  上述警告忽略  ------------")
 
 /**
  * 缓存照片
@@ -29,27 +29,23 @@ function CacheFile(url, savePath) {
         const req = https.request(options, (res) => {
             if (res.statusCode < 200 || res.statusCode > 302) {
                 let err = new Error(`${url} 返回状态：${res.statusCode} - ${res.statusMessage}`);
-                ErrorHandler(url, err, reject);
+                reject(err);
                 return;
             }
 
             AddFile(res, savePath).then((res) => {
                 resolve(true);
             }).catch((err) => {
-                ErrorHandler(url, err, reject);
+                reject(err);
             });
         });
         req.on('error', (err) => {
-            ErrorHandler(url, err, reject);
+            reject(err);
         })
         req.end();
     });
 }
 
-function ErrorHandler(url, err, reject) {
-    em.emit("Debug.Log", `【线程】缓存文件失败：${url}\n出错来源：${__filename}\n`, "WEBBOOKCOVER", err);
-    reject({ result: false, err });
-}
 
 /**
  * 多线程执行入口
@@ -57,6 +53,7 @@ function ErrorHandler(url, err, reject) {
  * @returns {Promise<bool>}
  */
 async function RunTask(param) {
+    // if (param.em) em = param.em;        //如果是线程来的，则要用主线程的EM发信息才能被捕捉
     return CacheFile(param.url, param.savePath);
 }
 
