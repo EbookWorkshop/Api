@@ -90,7 +90,7 @@ module.exports = () => ({
             .then(result => {
                 new ApiResponse("已启动分析，稍后将生成书本配置。").toCTX(ctx);
             }).catch((err) => {
-                new ApiResponse(null, err.message, 50000).toCTX(ctx);
+                new ApiResponse(err, err.message, 50000).toCTX(ctx);
             });
     },
 
@@ -191,7 +191,7 @@ module.exports = () => ({
         await wbm.UpdateChapter(cIds, param.isUpdate).then((rsl) => {
             new ApiResponse(rsl).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(null, err.message, 50000).toCTX(ctx);
+            new ApiResponse(err, err.message, 50000).toCTX(ctx);
         });
 
     },

@@ -1,10 +1,9 @@
 //管理站点与爬站规则之间的关系
-const DB = require("./../OTO/DatabaseHelper");
 const Models = require("./../../Core/OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
-const { where } = require("sequelize");
+
 
 /**
  * 规则管理器 
@@ -21,7 +20,8 @@ class RuleManager {
             chapter: new ChapterOptions()
         };
 
-        let allRules = await DB.Models().RuleForWeb.findAll({
+        let myModels= new Models();
+        let allRules = await myModels.RuleForWeb.findAll({
             where: { Host: host }
         });
 

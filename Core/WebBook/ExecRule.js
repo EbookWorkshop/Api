@@ -36,11 +36,6 @@ async function ExecRule(page, rule, isVis = false) {
             if (action == undefined) return;
             let result;
 
-            if (action.startsWith("/*fun*/")) {
-                var r = eval(action);
-                return result || r;
-            }
-
             /**
              * 配置的动作表达式
              */
@@ -51,6 +46,9 @@ async function ExecRule(page, rule, isVis = false) {
                     break;
                 case "cache":       //缓存的
                     result = "cache::" + myNode[acExp[1]];
+                    break;
+                case "fun":         //执行节点上的方法
+                    result = eval(acExp[1]);
                     break;
                 case "reg":
                     result = "ToDo";

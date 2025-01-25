@@ -26,11 +26,14 @@ app.use(koaSwagger({
     }
 }));
 
+process.on('unhandledRejection', (reason, promise) => {     //全局监听Promise未捕获的Rejection
+    em.emit("Debug.Log", reason, "unhandledRejection", reason, promise); 
+});
 app.on("error", (err, ctx) => {
     if (ctx) CtxSetAllowHead(ctx);  //处理500错误到前端时会有跨域拦截
     let em = new EventManager();
     em.emit("Debug.Log", err?.message || err, "KOAERR", err);
-})
+});
 
 //设置跨域
 app.use(async (ctx, next) => {

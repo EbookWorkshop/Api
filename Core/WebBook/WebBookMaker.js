@@ -93,7 +93,7 @@ class WebBookMaker {
             if (result.has("BookCover")) {  //保存封面
                 let cv = result.get("BookCover")[0];
                 let imgPath = cv.text;
-                if (imgPath.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
+                if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
 
                 const coverImgPath = path.join("/library", this.myWebBook.BookName, "cover", path.basename(imgPath));//图片存储的相对位置
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);

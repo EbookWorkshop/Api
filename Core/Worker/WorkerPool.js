@@ -23,9 +23,14 @@ class WorkerPoolTaskInfo extends AsyncResource {
      * @param {*} err 错误信息
      * @param {*} result 回调的结果
      */
-    Done(err, result) {
-        if (this.callback) this.runInAsyncScope(this.callback, null, result, err);
-        this.emitDestroy();  // `TaskInfo`s are used only once.
+    async Done(err, result) {
+        try {
+            if (this.callback) await this.runInAsyncScope(this.callback, null, result, err);
+        } catch (newerr) {
+            em.emit("Debug.Log", `线程退出后执行回调出错：${newerr?.message || newerr}`, "WORKERPOOL", newerr);
+        } finally {
+            this.emitDestroy();  // `TaskInfo`s are used only once.
+        }
     }
 }
 

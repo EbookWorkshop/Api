@@ -1,8 +1,10 @@
 const DO = require("./index");
 const Models = require("./../Models");
+const Ebook = require("./../../../Entity/Ebook/Ebook");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
+const Reviewer = require("./../../Utils/RuleReview");
 // const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
 // const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
 
@@ -227,7 +229,7 @@ class OTO_WebBook {
                 where: { WebTitle: title },
                 include: {
                     model: myModels.EbookIndex,
-                    as: "EbookChapter",//TODO: 检查这个返回数据是否正确
+                    as: "EbookIndex",
                     where: { BookId: webBook.BookId }
                 },
             });

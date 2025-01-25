@@ -25,7 +25,7 @@ async function VisualizationOfRule(url, rule) {
     if(!page.url() !== url) await page.goto(url); //相同的页面不再刷新
 
     let rsl = await ExecRule(page, rule, true);
-    console.log(`[耗时${new Date().getTime()-curTime}ms]规则获得结果内容：`, ...rsl);
+    // console.log(`[耗时${new Date().getTime()-curTime}ms]规则获得结果内容：`, ...rsl);
     return rsl;
 }
 
