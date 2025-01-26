@@ -69,6 +69,32 @@ class WorkerPool extends EventEmitter {
          */
         this.waitingTask = new Map();
 
+        /**
+         * 线程监控
+         */
+        this.workerWatcher = setInterval(() => {
+            if (this.freeWorkers.length == 0) return;
+            if (this.workers.length <= 1) return;
+            let feeTime = 0;
+            let lazyWorker = null;
+            for (let i = 0; i < this.freeWorkers.length; i++) {
+                if (Date.now() - this.freeWorkers[i].WaitingTime > feeTime) {
+                    lazyWorker = this.freeWorkers[i];
+                    feeTime = Date.now() - lazyWorker.WaitingTime;
+                }
+            }
+            if(!lazyWorker) return;
+            let workerId = this.workers.indexOf(lazyWorker);
+            this.workers.splice(workerId, 1);
+            let freeWorkersId = this.freeWorkers.indexOf(lazyWorker);
+            this.freeWorkers.splice(freeWorkersId, 1);
+            lazyWorker.terminate().then(() => {
+                em.emit("Debug.Log", `释放资源，关掉长期闲置进程。ID: ${lazyWorker.ID}\t已闲置${feeTime/1000}秒。`, "WORKERPOOL");
+            }).catch((err) => {
+                em.emit("Debug.Log", `尝试关闭闲置进程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", err);
+            });
+        }, 90 * 1000);
+
         let createNum = 2;// Math.max(this.numThreads / 2, 2);      //启动时创建的线程数，默认先创建2个
         for (let i = 0; i < createNum; i++)
             this.AddNewWorker();
