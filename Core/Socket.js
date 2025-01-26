@@ -1,6 +1,6 @@
 const socketIO = require('socket.io');
 const EventManager = require("./EventManager");
-
+const WorkerPool = require("./Worker/WorkerPool");
 
 let myIO = null;
 let myEM = null;
@@ -10,7 +10,6 @@ class SocketIO {
     if (myIO != null) return this.GetIO("☠️");
 
     myEM = new EventManager();
-    this.initEM_WebBook();
 
     myIO = socketIO(server, {
       cors: {
@@ -23,11 +22,13 @@ class SocketIO {
 
     myIO.on("connection", (socket) => {
       // console.log("客户端已上线",socket);
-
       socket.on("message", (msg) => {
         console.log("收到消息：", msg);
       })
     });
+
+    this.initEM_WebBook();
+    this.initWorkerPool();
 
     myEM.emit("Debug.Model.Init.Finish", "SocketIO");
     return myIO;
@@ -68,6 +69,54 @@ class SocketIO {
 
     myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
       myIO.emit(`WebBook.UpdateChapter.Finish.${bookid}`, { bookid, bookName, chapterIndexArray, doneNum, failNum });
+    });
+  }
+
+  /**
+   * 初始化线程池监控
+   */
+  initWorkerPool() {
+    if(myIO == null) return;
+
+    let intervalHandle = null;
+    let lastWakeUp = 0;
+
+    let disConnect = () => {
+      if (intervalHandle) {
+        clearInterval(intervalHandle);
+        intervalHandle = null;
+        lastWakeUp = 0;
+      }
+    }
+
+    //监听线程池状态
+    myIO.on("WorkerPool.Status.On", () => {
+      if (intervalHandle) {
+        lastWakeUp = Date.now();
+        return;
+      };
+      intervalHandle = setInterval(() => {
+        if (lastWakeUp > 0 && Date.now() - lastWakeUp > 5000) {
+          disConnect();
+          return;
+        }
+        let status = WorkerPool.GetStatus();
+        myIO.emit("WorkerPool.Status", {
+          type: "update",
+          data: status,
+          timestamp: Date.now()
+        });
+      }, 1000);
+    });
+
+    //监听线程池唤醒
+    myIO.on("WorkerPool.Status.WakeUp", () => {
+      lastWakeUp = Date.now();
+    });
+
+    //监听线程池关闭
+    myIO.on("WorkerPool.Status.Off", () => {
+      disConnect();
     });
   }
 }

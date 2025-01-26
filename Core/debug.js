@@ -77,13 +77,13 @@ module.exports = (() => {
             console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程池初始化完成！\n`);
         });
         em.on("WorkerPool.Worker.Start", ({ MaxThread, NowWorker, FreeWorker, Id, Task }) => {
-            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已安排任务:\t\t${Task}\n`);
+            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t<线程${Id}>:已安排任务:\t\t${Task}\n`);
         });
-        em.on("WorkerPool.Worker.Done", ({ MaxThread, NowWorker, FreeWorker, Id, Task }) => {
-            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:已完成任务:\t\t${Task}\n`);
+        em.on("WorkerPool.Worker.Done", ({ MaxThread, NowWorker, FreeWorker, Id, Task, RunTime }) => {
+            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t<线程${Id}>:\t执行时长:${RunTime / 1000}s\t任务完成:\t\t${Task}\n`);
         });
-        em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, Task, err }) => {
-            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t线程${Id}:出错任务：\t\t${Task}\n`);
+        em.on("WorkerPool.Worker.Error", ({ MaxThread, NowWorker, FreeWorker, Id, Task, RunTime, err }) => {
+            console.info(`[线程池]\t最大线程数：${MaxThread}\t已激活线程：${NowWorker}\t空闲线程：${FreeWorker}\n\t<线程${Id}>:\t执行时长:${RunTime / 1000}s\t任务出错：\t\t${Task}\n`);
             if (!err.message.startsWith("Command failed: npm outdated -json")) {
                 console.log("-- -- -- 线程内部错误信息开始 -- -- --")
                 console.error(err);

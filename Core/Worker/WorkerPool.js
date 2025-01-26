@@ -110,6 +110,9 @@ class WorkerPool extends EventEmitter {
     AddNewWorker() {
         const worker = new Worker(path.resolve(__dirname, 'WorkerRunner.js'));
         const handleError = (err) => {
+            const runTime = Date.now() - worker.StartTime;
+            worker.StartTime = 0;
+
             //若有回调的话，将错误发到回调上
             if (worker[kTaskCallback])
                 worker[kTaskCallback].Done(err, null);      //出错时的回调
@@ -137,12 +140,15 @@ class WorkerPool extends EventEmitter {
                 FreeWorker: this.freeWorkers.length,
                 Id: workerId,
                 Task: taskParam.taskfile,
+                RunTime: runTime,
                 err: err
             });
         };
 
         worker.on('message', (result) => {      //执行后主线程监听结果
             if (result.type === "error") return handleError(result.err);//线程捕获的错误
+            const runTime = Date.now() - worker.StartTime;
+            worker.StartTime = 0;
 
             let taskParam = worker[kTaskParam];
             worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
@@ -163,10 +169,12 @@ class WorkerPool extends EventEmitter {
                 NowWorker: this.workers.length,
                 FreeWorker: this.freeWorkers.length,
                 Task: taskParam.taskfile,
-                Id: this.workers.indexOf(worker)
+                Id: this.workers.indexOf(worker),
+                RunTime: runTime
             });
         });
-
+        worker.StartTime = 0;
+        worker.ID = Math.random().toString(36).substring(2, 15);
         worker.on('error', handleError);
         this.workers.push(worker);
         this.freeWorkers.push(worker);
@@ -209,6 +217,7 @@ class WorkerPool extends EventEmitter {
         }
 
         const worker = this.freeWorkers.shift();//空闲线程
+        worker.StartTime = Date.now();  //记录进程启动时间
 
         em.emit("WorkerPool.Worker.Start", {
             MaxThread: this.maxThreadsNum,
@@ -287,6 +296,39 @@ class WorkerPool extends EventEmitter {
         if (_Singleton_WorkerPool === null) _Singleton_WorkerPool = new WorkerPool();
 
         return _Singleton_WorkerPool;
+    }
+
+    /**
+     * 获取进程池信息
+     * @returns 
+     */
+    static GetStatus() {
+        let getWorkerData = (worker) => {
+            return {
+                ID: worker.ID,
+                RunTime: worker.StartTime > 0 ? (Date.now() - worker.StartTime) : 0,
+                Param: worker.StartTime === 0 ? null : Object.assign({}, worker[kTaskParam]),
+            }
+        }
+        return {
+            // 最大线程数
+            MaxThread: _Singleton_WorkerPool.maxThreadsNum,
+            // 当前线程数
+            NowWorker: _Singleton_WorkerPool.workers.length,
+            // 空闲线程
+            FreeWorker: _Singleton_WorkerPool.freeWorkers.map(worker => getWorkerData(worker)),
+            //正在运行的任务
+            RunningTask: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
+            //等待任务列表
+            WaitingTask: [..._Singleton_WorkerPool.waitingTask.keys().map(key => {
+                return {
+                    type: key,
+                    list: [..._Singleton_WorkerPool.waitingTask.get(key)],
+                }
+            })],
+            //所有线程
+            WorkerPool: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
+        };
     }
 }
 

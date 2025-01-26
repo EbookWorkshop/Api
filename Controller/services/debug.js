@@ -102,7 +102,10 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /test": async (ctx) => {
-        let DO = require("../../Core/OTO/DO");
-        console.log(Object.getOwnPropertyNames(DO));
+        let WorkerPool = require("./../../Core/Worker/WorkerPool");
+        console.log(WorkerPool.GetStatus());
+        // console.log(JSON.stringify(WorkerPool.GetStatus()));
+        ctx.body = WorkerPool.GetStatus();
+
     },
 });

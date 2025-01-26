@@ -26,9 +26,9 @@ app.use(koaSwagger({
     }
 }));
 
-process.on('unhandledRejection', (reason, promise) => {     //全局监听Promise未捕获的Rejection
-    em.emit("Debug.Log", reason, "unhandledRejection", reason, promise); 
-});
+// process.on('unhandledRejection', (reason, promise) => {     //全局监听Promise未捕获的Rejection
+//     em.emit("Debug.Log", reason, "unhandledRejection", reason, promise); 
+// });
 app.on("error", (err, ctx) => {
     if (ctx) CtxSetAllowHead(ctx);  //处理500错误到前端时会有跨域拦截
     let em = new EventManager();
