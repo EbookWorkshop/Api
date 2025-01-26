@@ -21,14 +21,13 @@ class SocketIO {
     });
 
     myIO.on("connection", (socket) => {
-      // console.log("客户端已上线",socket);
+      this.initWorkerPool(socket);//设置监听消息
       socket.on("message", (msg) => {
         console.log("收到消息：", msg);
       })
     });
 
     this.initEM_WebBook();
-    this.initWorkerPool();
 
     myEM.emit("Debug.Model.Init.Finish", "SocketIO");
     return myIO;
@@ -74,14 +73,19 @@ class SocketIO {
 
   /**
    * 初始化线程池监控
+   * @param {*} socket 连接的客户端
    */
-  initWorkerPool() {
-    if(myIO == null) return;
+  initWorkerPool(socket) {
+    if (myIO == null) return;
 
     let intervalHandle = null;
     let lastWakeUp = 0;
 
     let disConnect = () => {
+      if (myIO.engine.clientsCount > 0) {
+        return;
+      }
+
       if (intervalHandle) {
         clearInterval(intervalHandle);
         intervalHandle = null;
@@ -90,7 +94,7 @@ class SocketIO {
     }
 
     //监听线程池状态
-    myIO.on("WorkerPool.Status.On", () => {
+    socket.on("WorkerPool.Status.On", (socket) => {
       if (intervalHandle) {
         lastWakeUp = Date.now();
         return;
@@ -110,12 +114,12 @@ class SocketIO {
     });
 
     //监听线程池唤醒
-    myIO.on("WorkerPool.Status.WakeUp", () => {
+    socket.on("WorkerPool.Status.WakeUp", (socket) => {
       lastWakeUp = Date.now();
     });
 
     //监听线程池关闭
-    myIO.on("WorkerPool.Status.Off", () => {
+    socket.on("WorkerPool.Status.Off", (socket) => {
       disConnect();
     });
   }
