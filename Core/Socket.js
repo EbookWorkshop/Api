@@ -110,12 +110,13 @@ class SocketIO {
           data: status,
           timestamp: Date.now()
         });
-      }, 1000);
+      }, 50);
     });
 
     //监听线程池唤醒
     socket.on("WorkerPool.Status.WakeUp", (socket) => {
       lastWakeUp = Date.now();
+      console.log("唤醒线程池");
     });
 
     //监听线程池关闭

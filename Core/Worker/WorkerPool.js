@@ -112,6 +112,7 @@ class WorkerPool extends EventEmitter {
         const handleError = (err) => {
             const runTime = Date.now() - worker.StartTime;
             worker.StartTime = 0;
+            worker.WaitingTime = Date.now();
 
             //若有回调的话，将错误发到回调上
             if (worker[kTaskCallback])
@@ -149,6 +150,7 @@ class WorkerPool extends EventEmitter {
             if (result.type === "error") return handleError(result.err);//线程捕获的错误
             const runTime = Date.now() - worker.StartTime;
             worker.StartTime = 0;
+            worker.WaitingTime = Date.now();
 
             let taskParam = worker[kTaskParam];
             worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
@@ -174,6 +176,7 @@ class WorkerPool extends EventEmitter {
             });
         });
         worker.StartTime = 0;
+        worker.WaitingTime = Date.now();
         worker.ID = Math.random().toString(36).substring(2, 15);
         worker.on('error', handleError);
         this.workers.push(worker);
@@ -307,6 +310,7 @@ class WorkerPool extends EventEmitter {
             return {
                 ID: worker.ID,
                 RunTime: worker.StartTime > 0 ? (Date.now() - worker.StartTime) : 0,
+                WaitTime: Date.now() - worker.WaitingTime,
                 Param: worker.StartTime === 0 ? null : Object.assign({}, worker[kTaskParam]),
             }
         }
@@ -318,7 +322,7 @@ class WorkerPool extends EventEmitter {
             // 空闲线程
             FreeWorker: _Singleton_WorkerPool.freeWorkers.map(worker => getWorkerData(worker)),
             //正在运行的任务
-            RunningTask: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
+            // RunningTask: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
             //等待任务列表
             WaitingTask: [..._Singleton_WorkerPool.waitingTask.keys().map(key => {
                 return {
