@@ -6,13 +6,17 @@ const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
 const Do2Po = require("../OTO/DO");
+const path = require("path");
+const { dataPath } = require("../../config");
+const fs = require('fs');
+const { CheckAndMakeDir } = require("./../Server")
 
 class BookMaker {
     /**
      * 添加一本`TXT`书
      * @param {{
      * bookName:string,
-     * chapters:Chapter[], 
+     * chapters:Chapter[], //该书包含的章节
      * author:string,
      * conver:string}} book 书的配置
      */
@@ -35,7 +39,7 @@ class BookMaker {
             ebook.Chapters.set(c.Title.trim(), c.Content);
         }
 
-        return await Do2Po.EBookObjToModel(ebook);
+        return await Do2Po.EBookObjToModel(ebook);//持久化
     }
 
     /**
@@ -56,6 +60,47 @@ class BookMaker {
         });
 
         return await Do2Po.EBookObjToModel(ebook);
+    }
+
+    /**
+     * 生成一个Txt的文件
+     * @param {number} bookId 书ID 
+     * @param {Array<number>?} showChpaters 需要包含的章节ID，不传则为全部
+     * @returns 
+     */
+    static async MakeTxtFile(bookId, showChpaters) {
+        let ebook = await Do2Po.GetEBookById(bookId);
+        if (ebook == null) return null;
+
+        if (!showChpaters || showChpaters.length <= 0) {
+            showChpaters = ebook.Index.map(item => item.IndexId);
+        }
+        await ebook.SetShowChapters(showChpaters);
+
+        return new Promise((resolve, reject) => {
+            const fileInfo = {
+                filename: ebook.BookName + ".txt",
+                path: path.join(dataPath, "Output", ebook.BookName + '.txt'),
+                chapterCount: ebook.showIndexId.length           //含有多少章
+            };
+
+            CheckAndMakeDir(fileInfo.path);
+            const writeStream = fs.createWriteStream(fileInfo.path);
+            writeStream.on('error', function (err) {
+                reject(err);
+            });
+            writeStream.on('finish', function () {
+                resolve(fileInfo);
+            });
+            const author = ebook.Author ? `作者：${ebook.Author}\n` : '';
+            writeStream.write(`${ebook.BookName}\n${author}\n`);
+
+            for (let i of ebook.Index) {
+                let c = ebook.Chapters.get(i.Title);
+                writeStream.write(`${i.Title}\n${c.Content}\n\n`);
+            }
+            writeStream.end();
+        });
     }
 }
 module.exports = BookMaker;

@@ -46,7 +46,6 @@ class DO {
             let cp = new Chapter({ ...ebookIndex.dataValues });
             // if (cp.Content) 
             ebook.Chapters.set(cp.Title, cp);
-            // await ebook.ReviewChapter(cId);     //加载每一章后自动校阅      //DEBUG: 可能会造成性能损耗
         }
 
         /**
@@ -78,7 +77,7 @@ class DO {
 
         /**
          * 校正指定章节
-         * @param {*} chapterId
+         * @param {*} chapterId 要校阅的章节ID，为空则全部章节校阅
          * @returns 
          */
         ebook.ReviewChapter = async (chapterId) => {
@@ -96,12 +95,25 @@ class DO {
             if (ebook.ReviewRules == null) await ebook.InitReviewRules();
             if (chapterId === undefined) {
                 for (let idx of ebook.Index) {
-                    RC(idx.IndexId);
+                    await RC(idx.IndexId);
                 }
             } else {
-                RC(chapterId);
+                await RC(chapterId);
             }
 
+        }
+
+        /**
+         * 设置包含的章节
+         * @param {Array<number>} chapters 需要的章节Id
+         */
+        ebook.SetShowChapters = async (chapters) => {
+            for (let c of chapters) {
+                if (ebook.showIndexId.has(c)) continue;
+                await ebook.ReloadChapter(c);
+                await ebook.ReviewChapter(c);
+                ebook.showIndexId.add(c);
+            }
         }
 
         await ebook.ReloadIndex();

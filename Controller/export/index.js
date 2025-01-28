@@ -1,5 +1,6 @@
 const DO = require("./../../Core/OTO/DO");
 
+const BookMaker = require("./../../Core/Book/BookMaker");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
@@ -117,6 +118,18 @@ module.exports = () => ({
         var bookid = param.bookId;
         let cIds = param.chapterIds;
 
+        await BookMaker.MakeTxtFile(bookid, cIds).then(async (rsl) => {
+            if (param.sendByEmail) {
+                await SendAMail({
+                    title: rsl.filename,
+                    content: rsl.filename,
+                    files: [rsl.path]
+                });
+            }
+            new ApiResponse({ book: rsl, chapterIds: cIds }).toCTX(ctx);
+        }).catch((err) => {
+            new ApiResponse(err, `生成Txt${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+        });
 
     },
 });

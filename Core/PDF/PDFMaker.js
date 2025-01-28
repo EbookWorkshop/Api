@@ -1,5 +1,8 @@
 const PDFToolkit = require("./PDFToolkit")
 const EventManager = require("./../EventManager");
+const path = require("path");
+const { dataPath } = require("../../config");
+
 
 class PDFMaker {
     constructor(pdf) {
@@ -21,7 +24,7 @@ class PDFMaker {
     async MakePdfFile() {
         const fileInfo = {
             filename: this.pdf.BookName + ".pdf",
-            path: "./Data/Books/" + this.pdf.BookName + '.pdf',      //TODO:路径不存在时会报错、书名含非系统命名规范时会报错
+            path: path.join(dataPath, "Output", this.pdf.BookName + '.pdf'),
             chapterCount: this.pdf.showIndexId.length           //含有多少章
         };
         return new Promise(async (resolve, reject) => {

@@ -34,7 +34,7 @@ class OTO_Ebook {
 
     /**
      * Ebook 持久化
-     * @param {*} book 
+     * @param {Ebook} book 
      * @returns 
      */
     static async EBookObjToModel(book) {
@@ -56,8 +56,8 @@ class OTO_Ebook {
 
     /**
      * 根据ID获得对应的EBook对象
-     * @param {*} bookId 
-     * @returns Ebook
+     * @param {number} bookId 
+     * @returns {Ebook} 
      */
     static async GetEBookById(bookId) {
         const myModels = new Models();
@@ -79,6 +79,7 @@ class OTO_Ebook {
 
     /**
      * 根据ID获得对应的 章节对象
+     * 带有校阅功能
      * @param {*} chapterId 章节ID
      * @returns 章节
      */

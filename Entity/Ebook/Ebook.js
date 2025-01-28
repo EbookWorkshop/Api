@@ -12,7 +12,7 @@ class Ebook {
          */
         this.Chapters = new Map();
         /**
-         * @prop {Index} 目录
+         * @prop {Array<number>} 目录
          */
         this.Index = [];
         /**
@@ -36,6 +36,12 @@ class Ebook {
 
         //校阅规则
         this.ReviewRules = null;
+        
+        /**
+         * 制作范围：选定范围内的章节制作成书
+         * 导出时用
+         */
+        this.showIndexId = new Set();
     }
 }
 
