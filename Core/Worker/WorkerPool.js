@@ -105,7 +105,11 @@ class WorkerPool extends EventEmitter {
             FreeWorker: this.freeWorkers.length
         });
 
-        //需要按类型限制总运行数量的线程运行数统计
+        /**
+         * 需要按类型限制总运行数量的线程运行数统计    
+         * key: 任务类型    
+         * value: 当前类型运行的线程-**数量**
+         */
         this.runningThreadCountByType = new Map();
         this.on(kWorkerFreedEvent, (taskType) => {
             let tt = this.waitingTask.get(taskType || "");
@@ -258,7 +262,6 @@ class WorkerPool extends EventEmitter {
 
         worker[kTaskParam] = taskParam;
         worker[kTaskCallback] = new WorkerPoolTaskInfo(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.
-
 
         worker.postMessage(taskParam);      //发到线程上运行
     }
