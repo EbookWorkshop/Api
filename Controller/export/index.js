@@ -8,10 +8,10 @@ const { SendAMail } = require("./../../Core/services/email")
 module.exports = () => ({
     /**
      * @swagger
-     * /library/pdf:
+     * /export/pdf:
      *   post:
      *     tags:
-     *       - Library - PDF —— 图书馆产物：PDF
+     *       - Export —— 图书馆产物
      *     summary: 创建一本PDF
      *     description: 根据提供的章节ID数组，打包成一本PDF
      *     parameters:
@@ -41,7 +41,7 @@ module.exports = () => ({
      *       600:
      *         description: 参数错误，参数类型错误
      */
-    "post ": async (ctx) => {
+    "post /pdf": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
         var bookid = param.bookId;
@@ -72,8 +72,51 @@ module.exports = () => ({
             }
             new ApiResponse({ book: rsl, chapterIds: cIds }).toCTX(ctx);
         }).catch((err) => {
-            console.warn("生成PDF出错：", err.message);
-            new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + err.message, 50000).toCTX(ctx);
+            new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
+    },
+
+    /**
+     * @swagger
+     * /export/txt:
+     *   post:
+     *     tags:
+     *       - Export —— 图书馆产物
+     *     summary: 创建一本Txt
+     *     description: 根据提供的章节ID数组，打包成一本Txt
+     *     parameters:
+     *       - in: body
+     *         name: bookInfo
+     *         description: 需要包含的书目ID，章节信息;如果没有指定章节，则将所有已有正文的章节都算上
+     *         schema:
+     *           type: object
+     *           required:
+     *             - bookId
+     *           properties:
+     *             bookId:
+     *               type: integer
+     *               format: int32
+     *             sendByEmail:
+     *               type: boolean
+     *             chapterIds:
+     *               type: array
+     *               items:
+     *                 type: integer
+     *                 format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /txt": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["bookId"]);
+
+        var bookid = param.bookId;
+        let cIds = param.chapterIds;
+
+
     },
 });

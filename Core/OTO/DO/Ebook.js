@@ -159,6 +159,20 @@ class OTO_Ebook {
         let rsl = await myModels.EbookIndex.update(chapter, { where: { id: cid } });
         return rsl;
     }
+
+    /**
+     * 给书添加一章
+     * @param {*} chapter 
+     * @returns 
+     */
+    static async AddChapter(chapter) {
+        if (chapter.BookId * 1 !== chapter.BookId) return;
+        const myModels = new Models();
+        let maxOrderNum = await myModels.EbookIndex.max('OrderNum', { where: { BookId: chapter.BookId } });//获取最大的OrderNum 最大值
+        chapter.OrderNum = maxOrderNum + 1;
+        let rsl = await myModels.EbookIndex.create(chapter);
+        return rsl;
+    }
 }
 
 

@@ -41,6 +41,11 @@ class PDFMaker {
                     new EventManager().emit("PDFMaker.CreateBook.Finish", fileInfo);
                     resolve(fileInfo);
                 });
+
+                fileStream.on('error', function (err) {
+                    new EventManager().emit("PDFMaker.CreateBook.Fail", err.message, fileInfo.filename, fileInfo.path);
+                    reject(err);
+                });
             } catch (e) {
                 new EventManager().emit("Debug.PDFMaker.MakePDF.Fail", e.message, fileInfo.filename, fileInfo.path)
                 reject(e);

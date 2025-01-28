@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require("./../../config");
 const sharp = require("sharp");     //提供图像格式转换
+const { CheckAndMakeDir } = require("./../Server");
 
 /**
  * 生成一个PDF文件
@@ -12,6 +13,7 @@ const sharp = require("sharp");     //提供图像格式转换
  * @returns {{PDFDocument,stream.Writable}} { doc="pdf文档对象", stream="文件写入流" }
  */
 function CreateNewDocFile(filepath, setting) {
+    CheckAndMakeDir(filepath);
     const stream = fs.createWriteStream(filepath);
     const doc = CreateNewDoc(setting);
     doc.pipe(stream);

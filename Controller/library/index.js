@@ -208,8 +208,8 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Library —— 图书馆
-     *     summary: 修改指定章节内容
-     *     description: 根据提供的信息修改章节内容
+     *     summary: 新增/修改指定章节内容
+     *     description: 提供章节ID则修改对应内容，仅提供书籍ID则新增对应章节
      *     parameters:
      *     - name: chapter
      *       in: body
@@ -226,20 +226,21 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /book/chapter": async (ctx) => {
-        // let chapter = ctx.request.body;
-        // let chapterId = chapter.IndexId;
-        // if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
-        //     new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
-        //     return;
-        // }
-
         let chapter = await parseJsonFromBodyData(ctx);
-        let chapterId = chapter.IndexId;
-        if (chapterId * 1 !== chapterId || (!chapter.Content && !chapter.Title)) {
+        let chapterId = chapter.IndexId * 1;
+
+        if (!chapter.Content && !chapter.Title) {       //如果同时没有内容和标题，直接返回
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
 
-        new ApiResponse(await DO.UpdateChapter(chapter)).toCTX(ctx);
+        if (chapterId <= 0 && chapter.BookId > 0) {       //新增章节
+            new ApiResponse(await DO.AddChapter(chapter)).toCTX(ctx);
+            return;
+        } else if (chapterId > 0) {      //修改章节
+            new ApiResponse(await DO.UpdateChapter(chapter)).toCTX(ctx);
+            return;
+        }
+        new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
     },
 });

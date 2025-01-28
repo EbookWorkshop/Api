@@ -1,6 +1,7 @@
 //与服务器相关的通用方法都放这
 const fs = require("fs");
 const ApiResponse = require('../Entity/ApiResponse');
+const path = require("path");
 
 /**
  * 处理通过body传递的参数
@@ -82,8 +83,20 @@ function MkPath(dir) {
     }
 }
 
+/**
+ * 检查目录是否存在，不存在则创建
+ * @param {*} path 
+ */
+function CheckAndMakeDir(filePath) {
+    let directory = path.dirname(filePath);
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+    }
+}
+
 module.exports = {
     MkPath: MkPath,
+    CheckAndMakeDir:CheckAndMakeDir,
     parseBodyData: parseBodyData,
     parseJsonFromBodyData: parseJsonFromBodyData
 }

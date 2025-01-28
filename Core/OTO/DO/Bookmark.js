@@ -23,7 +23,8 @@ class OTO_BOOKMARK {
                     attributes: ['BookName'],
                     as: 'Ebook'
                 }]
-            }]
+            }],
+            order: [['createdAt', 'DESC']]  
         });
         return bookmark.map(b => {
             return {
