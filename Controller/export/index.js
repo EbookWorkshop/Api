@@ -5,6 +5,8 @@ const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
 const { SendAMail } = require("./../../Core/services/email")
+const { dataPath } = require("./../../config");
+const path = require("path");
 
 module.exports = () => ({
     /**
@@ -71,7 +73,8 @@ module.exports = () => ({
                     files: [rsl.path]
                 });
             }
-            new ApiResponse({ book: rsl, chapterIds: cIds }).toCTX(ctx);
+            const relativePath = path.relative(dataPath, rsl.path);
+            new ApiResponse({ book: rsl, chapterIds: cIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
             new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
@@ -126,7 +129,8 @@ module.exports = () => ({
                     files: [rsl.path]
                 });
             }
-            new ApiResponse({ book: rsl, chapterIds: cIds }).toCTX(ctx);
+            const relativePath = path.relative(dataPath, rsl.path);
+            new ApiResponse({ book: rsl, chapterIds: cIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
             new ApiResponse(err, `生成Txt${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });

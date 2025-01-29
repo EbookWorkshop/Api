@@ -1,5 +1,5 @@
 const send = require('koa-send');//下载文件
-const myConfig = require("./../config").config;
+const { dataPath } = require("./../config");
 const path = require("path");
 
 //获取静态资源文件
@@ -29,9 +29,9 @@ module.exports = () => ({
      */
     "get /download/:path": async (ctx) => {
         //传入的相对路径
-        let resPath = path.join(myConfig.dataPath, ctx.params.path);
+        let resPath = path.join(dataPath, ctx.params.path);
         console.debug("获取文件：", resPath);
         ctx.attachment(resPath);
-        await send(ctx, resPath);
+        await send(ctx, ctx.params.path, { root: dataPath });
     },
 });
