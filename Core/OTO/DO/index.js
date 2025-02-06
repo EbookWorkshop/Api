@@ -89,7 +89,7 @@ class DO {
 
                 ebook.Chapters.delete(iObj[0].Title);
                 [curContent.Title, curContent.Content] = Reviewer(ebook.ReviewRules, [curContent.Title, curContent.Content]);
-                ebook.Chapters.set(curContent.Title, curContent);
+                ebook.Chapters.set(iObj[0].Title, curContent);//ebook.Chapters 通过Title索引文章，不能用整理后的，否则会找不到数据
             }
 
             if (ebook.ReviewRules == null) await ebook.InitReviewRules();
