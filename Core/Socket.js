@@ -59,7 +59,7 @@ class SocketIO {
 
     myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
       myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message } });
-      if (jobId) myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务进程
+      if (jobId) myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务线程
     })
 
     myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {

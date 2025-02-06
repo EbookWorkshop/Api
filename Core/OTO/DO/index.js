@@ -4,7 +4,7 @@ const EventManager = require("../../EventManager");
 const Models = require("./../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
-const Reviewer = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/RuleReview");
 
 //数据库操作文档 https://www.sequelize.cn/
 

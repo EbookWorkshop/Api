@@ -2,7 +2,7 @@
 
 const Models = require("../../Core/OTO/Models");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
-
+const { Test } = require("./../../Core/Utils/RuleReview");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 
@@ -123,5 +123,47 @@ module.exports = () => ({
         rules.map((item) => item.destroy());
 
         new ApiResponse(rules).toCTX(ctx);
+    },
+    /**
+    * @swagger
+    * /review/rule/test:
+    *   post:
+    *     tags:
+    *       - Review - Rule —— 自助校阅 - 规则库
+    *     summary: 测试规则
+    *     description: 测试规则
+    *     parameters:
+    *       - in: body
+    *         name: rule
+    *         description: 规则和测试用的章节ID
+    *         schema:
+    *             type: object
+    *             required:
+    *               - chapterId
+    *               - ruleId
+    *             properties:
+    *               chapterId:
+    *                 type: number
+    *               ruleId:
+    *                 type: number
+    *     consumes:
+    *       - application/json
+    *     responses:
+    *       200:
+    *         description: 请求成功
+    */
+    "post /test": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["chapterId", "ruleId"]);
+        if (param == null) return;
+
+        const myModels = new Models();
+        let rule = await myModels.ReviewRule.findOne({
+            where: { id: param.ruleId }
+        });
+        let chapter = await myModels.EbookIndex.findOne({
+            where: { id: param.chapterId }
+        });
+        let result = Test(rule, chapter.Content);
+        new ApiResponse(result).toCTX(ctx);
     },
 });

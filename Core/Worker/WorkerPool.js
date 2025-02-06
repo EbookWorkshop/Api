@@ -89,9 +89,9 @@ class WorkerPool extends EventEmitter {
             let freeWorkersId = this.freeWorkers.indexOf(lazyWorker);
             this.freeWorkers.splice(freeWorkersId, 1);
             lazyWorker.terminate().then(() => {
-                em.emit("Debug.Log", `释放资源，关掉长期闲置进程。ID: ${lazyWorker.ID}\t已闲置${feeTime/1000}秒。`, "WORKERPOOL");
+                em.emit("Debug.Log", `释放资源，关掉长期闲置线程。ID: ${lazyWorker.ID}\t已闲置${feeTime/1000}秒。`, "WORKERPOOL");
             }).catch((err) => {
-                em.emit("Debug.Log", `尝试关闭闲置进程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", err);
+                em.emit("Debug.Log", `尝试关闭闲置线程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", err);
             });
         }, 90 * 1000);
 

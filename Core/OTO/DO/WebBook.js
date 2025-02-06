@@ -4,7 +4,7 @@ const Ebook = require("./../../../Entity/Ebook/Ebook");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
-const Reviewer = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/RuleReview");
 // const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
 // const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
 

@@ -3,7 +3,7 @@ const Ebook = require("../../../Entity/Ebook/Ebook");
 const Models = require("./../Models");
 // const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
-const Reviewer = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/RuleReview");
 
 class OTO_Ebook {
 
