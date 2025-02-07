@@ -31,6 +31,8 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             fontFamliy:
+     *               type: string
      *             chapterIds:
      *               type: array
      *               items:

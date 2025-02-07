@@ -1,8 +1,9 @@
-const PDFToolkit = require("./PDFToolkit")
+// const PDFToolkit = require("./PDFToolkit")
 const EventManager = require("./../EventManager");
 const path = require("path");
 const { dataPath } = require("../../config");
-
+const WorkerPool = require("./../Worker/WorkerPool");
+const wPool = WorkerPool.GetWorkerPool();
 
 class PDFMaker {
     constructor(pdf) {
@@ -22,44 +23,38 @@ class PDFMaker {
      * 按当前内容制作Pdf的文件
      */
     async MakePdfFile() {
+        const pdf = Object.keys(this.pdf)
+            .filter(key => typeof this.pdf[key] !== 'function')
+            .reduce((obj, key) => {
+                obj[key] = this.pdf[key];
+                return obj;
+            }, {});
         const fileInfo = {
             filename: this.pdf.BookName + ".pdf",
             path: path.join(dataPath, "Output", this.pdf.BookName + '.pdf'),
+            pdf,
             chapterCount: this.pdf.showIndexId.length           //含有多少章
         };
+
         return new Promise(async (resolve, reject) => {
-            try {
-                //创建一个写入对象 `{ doc, stream }`
-                const { doc: pdfDoc, stream: fileStream } = PDFToolkit.CreateNewDocFile(fileInfo.path, this.GetSettingFromPdf());
-
-                await PDFToolkit.AddBookCoverToPdf(this.pdf, pdfDoc);//制作封面
-
-                await PDFToolkit.AddChaptersToPdf(this.pdf, pdfDoc);
-
-                //关闭结束文档
-                pdfDoc.text("（完）", this.pdf.paddingX, this.pdf.paddingY, { width: this.pdf.pageWidth });
-                pdfDoc.end();
-
-                fileStream.on('finish', function () {
-                    new EventManager().emit("PDFMaker.CreateBook.Finish", fileInfo);
-                    resolve(fileInfo);
-                });
-
-                fileStream.on('error', function (err) {
-                    new EventManager().emit("PDFMaker.CreateBook.Fail", err.message, fileInfo.filename, fileInfo.path);
-                    reject(err);
-                });
-            } catch (e) {
-                new EventManager().emit("Debug.PDFMaker.MakePDF.Fail", e.message, fileInfo.filename, fileInfo.path)
-                reject(e);
-            }
+            wPool.RunTask({
+                taskfile: "@/Core/PDF/MakePdfFile",
+                param: {
+                    fileInfo
+                },
+                taskType: "MakePdfFile",
+            }, async (result, err) => {
+                console.log("pdf-make-result", result, err);
+                if (result && !err) resolve(result);
+                else reject(err);
+            });
         });
     }
 
-    GetSettingFromPdf() {
-        let { FontFamily, FontSize } = this.pdf;
-        return { fontFamily: FontFamily, fontSize: FontSize };
-    }
+    // GetSettingFromPdf() {
+    //     let { FontFamily, FontSize } = this.pdf;
+    //     return { fontFamily: FontFamily, fontSize: FontSize };
+    // }
 }
 
 module.exports = PDFMaker;

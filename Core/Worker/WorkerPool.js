@@ -226,7 +226,7 @@ class WorkerPool extends EventEmitter {
         }
      *
      * ```
-     * @param {function(result:object,err)} callback 线程结束后的回调，如果线程运行出错，result的值将为null
+     * @param {(result: object|null, err: object|null) => void} callback 线程结束后的回调，如果线程运行出错，result的值将为null
      */
     RunTask(taskParam, callback) {
         //排队机制
