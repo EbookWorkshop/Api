@@ -18,12 +18,20 @@ parentPort.on('message', (task) => {
 
         if (result instanceof Promise) {
             result.then((rsl) => {
-                parentPort.postMessage(rsl);
+                var temp = JSON.stringify(rsl);//转手一次，吃掉对象中的不可克隆部分
+                parentPort.postMessage(JSON.parse(temp));
             }).catch(err => {
-                parentPort.postMessage({ type: "error", err });
+                let error = structuredClone(err);
+                //当err的属性不能被枚举时，上述方法只能拿到一个空对象
+                // 子线程返回结果对象中含有function方法时，会得到类似的一个错误对象(DataCloneError)
+                // 发到顶层就是一个空对象，所以额外处理几个常见的属性
+                if (err.name) error.name = err.name;
+                if (err.message) error.message = err.message;
+                if (err.stack) error.stack = err.stack
+                parentPort.postMessage({ type: "error", err: error });
             })
         } else {
-            parentPort.postMessage(result);//执行完成，往主线程发送结果
+            parentPort.postMessage(JSON.parse(JSON.stringify(result)));//执行完成，往主线程发送结果
         }
 
     } catch (err) {

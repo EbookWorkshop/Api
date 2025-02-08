@@ -1,4 +1,3 @@
-const DO = require("./../../Core/OTO/DO");
 
 const BookMaker = require("./../../Core/Book/BookMaker");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
@@ -31,6 +30,8 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             embedTitle:
+     *               type: boolean
      *             fontFamliy:
      *               type: string
      *             chapterIds:
@@ -48,26 +49,9 @@ module.exports = () => ({
      */
     "post /pdf": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
+        if (!param) return;
 
-        var bookid = param.bookId;
-        let ebook = await DO.GetPDFById(bookid);
-        ebook.FontFamily = "Alibaba-PuHuiTi-Medium";    //debug
-
-        //没指定章节ID时默认拿到所有章节列表
-        let cIds = param.chapterIds;
-        if (!cIds || cIds.length == 0) {
-            cIds = ebook.Index.map(item => item.IndexId);
-        }
-
-        if (cIds.length == 0) {
-            new ApiResponse(ebook.BookName, "没有可用章节，请先添加章节内容", 50000).toCTX(ctx);
-            return;
-        }
-
-        let pdfMaker = new PDFMaker(ebook);
-        await pdfMaker.SetShowChapters(cIds);
-
-        await pdfMaker.MakePdfFile().then(async (rsl) => {
+        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, param.fontFamliy, param.embedTitle).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
@@ -76,7 +60,7 @@ module.exports = () => ({
                 });
             }
             const relativePath = path.relative(dataPath, rsl.path);
-            new ApiResponse({ book: rsl, chapterIds: cIds, download: relativePath }).toCTX(ctx);
+            new ApiResponse({ book: rsl, chapterIds: param.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
             new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });

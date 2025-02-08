@@ -1,4 +1,3 @@
-// const stream = require("node:stream")
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
 const fs = require('fs');
 const path = require('path');
@@ -12,10 +11,10 @@ const { CheckAndMakeDir } = require("./../Server");
  * @param {{fontFamily,fontSize}} setting 设置
  * @returns {{PDFDocument,stream.Writable}} { doc="pdf文档对象", stream="文件写入流" }
  */
-function CreateNewDocFile(filepath, setting) {
+async function CreateNewDocFile(filepath, setting) {
     CheckAndMakeDir(filepath);
     const stream = fs.createWriteStream(filepath);
-    const doc = CreateNewDoc(setting);
+    const doc = await CreateNewDoc(setting);
     doc.pipe(stream);
     return { doc, stream };
 }
@@ -26,10 +25,17 @@ function CreateNewDocFile(filepath, setting) {
  * @param {string} defaultText 默认用于显示的文档
  * @returns {PDFDocument} PDF文档对象
  */
-function CreateNewDoc(setting, defaultText = null) {
+async function CreateNewDoc(setting, defaultText = null) {
     const doc = new PDFDocument();
-    if (!setting.fontFamily.includes(".")) setting.fontFamily += ".ttf";//只有字体名的时候默认加上ttf文件类型
-    doc.font(path.join(config.fontPath, setting.fontFamily));
+
+    //嵌入字体
+    if (setting.fontFamily) {
+        const { FindFile } = await import("./../services/file.mjs");
+        let fontent = await FindFile(config.fontPath, setting.fontFamily);
+        if (fontent) doc.font(path.join(fontent.parentPath, fontent.name));
+        else console.warn("PDF嵌入字体跳过，找不到字体：", setting.fontFamily, "生成的文件可能会乱码。");
+    }
+
     doc.fontSize(setting.fontSize);
 
     if (defaultText) {      //如果有文本则直接加入
@@ -44,18 +50,25 @@ function CreateNewDoc(setting, defaultText = null) {
 }
 
 /**
- * 将范围内的章节加入到pdf文档文件中
- * @param {PDFBook} pdfBook PDFBook 电子书对象
+ * 将范围内的章节加入到pdf文档文件中     
+ * 注意：用到了 `pdfBook.GetChapter` 方法，需要pdfBook对象已实现了GetChapter
+ * @param {PDFBook|Object} pdfBook PDFBook|Object 电子书对象
  * @param {PDFDocument} pdfDoc pdf文档对象
+ * @param {boolean} embedTitle 是否嵌入章节标题
  */
-async function AddChaptersToPdf(pdfBook, pdfDoc) {
+async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
     for (let cId of pdfBook.showIndexId.values()) {
         let curContent = pdfBook.GetChapter(cId);
 
         if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
+
         //加到大纲（pdf的目录）
         pdfDoc.outline.addItem(curContent.Title);
 
+        //加入章节标题
+        if (embedTitle) {
+            pdfDoc.text(curContent.Title, { align: 'center' }).moveDown();
+        }
 
         //如果当前章节没内容，则加入默认提示。
         let txt = curContent.Content;

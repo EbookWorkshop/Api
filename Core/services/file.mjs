@@ -87,10 +87,6 @@ export async function FindFile(path, fileName) {
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
 
-        // let isFound = false;
-        // if (filetype) for (let t of filetype) if (dirent.name.toLowerCase().endsWith(t)) isFound = true;
-        // if (isFound) result.push(dirent.name);
-        // console.log(dirent.name);
         if (dirent.name.startsWith(fileName + '.')) return dirent;
     }
 
