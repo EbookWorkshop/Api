@@ -20,9 +20,9 @@ export async function ListFile(path, filetype = null) {
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
 
-        let isFont = false;
-        if (filetype) for (let t of filetype) if (dirent.name.toLowerCase().endsWith(t)) isFont = true;
-        if (isFont) result.push(dirent.name);
+        let isFound = false;
+        if (filetype) for (let t of filetype) if (dirent.name.toLowerCase().endsWith(t)) isFound = true;
+        if (isFound) result.push(dirent.name);
     }
 
     // console.log(result);
@@ -72,4 +72,27 @@ export async function DeleteFile(fileFullPath) {
         fs.unlinkSync(fileFullPath);
         resolve(true);
     });
+}
+
+/**
+ * 找到指定文件——后缀未提供，也未知
+ * @param {*} path 文件所在目录
+ * @param {*} fileName 文件
+ * @returns {Dirent|null} 返回文件的Dirent对象
+ */
+export async function FindFile(path, fileName) {
+    if (!fs.existsSync(path)) return null;
+
+    const dir = fs.opendirSync(path);
+    for await (const dirent of dir) {
+        if (!dirent.isFile()) continue;
+
+        // let isFound = false;
+        // if (filetype) for (let t of filetype) if (dirent.name.toLowerCase().endsWith(t)) isFound = true;
+        // if (isFound) result.push(dirent.name);
+        // console.log(dirent.name);
+        if (dirent.name.startsWith(fileName + '.')) return dirent;
+    }
+
+    return null;
 }
