@@ -25,7 +25,18 @@ module.exports = () => ({
     */
     "get /list": async (ctx) => {
         const myModels = new Models();
-        let rules = await myModels.ReviewRule.findAll();
+        let rules = await myModels.ReviewRule.findAll({
+            include: [{
+                model: myModels.ReviewRuleUsing,
+                as: 'ReviewRuleUsings'
+            }]
+        });
+        rules = rules.map(rule => {
+            return {
+                ...rule.toJSON(),
+                Count: rule.ReviewRuleUsings.length
+            };
+        });
         new ApiResponse(rules).toCTX(ctx);
     },
     /**
