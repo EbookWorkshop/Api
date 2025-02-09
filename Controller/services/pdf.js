@@ -47,12 +47,12 @@ module.exports = () => ({
         }
         if (param.chapterId) {
             let chapter = await DO.GetEBookChapterById(param.chapterId * 1);
-            content =chapter.Title +"\n\n"+ chapter.Content;
+            content = chapter.Title + "\n\n" + chapter.Content;
         }
         ctx.status = 200;
 
-        let pdf = CreateNewDoc({        //只有开头一半 报错：在end之后继续写入
-            fontFamily: param.fontfamily || "Alibaba-PuHuiTi-Medium",
+        let pdf = await CreateNewDoc({        //只有开头一半 报错：在end之后继续写入
+            fontFamily: param.fontfamily,
             fontSize: param.fontsize || 26,
         }, content);
 
