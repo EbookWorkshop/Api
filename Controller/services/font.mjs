@@ -98,7 +98,7 @@ export default {
         let filePath = fontPath;
         if (!fontName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
 
-        await DeleteFile(filePath + fontName).catch((err) => {
+        await DeleteFile(path.join(filePath, fontName)).catch((err) => {
             new ApiResponse("删除失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
         }).then((reslut) => {
             new ApiResponse(reslut).toCTX(ctx);
