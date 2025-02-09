@@ -50,12 +50,17 @@ module.exports = () => ({
             content = chapter.Title + "\n\n" + chapter.Content;
         }
         ctx.status = 200;
+        try {
 
-        let pdf = await CreateNewDoc({        //只有开头一半 报错：在end之后继续写入
-            fontFamily: param.fontfamily,
-            fontSize: param.fontsize || 26,
-        }, content);
+            let pdf = await CreateNewDoc({        //只有开头一半 报错：在end之后继续写入
+                fontFamily: param.fontfamily,
+                fontSize: param.fontsize || 26,
+            }, content);
 
-        ctx.body = pdf;
+            ctx.body = pdf;
+        } catch (err) {
+            ctx.set('Content-Type', "text/html;charset=UTF-8");
+            ctx.body = `<h1 style="color:red">创建PDF出错</h1><p>${err.message}</p><p>${err.stack}</p><p>字体：${param.fontfamily}</p>`;
+        }
     },
 });

@@ -31,7 +31,7 @@ export default {
     "get ": async (ctx) => {
         //传入的相对路径
         let resPath = fontPath;
-        let data = await ListFile(resPath, ["ttf", "fon"]);
+        let data = await ListFile(resPath, ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"]);
         new ApiResponse((data ?? []).map(f => {
             return "/font/" + f;
         })).toCTX(ctx);
