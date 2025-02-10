@@ -243,4 +243,39 @@ module.exports = () => ({
         }
         new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
     },
+
+    /**
+     * @swagger
+     * /library/book/chapterOrder:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 调整章节顺序
+     *     description: 修改章节顺序
+     *     parameters:
+     *       - in: body
+     *         name: chapterOrder
+     *         description: 章节顺序
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: object
+     *             properties:
+     *               indexId:
+     *                 type: number
+     *               newOrder:
+     *                 type: number
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "patch /book/chapterOrder": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx);
+        if (!param) return;
+
+        new ApiResponse(await DO.UpdateChapterOrder(param)).toCTX(ctx);
+    },
+
 });
