@@ -163,18 +163,16 @@ class OTO_Ebook {
 
     /**
      * 更新章节顺序
-     * @param {*} chapterOrderList 
+     * @param {*} chapterOrderList 新的章节顺序列表
      */
     static async UpdateChapterOrder(chapterOrderList) {
-        let rsl = [];
         const myModels = new Models();
-        for (let chapter of chapterOrderList) {
-            let r = await myModels.EbookIndex.update(
-                { OrderNum: chapter.newOrder },
-                { where: { id: chapter.indexId } }
-            );
-            rsl.push(r);
-        }
+        const rsl = await Promise.all(chapterOrderList.map(chapter => 
+            myModels.EbookIndex.update(
+            { OrderNum: chapter.newOrder },
+            { where: { id: chapter.indexId } }
+            )
+        ));
         return rsl;
     }
 

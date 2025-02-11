@@ -18,8 +18,7 @@ parentPort.on('message', (task) => {
 
         if (result instanceof Promise) {
             result.then((rsl) => {
-                var temp = JSON.stringify(rsl);//转手一次，吃掉对象中的不可克隆部分
-                parentPort.postMessage(JSON.parse(temp));
+                parentPort.postMessage(rsl);//如果有不可序列化内容则会报错
             }).catch(err => {
                 let error = structuredClone(err);
                 //当err的属性不能被枚举时，上述方法只能拿到一个空对象
