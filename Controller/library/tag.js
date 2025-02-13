@@ -69,8 +69,8 @@ module.exports = () => ({
     "post ": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["tagText"]);
         if (!param) return;
-        var bookid = param.bookId;      //标记的书
-        var tagText = param.tagText;    //标记文本
+        let bookid = param.bookId;      //标记的书
+        let tagText = param.tagText;    //标记文本
         tagText = tagText?.trim();
         if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
 
@@ -148,7 +148,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete ": async (ctx) => {
-        var tagid = ctx.query.tagid * 1;
+        let tagid = ctx.query.tagid * 1;
         if (!tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.DeleteTag(tagid);
@@ -186,8 +186,8 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete /../tagonbook": async (ctx) => {
-        var bookid = ctx.query.bookid * 1;      //标记的书
-        var tagid = ctx.query.tagid * 1;      //需取消的标签Id
+        let bookid = ctx.query.bookid * 1;      //标记的书
+        let tagid = ctx.query.tagid * 1;      //需取消的标签Id
         if (!bookid || !tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.RemoveTagOnBook(bookid, tagid);

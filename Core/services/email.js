@@ -80,7 +80,7 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
             }
 
             //邮件属性——邮件的详细信息
-            var mailOptions = {
+            let mailOptions = {
                 from: sender,
                 to: mailto,
                 subject: title || "Send the e-mail by default",
