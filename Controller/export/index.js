@@ -88,6 +88,10 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             embedTitle:
+     *               type: boolean
+     *             fontFamliy:
+     *               type: string
      *             chapterIds:
      *               type: array
      *               items:
@@ -104,10 +108,10 @@ module.exports = () => ({
     "post /txt": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
-        var bookid = param.bookId;
+        let bookid = param.bookId;
         let cIds = param.chapterIds;
 
-        await BookMaker.MakeTxtFile(bookid, cIds).then(async (rsl) => {
+        await BookMaker.MakeTxtFile(bookid, cIds, param.embedTitle).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,

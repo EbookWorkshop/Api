@@ -66,9 +66,10 @@ class BookMaker {
      * 生成一个Txt的文件
      * @param {number} bookId 书ID 
      * @param {Array<number>?} showChpaters 需要包含的章节ID，不传则为全部
+     * @param {boolean} embedTitle 是否嵌入标题 
      * @returns 
      */
-    static async MakeTxtFile(bookId, showChpaters) {
+    static async MakeTxtFile(bookId, showChpaters, embedTitle = true) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
@@ -92,12 +93,13 @@ class BookMaker {
             writeStream.on('finish', function () {
                 resolve(fileInfo);
             });
-            const author = ebook.Author ? `作者：${ebook.Author}\n` : '';
+            const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
             writeStream.write(`${ebook.BookName}\n${author}\n`);
 
             for (let i of ebook.Index) {
                 let c = ebook.Chapters.get(i.Title);
-                writeStream.write(`${i.Title}\n${c.Content}\n\n`);
+                if (embedTitle) writeStream.write(`${i.Title}\n${c.Content}\n\n`);
+                else writeStream.write(`${c.Content}\n`);
             }
             writeStream.end();
         });
