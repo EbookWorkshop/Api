@@ -1,32 +1,21 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
 const { databasePath } = require("./../../config");
-const EventManager = require("./../EventManager");
-const em = new EventManager();
+// const EventManager = require("./../EventManager");
+// const em = new EventManager();
 
-let myDBConnnect = null;
-let myModels = null;
-
-
-/**
- * 数据库
- */
 class DB {
     constructor() {
-        if (myDBConnnect == null) {
+        if (!DB.instance) {
             this.myDbPath = null;
-
-            myDBConnnect = DB.Connect(databasePath);
-            myModels = new Models(myDBConnnect);
-            em.emit("Debug.Model.Init.Finish", "DatabaseHelper");
+            this.myDBConnnect = DB.Connect(databasePath);
+            this.myModels = new Models(this.myDBConnnect);
+            // em.emit("Debug.Model.Init.Finish", "DatabaseHelper");
+            DB.instance = this;
         }
-        return myDBConnnect;
+        return DB.instance;
     }
 
-    /**
-     * 建⽴连接
-     * @returns 
-     */
     static Connect(path) {
         this.myDbPath = path || databasePath;
 
@@ -45,4 +34,7 @@ class DB {
     }
 }
 
-module.exports = DB;
+const instance = new DB();
+Object.freeze(instance);
+
+module.exports = instance;

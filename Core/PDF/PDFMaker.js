@@ -10,7 +10,7 @@ class PDFMaker {
     /**
      * 按当前内容制作Pdf的文件
      */
-    static async MakePdfFile(bookId, showChpaters, fontFamliy) {
+    static async MakePdfFile(bookId, showChpaters, fontFamliy,embedTitle) {
         let ebook = await DO.GetPDFById(bookId);
         if (fontFamliy) ebook.FontFamily = fontFamliy;
         if (!showChpaters || showChpaters.length == 0) {
@@ -28,6 +28,7 @@ class PDFMaker {
             filename: ebook.BookName + ".pdf",
             path: path.join(dataPath, "Output", ebook.BookName + '.pdf'),
             pdf,
+            embedTitle,
             chapterCount: ebook.showIndexId.length           //含有多少章
         };
 

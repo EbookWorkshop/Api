@@ -32,6 +32,7 @@ async function CreateNewDoc(setting, defaultText = null) {
     if (setting.fontFamily) {
         const { FindFile } = await import("./../services/file.mjs");
         let fontent = await FindFile(config.fontPath, setting.fontFamily);
+        //PDFKit 支持嵌入 TrueType（.ttf）、OpenType（.otf）、WOFF、WOFF2、TrueType 集合（.ttc）和 Datafork TrueType（.dfont）字体。
         if (fontent) doc.font(path.join(fontent.parentPath, fontent.name));
         else console.warn("PDF嵌入字体跳过，找不到字体：", setting.fontFamily, "生成的文件可能会乱码。");
     }

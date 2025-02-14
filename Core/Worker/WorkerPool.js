@@ -117,7 +117,7 @@ class WorkerPool extends EventEmitter {
                 let p = tt.shift();
                 this.RunTask(p.taskParam, p.callback);
             } else {
-                for (var curType of this.waitingTask.keys()) {
+                for (let curType of this.waitingTask.keys()) {
                     if (curType == taskType) continue;
                     let taskList = this.waitingTask.get(curType);
                     if (taskList.length == 0) continue;

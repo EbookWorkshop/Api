@@ -54,6 +54,7 @@ system.then((service) => {
     console.log("开始监听：8777");
     let server = app.listen(8777);
     new service.io(server);
+    service.next();
 });
 
 

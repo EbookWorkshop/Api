@@ -7,7 +7,7 @@ const { exec } = require('child_process');
  */
 function CreateOutdatedInfo() {
     return new Promise((resolve, reject) => {
-        console.log("正在更新包信息。")
+        // console.log("正在更新包信息。")
         exec("npm outdated -json > Entity/outdated.json", (error, stdout, stderr) => {
             if (error || stderr) {
                 reject(error);

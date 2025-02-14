@@ -3,13 +3,17 @@ const EventManager = require("./EventManager");
 const WorkerPool = require("./Worker/WorkerPool");
 
 let myIO = null;
-let myEM = null;
 
 class SocketIO {
+  /**
+   * 
+   * @param {KoaServer} server 
+   * @returns 
+   */
   constructor(server) {
     if (myIO != null) return this.GetIO("☠️");
 
-    myEM = new EventManager();
+    this.myEM = new EventManager();
 
     myIO = socketIO(server, {
       cors: {
@@ -29,7 +33,7 @@ class SocketIO {
 
     this.initEM_WebBook();
 
-    myEM.emit("Debug.Model.Init.Finish", "SocketIO");
+    this.myEM.emit("Debug.Model.Init.Finish", "SocketIO");
     return myIO;
   }
 
@@ -43,12 +47,12 @@ class SocketIO {
    * @returns 
    */
   initEM_WebBook() {
-    if (myEM == null) return;
+    if (this.myEM == null) return;
     // myEM.on("WebBook.UpdateIndex.Finish", (bookid) => {
     //   // console.log("目录更新完毕！！");
     // })
 
-    myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
+    this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
       myIO.emit(`WebBook.Chapter.Update.${bookid}`, {
         status: true,
         title,
@@ -57,16 +61,16 @@ class SocketIO {
       });
     });
 
-    myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
-      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message } });
-      if (jobId) myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务线程
+    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
+      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err } });
+      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务线程
     })
 
-    myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
+    this.myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
       myIO.emit(`WebBook.UpdateChapter.Process.${bookid}`, { bookid, chapterId, rate, ok, fail, all })
     });
 
-    myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
+    this.myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
       myIO.emit(`WebBook.UpdateChapter.Finish.${bookid}`, { bookid, bookName, chapterIndexArray, doneNum, failNum });
     });
   }

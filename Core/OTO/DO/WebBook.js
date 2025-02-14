@@ -114,7 +114,7 @@ class OTO_WebBook {
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
         let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues });
         let urls = await webModel.getWebBookIndexSourceURLs();
-        for (var u of urls) webBook.IndexUrl.push(u.Path);
+        for (let u of urls) webBook.IndexUrl.push(u.Path);
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
 

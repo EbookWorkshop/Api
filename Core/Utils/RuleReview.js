@@ -16,7 +16,7 @@ function Run(rules, sourceText) {
             rTarget = rTarget.replace(/\\n/g, '\n');
         }
         for (let t of result) {
-            tempArray.push(t.replace(new RegExp(r.Rule, "g"), rTarget))
+            tempArray.push(t?.replace(new RegExp(r.Rule, "g"), rTarget))
         }
         result = Array.from(tempArray);
     }

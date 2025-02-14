@@ -162,6 +162,21 @@ class OTO_Ebook {
     }
 
     /**
+     * 更新章节顺序
+     * @param {*} chapterOrderList 新的章节顺序列表
+     */
+    static async UpdateChapterOrder(chapterOrderList) {
+        const myModels = new Models();
+        const rsl = await Promise.all(chapterOrderList.map(chapter => 
+            myModels.EbookIndex.update(
+            { OrderNum: chapter.newOrder },
+            { where: { id: chapter.indexId } }
+            )
+        ));
+        return rsl;
+    }
+
+    /**
      * 给书添加一章
      * @param {*} chapter 
      * @returns 

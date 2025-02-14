@@ -31,7 +31,7 @@ export default {
     "get ": async (ctx) => {
         //传入的相对路径
         let resPath = fontPath;
-        let data = await ListFile(resPath, ["ttf", "fon"]);
+        let data = await ListFile(resPath, ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"]);
         new ApiResponse((data ?? []).map(f => {
             return "/font/" + f;
         })).toCTX(ctx);
@@ -98,7 +98,7 @@ export default {
         let filePath = fontPath;
         if (!fontName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
 
-        await DeleteFile(filePath + fontName).catch((err) => {
+        await DeleteFile(path.join(filePath, fontName)).catch((err) => {
             new ApiResponse("删除失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
         }).then((reslut) => {
             new ApiResponse(reslut).toCTX(ctx);

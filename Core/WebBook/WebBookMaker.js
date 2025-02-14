@@ -145,7 +145,10 @@ class WebBookMaker {
         await this.myWebBook.ReloadChapter(cId);    //尝试加载章节内容到内存
 
         let cs = this.myWebBook.Chapters;
-        if (cs.has(curIndex.WebTitle) && !isUpdate) return false;        //已存在的内容跳过
+        if (cs.has(curIndex.WebTitle) && !isUpdate) {
+            new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "已有内容，未选择强制更新，已跳过。", jobId);
+            return false;        //已存在的内容跳过
+        }
 
         let url = this.GetDefaultUrl(curIndex.URL);
         if (!url) return false;
