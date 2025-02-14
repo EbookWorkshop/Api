@@ -4,6 +4,7 @@ const WP = require("./Worker/WorkerPool");
 const IO = require("./Socket");
 
 const { debug: isDebug } = require("./../config");
+if (isDebug) require("./debug");//载入Debug模块要尽可能早，便于尽早监听错误信息
 
 module.exports = new Promise((resolve, reject) => {
     try {
@@ -20,8 +21,6 @@ module.exports = new Promise((resolve, reject) => {
             resolve({
                 wp, db, em, io,
                 next: () => {
-                    if (isDebug) require("./debug");//载入Debug模块
-
                     wp.RunTask({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
                 }
             });

@@ -38,7 +38,7 @@ class SocketIO {
   }
 
   static GetIO(callerFile) {
-    console.assert(myIO !== null, "需要先初始化好Socket服务才能取得对应实例！", callerFile);//
+    if (myIO == null) return { emit: (...x) => console.warn(callerFile + "\nSocket 尚未建立连接，未能发送消息：\n", ...x) };
     return myIO;
   }
 

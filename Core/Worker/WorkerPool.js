@@ -241,12 +241,12 @@ class WorkerPool extends EventEmitter {
         if (taskParam.taskType && taskParam.maxThreadNum > 0) {
             let curTypeNum = this.runningThreadCountByType.get(taskParam.taskType) || 0;
             //按类型限制的线程已满
-            if (++curTypeNum > taskParam.maxThreadNum) {
+            if (curTypeNum > taskParam.maxThreadNum) {
                 this.WaitingTask(taskParam, callback);
-                em.emit("Debug.Log", "已达到当前类别的最大线程数，需要等待资源", "WORKERPOOL", taskParam.taskType);
+                em.emit("Debug.Log", `已达到当前类别的最大线程数(${taskParam.maxThreadNum}-${curTypeNum})，需要等待资源`, "WORKERPOOL", taskParam.taskType);
                 return;
             }
-            this.runningThreadCountByType.set(taskParam.taskType, curTypeNum);
+            this.runningThreadCountByType.set(taskParam.taskType, curTypeNum+1);
         }
 
         const worker = this.freeWorkers.shift();//空闲线程

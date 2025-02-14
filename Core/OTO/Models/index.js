@@ -81,8 +81,11 @@ function AutoInit(sqlConnect) {
         Relational(PO_MODELS);
 
         //同步所有模型
-        sqlConnect.sync().then(result => {
+        console.log("正在初始化数据库......")
+        sqlConnect.sync(/*{ alter: true }*/).then(result => {
             em.emit("DB.Models.Init", sqlConnect.options.storage, result);
+        }).catch(err=>{
+            em.emit("Debug.Log","数据库同步失败！", "DATABASE", err);
         })
     }).catch(err => {
         em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", err);

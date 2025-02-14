@@ -166,7 +166,7 @@ class OTO_WebBook {
         webBook.GetMaxIndexOrder = async () => {
             const myModels = new Models();
             let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
-            return lastIndex.OrderNum;
+            return lastIndex?.OrderNum || 1;
         }
 
         /**

@@ -45,7 +45,7 @@ app.use(async (ctx, next) => {
 app.use(router.routes());
 //启动静态文件服务
 let filePath = path.join(myConfig.dataPath, "");
-console.log("静态文件服务路径:\t\t", path.resolve(filePath));
+// console.log("静态文件服务路径:\t\t", path.resolve(filePath));
 app.use(static(filePath));
 
 //app.use(Router.allowedMethods()); TODO: 推荐的处理错误请求方式

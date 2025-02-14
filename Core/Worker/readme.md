@@ -11,6 +11,18 @@ pool.RunTask({
     //成功的回调函数
 });
 ```
+或者：
+```js
+const pool = WorkerPool.GetWorkerPool();
+pool.RunTaskAsync({
+    taskfile:"@/path/to/task",
+    param:{}
+}).then(result=>{
+    //成功的处理
+}).catch(err=>{
+    //失败时的处理
+})
+```
 
 ## 实现线程支持
 ```js

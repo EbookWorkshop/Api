@@ -1,5 +1,4 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
-const fs = require("fs");
 const path = require("path");
 const config = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
