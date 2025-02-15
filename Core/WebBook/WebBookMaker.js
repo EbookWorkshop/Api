@@ -109,9 +109,12 @@ class WebBookMaker {
                 });
             }
 
-            //翻页——继续爬
+            //翻页——继续爬 CheckSetting
             if (result.has("IndexNextPage")) {
-                let npData = result.get("IndexNextPage")[0];
+                let npDataList = result.get("IndexNextPage");
+                npDataList = npDataList.filter(item => !item.Rule.CheckSetting || item.Rule.CheckSetting == item.text);
+                if (npDataList.length == 0) return;
+                let npData = npDataList[0];
                 let nextPage = npData.url;
                 if (nextPage == "") {
                     new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
@@ -175,7 +178,7 @@ class WebBookMaker {
                 if (!cTitleResult.text) {
                     let errAdd = "";
                     if (!cTitleResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节标题失败"+errAdd, jobId);
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节标题失败" + errAdd, jobId);
                     return;
                 }
                 chap.Title = cTitleResult.text;
@@ -186,7 +189,7 @@ class WebBookMaker {
                 if (!cContentResult.text) {
                     let errAdd = "";
                     if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节内容失败"+errAdd, jobId);
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节内容失败" + errAdd, jobId);
                     return;
                 }
                 chap.Content = cContentResult.text;

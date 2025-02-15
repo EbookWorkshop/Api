@@ -47,6 +47,7 @@ class RuleManager {
             curRule.GetContentAction = r.GetContentAction;
             curRule.GetUrlAction = r.GetUrlAction;
             curRule.CheckSetting = r.CheckSetting;
+            curRule.Type = r.Type;
         }
 
         return result;

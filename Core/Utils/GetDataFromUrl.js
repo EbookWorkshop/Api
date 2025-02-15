@@ -41,7 +41,7 @@ async function GetDataFromUrl(url, setting) {
         if (isDEBUG) {
             page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
             new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
-            await page.screenshot({ path: `${dataPath}/../Debug/${Test_Date.now()}.png` });//截图
+            await page.screenshot({ path: `${dataPath}/../Debug/Test_${Date.now()}.png` });//截图
         }
 
         for (let rule of setting.RuleList) {
