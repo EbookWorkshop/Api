@@ -65,6 +65,8 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
                     }
                 });
                 if (mt) sender = mt.Value;
+            }
+            if (pass === "") {
                 let pt = await myModels.SystemConfig.findOne({
                     where: {
                         Group: EMAIL_SETTING_GROUP,
@@ -73,6 +75,7 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
                 });
                 if (pt) pass = pt.Value;
             }
+
 
             if (sender === "" || mailto === "" || pass === "") {
                 reject("默认邮箱配置不完整，不能发送邮件，请先在系统设置收/发件信息；或直接指定收/发件信息。");

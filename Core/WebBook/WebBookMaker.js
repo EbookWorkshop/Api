@@ -116,7 +116,7 @@ class WebBookMaker {
                 if (npDataList.length == 0) return;
                 let npData = npDataList[0];
                 let nextPage = npData.url;
-                if (nextPage == "") {
+                if (nextPage == "" || nextPage == url) {
                     new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
                     return;
                 }
