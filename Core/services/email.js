@@ -88,16 +88,18 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
                 to: mailto,
                 subject: title || "Send the e-mail by default",
                 text: content || "This e-mail sent by EBookWorkshop!",
-                attachments: []     //附件地址，需要相对地址
+                attachments: []// string[]
             };
 
             //添加附件-将附件按插件发送要求转换
             if (files) {        //NOTE: 这儿会有将服务器任意文件通过邮件发出去的bug，会泄露服务器信息。
-                //mailOptions.attachments = files.concat();
                 for (let f of files) {
+                    let parth = path.resolve(__dirname, "./../../", f)
+                    let filename = path.basename(parth);
+                    let filePath = path.dirname(parth);
                     mailOptions.attachments.push({
-                        filename: f.split("/").pop(),
-                        path: path.resolve(__dirname, "./../../", f)
+                        filename,
+                        path: filePath
                     });
                 }
             }

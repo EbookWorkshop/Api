@@ -96,9 +96,9 @@ class BookMaker {
             const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
             writeStream.write(`${ebook.BookName}\n${author}\n`);
 
-            for (let i of ebook.Index) {
-                let c = ebook.Chapters.get(i.Title);
-                if (embedTitle) writeStream.write(`${i.Title}\n${c.Content}\n\n`);
+            for (let i of ebook.showIndexId) {
+                let c = ebook.GetChapter(i);
+                if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
                 else writeStream.write(`${c.Content}\n`);
             }
             writeStream.end();
