@@ -10,10 +10,18 @@ const path = require("path");
  */
 function parseBodyData(ctx) {
     return new Promise((resolve, reject) => {
+        function resolveFile(postData) {
+            if (ctx.request.files) {
+                for (let item in ctx.request.files) {
+                    postData[item] = (Array.isArray(ctx.request.files[item])) ? ctx.request.files[item] : [ctx.request.files[item]];
+                }
+            }
+            resolve(postData);
+        }
         try {
             let postData = ctx.request?.body;
             if (postData) {
-                return resolve(postData);
+                return resolveFile(postData);
             }
 
             //在引入中间件koa-body之后，下面这方法基本不需要了 留着调试以及应对特殊情况
@@ -21,9 +29,8 @@ function parseBodyData(ctx) {
                 postData += data
             })
             ctx.req.on('end', () => {
-                resolve(postData)
+                resolveFile(postData)
             })
-
         } catch (err) {
             reject(err)
         }
@@ -96,7 +103,7 @@ function CheckAndMakeDir(filePath) {
 
 module.exports = {
     MkPath: MkPath,
-    CheckAndMakeDir:CheckAndMakeDir,
+    CheckAndMakeDir: CheckAndMakeDir,
     parseBodyData: parseBodyData,
     parseJsonFromBodyData: parseJsonFromBodyData
 }

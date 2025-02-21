@@ -4,6 +4,7 @@ const smtpTransport = require('nodemailer-smtp-transport');
 const EventManager = require("./../../Core/EventManager");
 const path = require('path')
 const Models = require("./../../Core/OTO/Models");
+const { version } = require("./../../package.json");
 
 
 const EMAIL_SETTING_GROUP = "send_email_account";       //系统设置-邮箱的配置分组
@@ -94,15 +95,24 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
             //添加附件-将附件按插件发送要求转换
             if (files) {        //NOTE: 这儿会有将服务器任意文件通过邮件发出去的bug，会泄露服务器信息。
                 for (let f of files) {
-                    let parth = path.resolve(__dirname, "./../../", f)
-                    let filename = path.basename(parth);
-                    let filePath = path.dirname(parth);
+                    let filePath = path.resolve(__dirname, "./../../", f)
+                    let filename = path.basename(filePath);
                     mailOptions.attachments.push({
                         filename,
-                        path: filePath
+                        path: filePath      //文件完整的路径
                     });
                 }
             }
+
+            if (!title) {
+                title = `${mailOptions.attachments[0].filename}等${mailOptions.attachments.length}本书`;
+                mailOptions.subject = title;
+            }
+            if (!content) {
+                content = `已发送下列书籍： \n${mailOptions.attachments.map(t => t.filename).join('\n')}`;
+                mailOptions.text = content;
+            }
+            mailOptions.text += `\n\n---------------------------------\n——邮件发送自：EBook Workshop v${version}`;
 
             CreateTransport(sender, pass).sendMail(mailOptions, function (error, info) {
                 if (error) {

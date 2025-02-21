@@ -1,8 +1,13 @@
 //发邮件 邮箱管理
+const BookMaker = require("./../../Core/Book/BookMaker");
+const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
-const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email")
+const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email");
+const path = require("path");
+const { dataPath } = require("./../../config");
+
 
 
 module.exports = () => ({
@@ -46,14 +51,46 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /send": async (ctx) => {
-        let param = await parseJsonFromBodyData(ctx, ["files"]);
+        let param = await parseJsonFromBodyData(ctx);
         if (param == null) return;
 
-        await SendAMail(param).then(result => {
+        // let email = { ...param };
+        let { mailto, sender, bookFiles, bookList } = param;
+        let email = { mailto, sender, files: [] };
+
+        if (bookFiles) {
+            const { AddFile } = await import("./../../Core/services/file.mjs");
+            await Promise.all(bookFiles.map(file => {
+                let filePath = path.join(dataPath, "temp", "email", file.originalFilename);
+                AddFile(file, filePath);
+                email.files.push(filePath)
+            }));
+        }
+        bookList = JSON.parse(bookList);
+        if (bookList && bookList.length > 0) {
+            const rsl = await Promise.all(bookList.map(bookSetting => {
+                let booking;
+                switch (bookSetting.filetype) {
+                    case "pdf":
+                        booking = PDFMaker.MakePdfFile(bookSetting.bookid);
+                        break;
+                    case "txt":
+                        booking = BookMaker.MakeTxtFile(bookSetting.bookid);
+                        break;
+                    case "epub":
+                        break;
+                }
+                return booking;
+            }));
+
+            email.files.push(...rsl.map(t => t.path));
+        }
+
+        await SendAMail(email).then(result => {
             new ApiResponse().toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(null, err.message, 50000).toCTX(ctx);
-        })
+            new ApiResponse(null, err.message || err, 50000).toCTX(ctx);
+        });
     },
 
     /**
