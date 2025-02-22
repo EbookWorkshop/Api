@@ -4,6 +4,8 @@ const path = require('path');
 const config = require("./../../config");
 const sharp = require("sharp");     //提供图像格式转换
 const { CheckAndMakeDir } = require("./../Server");
+const { GetDefaultFont } = require("./../services/font");
+
 
 /**
  * 生成一个PDF文件
@@ -34,7 +36,11 @@ async function CreateNewDoc(setting, defaultText = null) {
         let fontent = await FindFile(config.fontPath, setting.fontFamily);
         //PDFKit 支持嵌入 TrueType（.ttf）、OpenType（.otf）、WOFF、WOFF2、TrueType 集合（.ttc）和 Datafork TrueType（.dfont）字体。
         if (fontent) doc.font(path.join(fontent.parentPath, fontent.name));
-        else console.warn("PDF嵌入字体跳过，找不到字体：", setting.fontFamily, "生成的文件可能会乱码。");
+        else {
+            let defFont = await GetDefaultFont();
+            fontent = await FindFile(config.fontPath, defFont);//使用默认字体
+            if (!fontent) console.warn("PDF嵌入字体跳过，找不到字体：", setting.fontFamily, "生成的文件可能会乱码。");
+        }
     }
 
     doc.fontSize(setting.fontSize);

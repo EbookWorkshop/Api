@@ -6,6 +6,8 @@ import path from "path";
 import ApiResponse from "../../Entity/ApiResponse.js"
 import { ListFile, AddFile, DeleteFile } from "../../Core/services/file.mjs";
 import config from "../../config.js";
+import { parseJsonFromBodyData } from "./../../Core/Server.js";
+import { GetDefaultFont, SetDefaultFont } from "./../../Core/services/font.js"
 
 const { fontPath } = config;
 
@@ -90,8 +92,6 @@ export default {
      *     responses:
      *       200:
      *         description: 请求成功
-     *       600:
-     *         description: 参数错误，参数类型错误
      */
     "delete ": async (ctx) => {
         let fontName = ctx.query.fontName;
@@ -100,9 +100,65 @@ export default {
 
         await DeleteFile(path.join(filePath, fontName)).catch((err) => {
             new ApiResponse("删除失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
-        }).then((reslut) => {
-            new ApiResponse(reslut).toCTX(ctx);
+        }).then((result) => {
+            new ApiResponse(result).toCTX(ctx);
         })
 
+    },
+
+    /**
+     * @swagger
+     * /services/font/setDefault:
+     *   post:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 设置默认字体
+     *     description: 设置默认字体，当需要使用字体但没提供时，按默认字体提供设置
+     *     parameters:
+     *       - in: body
+     *         name: fontName
+     *         description: 将要设置为默认的字体
+     *         schema:
+     *           type: object
+     *           required:
+     *             - fontName
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /setDefault": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["fontName"]);
+        if (!param) return;
+
+        try {
+            let result = await SetDefaultFont(param.fontName);
+            let tt = await GetDefaultFont();
+            new ApiResponse(tt).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /services/font/defaultFont:
+     *   get:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 获取默认字体
+     *     description: 获取当前设置的默认字体
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /defaultFont": async (ctx) => {
+        try {
+            let defFont = await GetDefaultFont();
+            new ApiResponse(defFont).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("获取默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
     },
 };
