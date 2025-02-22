@@ -69,6 +69,42 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /library/book:
+     *   delete:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 删除指定的书
+     *     description: 删除书
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete /book": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        await DO.DeleteOneBook(bookId).then((rsl) => {
+            new ApiResponse(rsl).toCTX(ctx);
+        }).catch((err) => {
+            new ApiResponse(err, "删除出错：" + err.message, 50000).toCTX(ctx);
+        })
+    },
+
+    /**
+     * @swagger
      * /library/book/chapter:
      *   get:
      *     tags:
