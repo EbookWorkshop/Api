@@ -50,48 +50,52 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx);
         if (param == null) return;
 
-        // let email = { ...param };
-        let { mailto, sender, bookFiles, bookList } = param;
-        let email = { mailto, sender, files: [] };
+        try {
+            // let email = { ...param };
+            let { mailto, sender, bookFiles, bookList } = param;
+            let email = { mailto, sender, files: [] };
 
-        if (bookFiles) {
-            const { AddFile } = await import("./../../Core/services/file.mjs");
-            await Promise.all(bookFiles.map(file => {
-                let filePath = path.join(dataPath, "temp", "email", file.originalFilename);
-                AddFile(file, filePath);
-                email.files.push(filePath)
-            }));
-        }
-        if (bookList) bookList = JSON.parse(bookList);
-        if (bookList && bookList.length > 0) {
-            const rsl = await Promise.all(bookList.map(bookSetting => {
-                let booking;
-                switch (bookSetting.filetype) {
-                    case "pdf":
-                        booking = PDFMaker.MakePdfFile(bookSetting.bookid);
-                        break;
-                    case "txt":
-                        booking = BookMaker.MakeTxtFile(bookSetting.bookid);
-                        break;
-                    case "epub":
-                        break;
-                }
-                return booking;
-            }));
+            if (bookFiles) {
+                const { AddFile } = await import("./../../Core/services/file.mjs");
+                await Promise.all(bookFiles.map(file => {
+                    let filePath = path.join(dataPath, "temp", "email", file.originalFilename);
+                    AddFile(file, filePath);
+                    email.files.push(filePath)
+                }));
+            }
+            if (bookList) bookList = JSON.parse(bookList);
+            if (bookList && bookList.length > 0) {
+                const rsl = await Promise.all(bookList.map(bookSetting => {
+                    let booking;
+                    switch (bookSetting.filetype) {
+                        case "pdf":
+                            booking = PDFMaker.MakePdfFile(bookSetting.bookid);
+                            break;
+                        case "txt":
+                            booking = BookMaker.MakeTxtFile(bookSetting.bookid);
+                            break;
+                        case "epub":
+                            break;
+                    }
+                    return booking;
+                }));
 
-            email.files.push(...rsl.map(t => t.path));
-        }
+                email.files.push(...rsl.map(t => t.path));
+            }
 
-        if (email.files.length == 0) {
-            new ApiResponse(null, "发送邮件取消：没有可用于发送的书籍/附件，取消发邮件。", 50000).toCTX(ctx);
-            return
-        }
+            if (email.files.length == 0) {
+                new ApiResponse(null, "发送邮件取消：没有可用于发送的书籍/附件，取消发邮件。", 50000).toCTX(ctx);
+                return
+            }
 
-        await SendAMail(email).then(result => {
-            new ApiResponse().toCTX(ctx);
-        }).catch((err) => {
+            await SendAMail(email).then(result => {
+                new ApiResponse().toCTX(ctx);
+            }).catch((err) => {
+                new ApiResponse(null, err.message || err, 50000).toCTX(ctx);
+            });
+        } catch (err) {
             new ApiResponse(null, err.message || err, 50000).toCTX(ctx);
-        });
+        }
     },
 
     /**

@@ -25,17 +25,25 @@ async function GetDefaultFont() {
  */
 async function SetDefaultFont(fontName) {
     const myModels = new Models();
-    let [settings] = await myModels.SystemConfig.findOrCreate({
+    let setting = await myModels.SystemConfig.findOne({
         where: {
             Group: SYSTEM_DEFAULT_FONT,
             Name: "defaultfont",
-        },
-        defaults: {
-            Value: fontName
         }
     });
 
-    return settings;
+    if (setting) {
+        setting.Value = fontName;
+        await setting.save();
+    } else {
+        setting = await myModels.SystemConfig.create({
+            Group: SYSTEM_DEFAULT_FONT,
+            Name: "defaultfont",
+            Value: fontName
+        });
+    }
+
+    return setting;
 }
 
 module.exports = {

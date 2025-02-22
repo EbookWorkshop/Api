@@ -132,8 +132,7 @@ export default {
 
         try {
             let result = await SetDefaultFont(param.fontName);
-            let tt = await GetDefaultFont();
-            new ApiResponse(tt).toCTX(ctx);
+            new ApiResponse(result).toCTX(ctx);
         } catch (err) {
             new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
         }
