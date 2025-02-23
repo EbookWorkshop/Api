@@ -35,8 +35,8 @@ module.exports = () => ({
             rules.map(item => {
                 result.push({
                     id: item.id,
-                    bookId: item.Ebook.id,
-                    bookName: item.Ebook.BookName,
+                    bookId: item.Ebook?.id,
+                    bookName: item.Ebook?.BookName,
                     ruleId: item.ReviewRule.id,
                     ruleName: item.ReviewRule.Name
                 })

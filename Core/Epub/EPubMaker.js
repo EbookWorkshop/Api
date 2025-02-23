@@ -52,13 +52,16 @@ class EPubMaker {
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
             content: []
         }
+        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) option.cover = ebook.CoverImg;
 
         for (let i of ebook.showIndexId) {
             let c = ebook.GetChapter(i);
+            let content = c.Content ?? "--当前章节内容缺失--";
+            let p = content.split("\n").join("</p><p>");
             option.content.push({
                 title: c.Title,
-                data: c.Content ?? "--当前章节内容缺失--"
-            })
+                data: "<p>" + p + "</p>"
+            });
         }
 
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
