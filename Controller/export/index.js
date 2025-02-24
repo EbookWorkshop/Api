@@ -1,7 +1,7 @@
 
 const BookMaker = require("./../../Core/Book/BookMaker");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
-const EPubMaker = require("./../../Core/Epub/EPubMaker.js")
+const EPubMaker = require("./../../Core/EPub/EPubMaker.js")
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
 const { SendAMail } = require("./../../Core/services/email")

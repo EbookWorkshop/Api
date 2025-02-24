@@ -27,7 +27,7 @@ module.exports = () => ({
         let rules = await myModels.ReviewRuleUsing.findAll({
             include: [myModels.Ebook, myModels.ReviewRule],
             order: [
-                [myModels.Ebook, 'id', 'ASC']
+                [myModels.Ebook, 'id', 'DESC']
             ]
         });
         let result = [];
