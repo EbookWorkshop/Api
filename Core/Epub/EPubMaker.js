@@ -46,8 +46,10 @@ class EPubMaker {
 
         let option = {
             title: ebook.BookName, // *必需，书籍标题。
-            author: ebook.Author, // *必需，作者名字。
+            author: ebook.Author || "佚名", // *必需，作者名字。
             appendChapterTitles: embedTitle,
+            lang: "zh",
+            tocTitle:"目  录",//默认 Table Of Contents
             publisher: `EBook Workshop v${version}`, // 可选
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
             content: []
@@ -57,7 +59,7 @@ class EPubMaker {
         for (let i of ebook.showIndexId) {
             let c = ebook.GetChapter(i);
             let content = c.Content ?? "--当前章节内容缺失--";
-            let p = content.split("\n").join("</p><p>");
+            let p = content.split("\n").join("</p>\n<p>");
             option.content.push({
                 title: c.Title,
                 data: "<p>" + p + "</p>"
