@@ -29,6 +29,9 @@ class DB {
                 min: 0,
                 acquire: 30000,
                 idle: 10000
+            },
+            dialectOptions: {           //连接选项
+                foreignKeys: true       //启用外键约束——级联删除等需要
             }
         });
     }
