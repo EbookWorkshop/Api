@@ -5,7 +5,6 @@ const Models = require("./../Models");
 
 class OTO_PDF {
 
-
     static async GetReviewRules(bookid) {
         let result = [];
         const myModels = new Models();

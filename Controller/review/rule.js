@@ -29,7 +29,8 @@ module.exports = () => ({
             include: [{
                 model: myModels.ReviewRuleUsing,
                 as: 'ReviewRuleUsings'
-            }]
+            }],
+            order:[["createdAt","DESC"]]
         });
         rules = rules.map(rule => {
             return {

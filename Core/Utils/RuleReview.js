@@ -15,8 +15,9 @@ function Run(rules, sourceText) {
         if (rTarget.includes("\\")) {//MARK: 被替换字符如含转义符，需要先一步解释，需要这里先进行替换
             rTarget = rTarget.replace(/\\n/g, '\n');
         }
+
         for (let t of result) {
-            tempArray.push(t?.replace(new RegExp(r.Rule, "g"), rTarget))
+            tempArray.push(t?.replace(new RegExp(r.Rule, "gm"), rTarget))
         }
         result = Array.from(tempArray);
     }
@@ -29,7 +30,7 @@ function Run(rules, sourceText) {
  * @param { string } testText 测试用的文本
  */
 function Test(rule, testText) {
-    let testRegExp = new RegExp(rule.Rule, "g");
+    let testRegExp = new RegExp(rule.Rule, "gm");
 
     let rTarget = rule.Replace;
     if (rTarget.includes("\\")) {//MARK: 被替换字符如含转义符，需要先一步解释，需要这里先进行替换

@@ -3,6 +3,7 @@ const DO = require("./../../Core/OTO/DO");
 const EventManager = require("./../EventManager");
 const path = require("path");
 const { dataPath } = require("../../config");
+const { GetDefaultFont } = require("./../services/font")
 const WorkerPool = require("./../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
 
@@ -29,7 +30,8 @@ class PDFMaker {
             path: path.join(dataPath, "Output", ebook.BookName + '.pdf'),
             pdf,
             embedTitle,
-            chapterCount: ebook.showIndexId.length           //含有多少章
+            chapterCount: ebook.showIndexId.length,           //含有多少章
+            defaultFont: await GetDefaultFont()
         };
 
         return new Promise(async (resolve, reject) => {
