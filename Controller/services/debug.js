@@ -102,7 +102,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /test": async (ctx) => {
-        const Epub = require("epub-gen");
+        const EPUB = require("epub-gen");
 
         const options = {
             title: "示例书籍",
@@ -115,7 +115,7 @@ module.exports = () => ({
             ]
         };
         
-        new Epub(options, "output.epub").promise.then(
+        new EPUB(options, "output.epub").promise.then(
             () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
             err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
         );

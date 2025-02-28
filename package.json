@@ -18,7 +18,7 @@
   "dependencies": {
     "async_hooks": "^1.0.0",
     "epub-gen": "^0.1.0",
-    "koa": "^2.15.3",
+    "koa": "^2.16.0",
     "koa-body": "^6.0.1",
     "koa-router": "^13.0.0",
     "koa-send": "^5.0.1",
@@ -27,7 +27,7 @@
     "nodemailer": "^6.10.0",
     "nodemailer-smtp-transport": "^2.7.4",
     "pdfkit": "^0.16.0",
-    "puppeteer": "^24.2.0",
+    "puppeteer": "^24.3.0",
     "sequelize": "^6.37.5",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",

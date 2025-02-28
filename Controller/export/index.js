@@ -1,7 +1,7 @@
 
 const BookMaker = require("./../../Core/Book/BookMaker");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
-const EPubMaker = require("./../../Core/EPub/EPubMaker.js")
+const EPUBMaker = require("./../../Core/EPUB/EPUBMaker.js")
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require('../../Entity/ApiResponse');
 const { SendAMail } = require("./../../Core/services/email")
@@ -171,7 +171,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
 
-        await EPubMaker.MakeEPubFile(param.bookId, param.chapterIds, param.fontFamliy, param.embedTitle).then(async (rsl) => {
+        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, param.fontFamliy, param.embedTitle).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,

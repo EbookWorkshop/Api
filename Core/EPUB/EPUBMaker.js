@@ -1,9 +1,9 @@
-const EPub = require("epub-gen");
+const EPUB = require("epub-gen");
 // const Ebook = require("../../Entity/Ebook/Ebook");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
 const { dataPath } = require("../../config");
-const { version } = require("./../../package.json");
+const { version } = require("../../package.json");
 
 /*
     const option = {
@@ -28,14 +28,14 @@ const { version } = require("./../../package.json");
             ...
         ]
     };
-    new Epub(option).promise.then(
+    new EPUB(option).promise.then(
         () => console.log("电子书生成成功！"),
         err => console.error("由于 ", err, " 生成电子书失败")
     );
 */
 
-class EPubMaker {
-    static async MakeEPubFile(bookId, showChpaters, fontFamliy, embedTitle) {
+class EPUBMaker {
+    static async MakeEPUBFile(bookId, showChpaters, fontFamliy, embedTitle) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
@@ -68,7 +68,7 @@ class EPubMaker {
 
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
         return new Promise((resolve, reject) => {
-            new EPub(option, output).promise
+            new EPUB(option, output).promise
                 .then(
                     () => resolve({ path: output }),
                     err => reject(err)
@@ -77,4 +77,4 @@ class EPubMaker {
     }
 }
 
-module.exports = EPubMaker;
+module.exports = EPUBMaker;

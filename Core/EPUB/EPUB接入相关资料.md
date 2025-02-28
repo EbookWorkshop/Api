@@ -1,4 +1,4 @@
-# Epub 接入的一些笔记
+# EPUB 接入的一些笔记
 摘录于：https://github.com/cyrilis/epub-gen/blob/master/README.md
 ## 用法
 
@@ -9,9 +9,9 @@
 然后在你的代码中加入以下内容：
 
 ```javascript
-    const Epub = require("epub-gen");
+    const EPUB = require("epub-gen");
 
-    new Epub(option [, output]).promise.then(
+    new EPUB(option [, output]).promise.then(
         () => console.log("电子书生成成功！"),
 	err => console.error("由于 ", err, " 生成电子书失败")
     );
@@ -23,7 +23,7 @@
 - `author`:    书籍作者的名字，字符串或数组，例如 `"Alice"` 或 `["Alice", "Bob"]`
 - `publisher`:    出版社名称（可选）
 - `cover`:    书籍封面图像（可选），文件路径（绝对路径）或网络 URL，例如 `"http://abc.com/book-cover.jpg"` 或 `"/User/Alice/images/book-cover.jpg"`
-- `output`:    输出路径（绝对路径），你也可以在使用 `new` 时将输出路径作为第二个参数传递，例如：`new Epub(options, output)`
+- `output`:    输出路径（绝对路径），你也可以在使用 `new` 时将输出路径作为第二个参数传递，例如：`new EPUB(options, output)`
 - `version`:    你可以指定生成的 EPUB 版本，`3` 是最新版本（ http://idpf.org/epub/30 ）或 `2` 是之前的版本（ http://idpf.org/epub/201 ，兼容性更好）。如果未指定，将默认为 `3`。
 - `css`:    如果你不喜欢我们的 CSS，你可以传递 CSS 字符串来替换我们的默认样式。例如：`"body{background: #000}"`
 - `fonts`:    包含在书籍中的自定义字体的路径数组，以便它们可以在自定义 CSS 中使用。例如：如果你将数组配置为 `fonts: ['/path/to/Merriweather.ttf']`，你可以在自定义 CSS 中使用以下内容：
@@ -62,7 +62,7 @@
 ## 示例代码：
 
 ```javascript
-    const Epub = require("epub-gen");
+    const EPUB = require("epub-gen");
 
     const option = {
         title: "爱丽丝梦游仙境", // *必需，书籍标题。
@@ -87,7 +87,7 @@
         ]
     };
 
-    new Epub(option, "/path/to/book/file/path.epub");
+    new EPUB(option, "/path/to/book/file/path.epub");
 
 ```
 

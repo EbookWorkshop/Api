@@ -83,13 +83,13 @@ class WorkerPool extends EventEmitter {
                     feeTime = Date.now() - lazyWorker.WaitingTime;
                 }
             }
-            if(!lazyWorker) return;
+            if (!lazyWorker) return;
             let workerId = this.workers.indexOf(lazyWorker);
             this.workers.splice(workerId, 1);
             let freeWorkersId = this.freeWorkers.indexOf(lazyWorker);
             this.freeWorkers.splice(freeWorkersId, 1);
             lazyWorker.terminate().then(() => {
-                em.emit("Debug.Log", `释放资源，关掉长期闲置线程。ID: ${lazyWorker.ID}\t已闲置${feeTime/1000}秒。`, "WORKERPOOL");
+                em.emit("Debug.Log", `释放资源，关掉长期闲置线程。ID: ${lazyWorker.ID}\t已闲置${feeTime / 1000}秒。`, "WORKERPOOL");
             }).catch((err) => {
                 em.emit("Debug.Log", `尝试关闭闲置线程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", err);
             });
@@ -246,7 +246,7 @@ class WorkerPool extends EventEmitter {
                 em.emit("Debug.Log", `已达到当前类别的最大线程数(${taskParam.maxThreadNum}-${curTypeNum})，需要等待资源`, "WORKERPOOL", taskParam.taskType);
                 return;
             }
-            this.runningThreadCountByType.set(taskParam.taskType, curTypeNum+1);
+            this.runningThreadCountByType.set(taskParam.taskType, curTypeNum + 1);
         }
 
         const worker = this.freeWorkers.shift();//空闲线程
@@ -343,6 +343,7 @@ class WorkerPool extends EventEmitter {
                 Param: worker.StartTime === 0 ? null : Object.assign({}, worker[kTaskParam]),
             }
         }
+
         return {
             // 最大线程数
             MaxThread: _Singleton_WorkerPool.maxThreadsNum,
@@ -353,12 +354,12 @@ class WorkerPool extends EventEmitter {
             //正在运行的任务
             // RunningTask: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
             //等待任务列表
-            WaitingTask: [..._Singleton_WorkerPool.waitingTask.keys().map(key => {
+            WaitingTask: [...(_Singleton_WorkerPool.waitingTask.keys.length == 0 ? [] : _Singleton_WorkerPool.waitingTask.keys().map(key => {
                 return {
                     type: key,
                     list: [..._Singleton_WorkerPool.waitingTask.get(key)],
                 }
-            })],
+            }))],
             //所有线程
             WorkerPool: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
         };
