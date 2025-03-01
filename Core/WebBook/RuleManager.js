@@ -20,7 +20,7 @@ class RuleManager {
             chapter: new ChapterOptions()
         };
 
-        let myModels= new Models();
+        let myModels = new Models();
         let allRules = await myModels.RuleForWeb.findAll({
             where: { Host: host }
         });
@@ -122,14 +122,13 @@ class RuleManager {
         const myModels = new Models();
 
         for (let p of rules) {
-            let oldRule = await myModels.RuleForWeb.findAll({
+            await myModels.RuleForWeb.destroy({
                 where: {
                     Host: p.host,
                     RuleName: p.ruleName
                 }
             });
-            for(let r of oldRule) r.destroy();
-
+            
             let rule = {
                 Host: p.host,
                 RuleName: p.ruleName,

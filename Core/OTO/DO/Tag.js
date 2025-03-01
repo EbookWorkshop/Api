@@ -73,14 +73,11 @@ class OTO_TAG {
      */
     static async RemoveTagOnBook(bookId, tagId) {
         const myModels = Models.GetPO();
-        let result = await myModels.EbookTag.findAll({
+        await myModels.EbookTag.destroy({
             where: {
                 BookId: bookId,
                 TagId: tagId
             }
-        });
-        result.forEach(element => {
-            element.destroy();
         });
 
         return true;

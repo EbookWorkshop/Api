@@ -129,10 +129,9 @@ module.exports = () => ({
             return;
         }
         const myModels = new Models();
-        let rules = await myModels.ReviewRule.findAll({
+        let rules = await myModels.ReviewRule.destroy({
             where: { id: id }
         });
-        rules.map((item) => item.destroy());
 
         new ApiResponse(rules).toCTX(ctx);
     },

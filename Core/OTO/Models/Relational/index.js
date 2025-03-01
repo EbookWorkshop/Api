@@ -34,8 +34,8 @@ module.exports = function (models) {
     // ReviewRule <-- --> ReviewRuleUsing <-- --> Ebook
     models.ReviewRule.hasMany(models.ReviewRuleUsing, { foreignKey: 'RuleId', sourceKey: 'id', onDelete: 'CASCADE' });
     models.ReviewRuleUsing.belongsTo(models.ReviewRule, { foreignKey: 'RuleId', targetKey: 'id' });
-    models.ReviewRuleUsing.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
     models.Ebook.hasMany(models.ReviewRuleUsing, { foreignKey: 'BookId', sourceKey: 'id', onDelete: 'CASCADE' });
+    models.ReviewRuleUsing.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id', onDelete: 'CASCADE' });
 
 
     // Ebook <-- --> EBookTag <-- --> Tag

@@ -137,12 +137,11 @@ module.exports = () => ({
         }
 
         const myModels = new Models();
-        let settings = await myModels.SystemConfig.findAll({
+        await myModels.SystemConfig.destroy({
             where: {
                 Group: EMAIL_SETTING_GROUP
             }
         });
-        for (let s of settings) s.destroy();
 
         await myModels.SystemConfig.create({
             Group: EMAIL_SETTING_GROUP,

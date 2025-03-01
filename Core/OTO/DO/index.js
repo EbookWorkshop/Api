@@ -129,34 +129,10 @@ class DO {
      */
     static async DeleteOneBook(bookId) {
         const myModels = new Models();
+        await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
 
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
-        if (ebook == null) return;
-        const index = await ebook.getEbookIndex();
-
-        //取得WebBook
-        const wbook = await ebook.getWebBook();
-        const wbSourceUrl = await wbook?.getWebBookIndexSourceURLs();
-
-        //开始删除
-        for (let i of index) {
-            if (wbook) {
-                const eIndex = await i.getWebBookIndex();
-                if (eIndex !== null) {
-                    const eIUrl = await eIndex.getWebBookIndexURLs() || [];
-                    for (let ei of eIUrl) {
-                        await ei.destroy();
-                    }
-                    await eIndex.destroy();
-                }
-            }
-            await i.destroy();
-        }
-        for (let wu of wbSourceUrl ?? []) {
-            await wu.destroy();
-        }
-        await wbook?.destroy();
         await ebook.destroy();
     }
 
