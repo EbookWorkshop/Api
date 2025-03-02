@@ -60,6 +60,20 @@ class OTO_WebBook {
 
         return await bookSources;
     }
+    /**
+     * 获取对应书的默认来源地址
+     * @param {*} bookId 
+     * @returns 
+     */
+    static async GetWebBookDefaultSourcesById(bookId) {
+        const myModels = new Models();
+        let webBook = await myModels.WebBook.findOne({
+            where: { BookId: bookId }
+        });
+        let bookSources = await webBook?.getWebBookIndexSourceURLs();
+
+        return bookSources[webBook.defaultIndex];
+    }
 
     /**
      * 根据章节ID获取对应的来源地址
@@ -220,6 +234,7 @@ class OTO_WebBook {
         webBook.MergeIndex = async ({ title, url }, orderNum) => {
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
                 webBook.tempMergeIndex.get(title).urls.push(url);
+                await myModels.EbookIndex.update({ OrderNum: orderNum }, { where: { BookId: webBook.BookId, Title: title } });//如果相同的章节重复出现，按最新的排序更新
                 return;
             }
             webBook.tempMergeIndex.set(title, { urls: [url] });
