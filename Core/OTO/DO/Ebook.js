@@ -65,6 +65,21 @@ class OTO_Ebook {
         if (book == null) return null;
         return await DO.ModelToEBook(book);
     }
+
+    /**
+     * 获取电子书信息
+     * @param {*} bookId 
+     * @returns 
+     */
+    static async GetEBookInfoById(bookId) {
+        const myModels = new Models();
+        let book = await myModels.Ebook.findByPk(bookId, {
+            attributes: ['id', 'BookName', 'Author', 'CoverImg','FontFamily']
+        });
+        if (book == null) return null;
+        return book.dataValues;
+    }
+
     /**
      * 通过书名查找书
      * @param {*} name 书名（强制去除空格）

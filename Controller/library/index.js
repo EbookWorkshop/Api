@@ -105,6 +105,40 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /library/bookinfo:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 拿到指定ID的书的信息
+     *     description: 拿到指定ID的书的信息
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取信息的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /bookinfo": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetEBookInfoById(bookId * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
      * /library/book/chapter:
      *   get:
      *     tags:

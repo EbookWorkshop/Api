@@ -133,6 +133,15 @@ class DO {
 
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
+        let CoverImg = ebook.CoverImg;
+        if(CoverImg != null && !CoverImg.startsWith("#")){
+            const fs = require("fs");
+            fs.unlinkSync(CoverImg);
+            let imgDir = path.dirname(CoverImg);
+            fs.rmdir(imgDir);
+        }
+
+        //删除书本
         await ebook.destroy();
     }
 
