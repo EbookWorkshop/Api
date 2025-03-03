@@ -105,7 +105,7 @@ module.exports = () => ({
 
     /**
      * @swagger
-     * /library/bookinfo:
+     * /library/book/metadata:
      *   get:
      *     tags:
      *       - Library —— 图书馆
@@ -127,7 +127,7 @@ module.exports = () => ({
      *       600:
      *         description: 参数错误，参数类型错误
      */
-    "get /bookinfo": async (ctx) => {
+    "get /book/metadata": async (ctx) => {
         let bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
@@ -135,6 +135,64 @@ module.exports = () => ({
         }
 
         new ApiResponse(await DO.GetEBookInfoById(bookId * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/metadata:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 修改元数据
+     *     description: 修改书的元数据
+     *     parameters:
+     *     - name: book
+     *       in: body
+     *       required: true
+     *       description: 书的元数据
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "patch /book/metadata": async (ctx) => {
+        let bookInfo = ctx.request.body;
+
+        let rsl = false;
+
+        ApiResponse.GetResult(bookInfo).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/search:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 检索图书馆
+     *     description: 检索图书馆
+     *     parameters:
+     *     - name: data
+     *       in: body
+     *       required: true
+     *       description: 查询条件
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /book/search": async (ctx) => {
+        let bookInfo = await parseJsonFromBodyData(ctx, ["keyword"]);
+
+        let rsl = await DO.Search(bookInfo.keyword, bookInfo.option);
+
+        ApiResponse.GetResult(rsl).toCTX(ctx);
     },
 
     /**

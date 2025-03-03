@@ -74,7 +74,7 @@ class OTO_Ebook {
     static async GetEBookInfoById(bookId) {
         const myModels = new Models();
         let book = await myModels.Ebook.findByPk(bookId, {
-            attributes: ['id', 'BookName', 'Author', 'CoverImg','FontFamily']
+            attributes: ['id', 'BookName', 'Author', 'CoverImg', 'FontFamily']
         });
         if (book == null) return null;
         return book.dataValues;
@@ -182,10 +182,10 @@ class OTO_Ebook {
      */
     static async UpdateChapterOrder(chapterOrderList) {
         const myModels = new Models();
-        const rsl = await Promise.all(chapterOrderList.map(chapter => 
+        const rsl = await Promise.all(chapterOrderList.map(chapter =>
             myModels.EbookIndex.update(
-            { OrderNum: chapter.newOrder },
-            { where: { id: chapter.indexId } }
+                { OrderNum: chapter.newOrder },
+                { where: { id: chapter.indexId } }
             )
         ));
         return rsl;
@@ -203,6 +203,69 @@ class OTO_Ebook {
         chapter.OrderNum = maxOrderNum + 1;
         let rsl = await myModels.EbookIndex.create(chapter);
         return rsl;
+    }
+
+
+    static async Search(keyword, option) {
+        let where = {};
+        if (!option) {      //默认搜索
+            where = {
+                [Models.Op.or]: [
+                    { Title: { [Models.Op.like]: `%${keyword}%` } },
+                    { Content: { [Models.Op.like]: `%${keyword}%` } },
+                ],
+            };
+        } else {
+            if (option.type == "all" && option.bookId && option.bookId.length > 0) {
+                where = {
+                    [Op.and]: [
+                        {
+                            [Models.Op.or]: [
+                                { Title: { [Models.Op.like]: `%${keyword}%` } },
+                                { Content: { [Models.Op.like]: `%${keyword}%` } },
+                            ],
+                        },
+                        {
+                            BookId: {
+                                [Models.Op.in]: option.bookId,
+                            },
+                        },
+                    ],
+                };
+            } else {
+                if (option.type == "title") {
+                    where = {
+                        Title: {
+                            [Models.Op.like]: `%${keyword}%`,
+                        },
+                    };
+                } else if (option.type == "content") {
+                    where = {
+                        Content: {
+                            [Models.Op.like]: `%${keyword}%`,
+                        },
+                    };
+                }
+                if (option.bookId && option.bookId.length > 0) {
+                    where.BookId = {
+                        [Models.Op.in]: option.bookId,
+                    };
+                }
+            }
+        }
+
+        const myModels = new Models();
+        let result = await myModels.EbookIndex.findAll({
+            include: [{
+                model: myModels.Ebook,
+                as: "Ebook",
+                attributes: ["BookName"]
+            }],
+            where: where,
+            attributes: ["id", "Title", "BookId", "Content"],
+        });
+
+        return result;
     }
 }
 
