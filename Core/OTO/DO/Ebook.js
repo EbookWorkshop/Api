@@ -205,7 +205,12 @@ class OTO_Ebook {
         return rsl;
     }
 
-
+    /**
+     * 全库检索
+     * @param {string} keyword 搜索关键字
+     * @param {object|undefined} option 高级搜索选项
+     * @returns 
+     */
     static async Search(keyword, option) {
         let where = {};
         if (!option) {      //默认搜索
@@ -265,7 +270,25 @@ class OTO_Ebook {
             attributes: ["id", "Title", "BookId", "Content"],
         });
 
-        return result;
+        //统计命中次数
+        const escapedWord = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedWord, "gi");
+        let newResult = result.map(item => {
+            const matchesTitle = item.Title?.match(regex);
+            const matchesContent = item.Content?.match(regex);
+
+            const { Ebook, ...rest } = item.dataValues;
+            return {
+                ...rest,
+                HitCount: (matchesTitle?.length ?? 0) + (matchesContent?.length ?? 0),
+                BookName: Ebook.BookName
+            };
+        });
+
+        //按命中次数倒序排序
+        newResult.sort((a, b) => b.HitCount - a.HitCount);
+
+        return newResult;
     }
 }
 

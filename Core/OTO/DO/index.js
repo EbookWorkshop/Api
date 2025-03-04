@@ -129,7 +129,7 @@ class DO {
      */
     static async DeleteOneBook(bookId) {
         const myModels = new Models();
-        await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
+        // await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
 
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
