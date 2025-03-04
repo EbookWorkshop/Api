@@ -1,7 +1,6 @@
 const DO = require("./index");
 const Ebook = require("../../../Entity/Ebook/Ebook");
 const Models = require("./../Models");
-// const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
 
@@ -221,42 +220,47 @@ class OTO_Ebook {
                 ],
             };
         } else {
-            if (option.type == "all" && option.bookId && option.bookId.length > 0) {
-                where = {
-                    [Op.and]: [
-                        {
-                            [Models.Op.or]: [
-                                { Title: { [Models.Op.like]: `%${keyword}%` } },
-                                { Content: { [Models.Op.like]: `%${keyword}%` } },
-                            ],
-                        },
-                        {
-                            BookId: {
-                                [Models.Op.in]: option.bookId,
-                            },
-                        },
-                    ],
+            let typeParam = {};
+            if (option.type == "title") {
+                typeParam = {
+                    Title: {
+                        [Models.Op.like]: `%${keyword}%`,
+                    },
+                };
+            } else if (option.type == "content") {
+                typeParam = {
+                    Content: {
+                        [Models.Op.like]: `%${keyword}%`,
+                    },
                 };
             } else {
-                if (option.type == "title") {
-                    where = {
-                        Title: {
-                            [Models.Op.like]: `%${keyword}%`,
-                        },
-                    };
-                } else if (option.type == "content") {
-                    where = {
-                        Content: {
-                            [Models.Op.like]: `%${keyword}%`,
-                        },
-                    };
-                }
-                if (option.bookId && option.bookId.length > 0) {
-                    where.BookId = {
-                        [Models.Op.in]: option.bookId,
-                    };
-                }
+                typeParam = {
+                    [Models.Op.or]: [
+                        { Title: { [Models.Op.like]: `%${keyword}%` } },
+                        { Content: { [Models.Op.like]: `%${keyword}%` } },
+                    ],
+                };
             }
+
+            let idParam = [];
+            if (option.bookId && option.bookId.length > 0) {
+                idParam.push({
+                    BookId: {
+                        [Models.Op.in]: option.bookId,
+                    },
+                });
+            }
+            if (option.notFind && option.notFind.length > 0) {
+                idParam.push({
+                    BookId: {
+                        [Models.Op.notIn]: option.notFind,
+                    },
+                });
+            }
+
+            where = {
+                [Models.Op.and]: [typeParam, idParam],
+            };
         }
 
         const myModels = new Models();
