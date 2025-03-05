@@ -158,29 +158,34 @@ class OTO_WebBook {
          */
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: webBook.BookId }, order: ["OrderNum"] });
+            let eIndexs = await myModels.EbookIndex.findAll({
+                include: myModels.WebBookIndex,
+                where: {
+                    BookId: webBook.BookId,
+                    isHidden: false
+                },
+                order: ["OrderNum"]
+            });
             await ebookObj.InitReviewRules();       //注意：InitReviewRules定义在 DO.ModelToBookObj 创建的实体上
-            for (let i of eIndexs) {
-                let eI = await i.getWebBookIndex();
 
-                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues });
+            let sourceUrls = await webModel.getWebBookIndexSourceURLs();
+            let defaultIndex = webBook.defaultIndex;
+            if (defaultIndex > sourceUrls.length) defaultIndex = 0;
+            const defaultHost = new URL(sourceUrls[defaultIndex].Path).host;
+
+            for (let i of eIndexs) {
+                let eI = await i.getWebBookIndex();//加载 WebBookChapter 内容，即取得每章网文的配置
+
+                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost });
+
                 let urls = await eI?.getWebBookIndexURLs() || [];
                 for (let u of urls) tIdx.URL.push(u.Path);
 
-                [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
+                // [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
+                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.WebTitle])
 
                 webBook.Index.push(tIdx);
             }
-        }
-
-        /**
-         * 拿到章节的最大序号
-         * @returns 当前最大的排序序号
-         */
-        webBook.GetMaxIndexOrder = async () => {
-            const myModels = new Models();
-            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
-            return lastIndex?.OrderNum || 1;
         }
 
         /**

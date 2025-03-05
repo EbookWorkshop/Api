@@ -116,6 +116,15 @@ class DO {
             }
         }
 
+        /**
+         * 拿到最大的章节排序号
+         * @returns {number} 最大章节序号
+         */
+        ebook.GetMaxIndexOrder = async () => {
+            const myModels = Models.GetPO();
+            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
+            return lastIndex?.OrderNum || 1;
+        }
         await ebook.ReloadIndex();
 
         return ebook;
@@ -134,7 +143,7 @@ class DO {
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
         let CoverImg = ebook.CoverImg;
-        if(CoverImg != null && !CoverImg.startsWith("#")){
+        if (CoverImg != null && !CoverImg.startsWith("#")) {
             const fs = require("fs");
             fs.unlinkSync(CoverImg);
             let imgDir = path.dirname(CoverImg);
@@ -144,7 +153,6 @@ class DO {
         //删除书本
         await ebook.destroy();
     }
-
 }
 
 /**

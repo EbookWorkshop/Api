@@ -159,11 +159,12 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "patch /book/metadata": async (ctx) => {
-        let bookInfo = ctx.request.body;
+        let bookInfo = await parseJsonFromBodyData(ctx, ["id"]);
+        if(!bookInfo) return;
 
-        let rsl = false;
+        let rsl = DO.EditEBookInfo(bookInfo);
 
-        ApiResponse.GetResult(bookInfo).toCTX(ctx);
+        ApiResponse.GetResult(rsl).toCTX(ctx);
     },
 
     /**

@@ -16,6 +16,11 @@ class WebIndex extends Index {
          * 章节页地址，多来源
          */
         this.URL = URL || [];//TODO:该用什么方式管理多来源
+
+        /**
+         * 采用哪个网站来源的地址
+         */
+        this.curHost = "";
     }
 }
 

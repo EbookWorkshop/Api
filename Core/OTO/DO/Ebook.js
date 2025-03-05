@@ -32,7 +32,7 @@ class OTO_Ebook {
     }
 
     /**
-     * Ebook 持久化
+     * Ebook 持久化 DO to PO
      * @param {Ebook} book 
      * @returns 
      */
@@ -77,6 +77,20 @@ class OTO_Ebook {
         });
         if (book == null) return null;
         return book.dataValues;
+    }
+
+    /**
+     * 修改电子书元数据
+     * @param {*} book 
+     */
+    static async EditEBookInfo(book) {
+        const myModels = Models.GetPO();
+        let bookid = book.id;
+        delete book.id;
+        //TODO: 上传封面图片
+        
+        let rsl = await myModels.Ebook.update(book, { where: { id: bookid } });
+        return rsl;
     }
 
     /**
