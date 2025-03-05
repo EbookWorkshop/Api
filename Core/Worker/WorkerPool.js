@@ -216,13 +216,14 @@ class WorkerPool extends EventEmitter {
 
     /**
      * 启用一个线程，
-     * @param {{taskfile,param,taskType,maxThreadNum}} taskParam 
+     * @param {{taskfile,param,taskType,maxThreadNum,highPriority}} taskParam 
      * ```js
         {
             taskfile,   //模块文件地址，可以用 ‘@’ 代表根目录。
             param,      //线程执行的传入参数，要求为可序列化的内容
             taskType,   //可选，按类别限制线程最大数控制时，用于区别线程类别
-            maxThreadNum//可选，当taskType不为空时，用于限制指定类别的线程最大数量。
+            maxThreadNum,//可选，当taskType不为空时，用于限制指定类别的线程最大数量。
+            highPriority,//可选，是否优先执行，默认为false
         }
      *
      * ```
@@ -274,7 +275,8 @@ class WorkerPool extends EventEmitter {
             taskfile,   //模块文件地址，可以用 ‘@’ 代表根目录。
             param,      //线程执行的传入参数，要求为可序列化的内容
             taskType,   //可选，按类别限制线程最大数控制时，用于区别线程类别
-            maxThreadNum//可选，当taskType不为空时，用于限制指定类别的线程最大数量。
+            maxThreadNum,//可选，当taskType不为空时，用于限制指定类别的线程最大数量。
+            highPriority,//可选，是否优先执行，默认为false
         }
      *
      * ```
@@ -308,7 +310,10 @@ class WorkerPool extends EventEmitter {
             this.waitingTask.set(taskParam.taskType || "", taskList);
         }
 
-        taskList.push({ taskParam, callback });
+        if (taskParam.highPriority)
+            taskList.unshift({ taskParam, callback });
+        else
+            taskList.push({ taskParam, callback });
     }
 
     /**
@@ -344,6 +349,16 @@ class WorkerPool extends EventEmitter {
             }
         }
 
+        let wtTask = [];
+        if (_Singleton_WorkerPool.waitingTask.size > 0) {
+            _Singleton_WorkerPool.waitingTask.keys().forEach(key => {
+                wtTask.push({
+                    type: key,
+                    list: [..._Singleton_WorkerPool.waitingTask.get(key)],
+                })
+            });
+        }
+
         return {
             // 最大线程数
             MaxThread: _Singleton_WorkerPool.maxThreadsNum,
@@ -354,12 +369,7 @@ class WorkerPool extends EventEmitter {
             //正在运行的任务
             // RunningTask: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
             //等待任务列表
-            WaitingTask: [...(_Singleton_WorkerPool.waitingTask.keys.length == 0 ? [] : _Singleton_WorkerPool.waitingTask.keys().map(key => {
-                return {
-                    type: key,
-                    list: [..._Singleton_WorkerPool.waitingTask.get(key)],
-                }
-            }))],
+            WaitingTask: wtTask,
             //所有线程
             WorkerPool: _Singleton_WorkerPool.workers.map(worker => getWorkerData(worker)),
         };

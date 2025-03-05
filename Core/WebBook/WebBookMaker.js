@@ -100,7 +100,8 @@ class WebBookMaker {
                     param: {
                         url: imgPath,
                         savePath: saveImageFilePath
-                    }
+                    },
+                    highPriority: true
                 }).then((result) => {
                     new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
                     this.myWebBook.SetCoverImg(coverImgPath);
@@ -198,13 +199,26 @@ class WebBookMaker {
             //下一页
             if (result.has("ContentNextPage")) {
                 let nextPageResult = result.get("ContentNextPage")[0];
-                while (nextPageResult.text == nextPageResult.Rule.CheckSetting) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
-                    let npUrl = nextPageResult.url;
-                    if (!npUrl) break;
+                let nextPageUrl = url;
+                while (nextPageResult.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
+                    if (nextPageUrl == nextPageResult?.url) break;        //防止死循环
+                    nextPageUrl = nextPageResult.url;
+                    if (!nextPageUrl) break;
 
-                    let tempResult = await GetDataFromUrl(npUrl, option);
+                    // let tempResult = await GetDataFromUrl(npUrl, option);
+
+                    let tempResult = await wPool.RunTaskAsync({
+                        taskfile: "@/Core/Utils/GetDataFromUrl",
+                        param: {
+                            url: nextPageUrl,
+                            setting: option
+                        },
+                        taskType: "puppeteer",
+                        maxThreadNum: 10
+                    });
+
                     chap.Content += tempResult.get("Content")[0].text;
-                    nextPageResult = tempResult.get("ContentNextPage")[0];
+                    nextPageResult = tempResult.get("ContentNextPage")[0];          //TODO: 需要更合适的方式找到命中的那页
                 }
             }
 

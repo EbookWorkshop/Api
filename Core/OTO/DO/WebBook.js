@@ -159,10 +159,13 @@ class OTO_WebBook {
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({
-                include: myModels.WebBookIndex,
+                include: {
+                    model: myModels.WebBookIndex,
+                    as: 'WebBookIndex',
+                    where: { isHidden: false }
+                },
                 where: {
-                    BookId: webBook.BookId,
-                    isHidden: false
+                    BookId: webBook.BookId
                 },
                 order: ["OrderNum"]
             });
@@ -174,7 +177,7 @@ class OTO_WebBook {
             const defaultHost = new URL(sourceUrls[defaultIndex].Path).host;
 
             for (let i of eIndexs) {
-                let eI = await i.getWebBookIndex();//加载 WebBookChapter 内容，即取得每章网文的配置
+                let eI = i.WebBookIndex; //加载 WebBookChapter 内容，即取得每章网文的配置
 
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost });
 
