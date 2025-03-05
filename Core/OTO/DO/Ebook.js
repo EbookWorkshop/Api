@@ -81,15 +81,14 @@ class OTO_Ebook {
 
     /**
      * 修改电子书元数据
-     * @param {*} book 
+     * @param {number} id 书ID
+     * @param {*} metadata 
+     * @returns 
      */
-    static async EditEBookInfo(book) {
+    static async EditEBookInfo(id, metadata) {
         const myModels = Models.GetPO();
-        let bookid = book.id;
-        delete book.id;
-        //TODO: 上传封面图片
-        
-        let rsl = await myModels.Ebook.update(book, { where: { id: bookid } });
+
+        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
         return rsl;
     }
 

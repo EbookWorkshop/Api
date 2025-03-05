@@ -160,9 +160,14 @@ module.exports = () => ({
      */
     "patch /book/metadata": async (ctx) => {
         let bookInfo = await parseJsonFromBodyData(ctx, ["id"]);
-        if(!bookInfo) return;
+        if (!bookInfo) return;
 
-        let rsl = DO.EditEBookInfo(bookInfo);
+        let metadata = {}
+        if (bookInfo.name) metadata.BookName = bookInfo.name;
+        if (bookInfo.author) metadata.Author = bookInfo.author;
+        if (bookInfo.font) metadata.FontFamily = bookInfo.font;
+
+        let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
