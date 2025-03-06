@@ -4,6 +4,7 @@ const Ebook = require("./../../../Entity/Ebook/Ebook");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
+const SystemConfigService = require("../services/SystemConfig");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
 // const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
 // const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
@@ -106,8 +107,10 @@ class OTO_WebBook {
 
         if (created) {
             //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
+            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
-                where: { BookName: bookName }
+                where: { BookName: bookName },
+                defaults: { FontFamily: FontFamily }
             });
 
             if (ecreated) {

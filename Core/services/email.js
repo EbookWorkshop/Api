@@ -1,14 +1,12 @@
 //发邮件 邮箱管理
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
-const EventManager = require("./../../Core/EventManager");
+const EventManager = require("../../Core/EventManager");
 const path = require('path')
-const Models = require("./../../Core/OTO/Models");
-const { version } = require("./../../package.json");
+const { version } = require("../../package.json");
 
-
-const EMAIL_SETTING_GROUP = "send_email_account";       //系统设置-邮箱的配置分组
-const KINDLE_INBOX = "kindle_inbox";                   //系统设置-收件箱-可用于kindle的收件箱
+const { EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("../../Entity/SystemConfigGroup");
+const SystemConfigService = require("./SystemConfig");
 
 
 /**
@@ -47,37 +45,18 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
         try {
             // console.log("准备发送邮件：", title, content, files)
 
-            const myModels = new Models();
+            const mySystemConfig = new SystemConfigService();
 
             if (mailto === "") {
-                let mt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: KINDLE_INBOX,
-                        Name: "address"
-                    }
-                });
-                if (mt) mailto = mt.Value;
+                mailto =await mySystemConfig.getConfig(KINDLE_INBOX, "address");
             }
             if (sender === "") {
-                let mt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: EMAIL_SETTING_GROUP,
-                        Name: "address"
-                    }
-                });
-                if (mt) sender = mt.Value;
+                sender = await mySystemConfig.getConfig(EMAIL_SETTING_GROUP, "address");
             }
             if (pass === "") {
-                let pt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: EMAIL_SETTING_GROUP,
-                        Name: "password"
-                    }
-                });
-                if (pt) pass = pt.Value;
+                pass = await mySystemConfig.getConfig(EMAIL_SETTING_GROUP, "password");
             }
-
-
+            
             if (sender === "" || mailto === "" || pass === "") {
                 reject("默认邮箱配置不完整，不能发送邮件，请先在系统设置收/发件信息；或直接指定收/发件信息。");
                 return;

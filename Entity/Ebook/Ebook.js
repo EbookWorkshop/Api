@@ -27,7 +27,7 @@ class Ebook {
         this.Author = Author?.trim();
 
         //字体
-        this.FontFamily = FontFamily || "微软雅黑";
+        this.FontFamily = FontFamily;
 
         //字号
         this.FontSize = FontSize || 22;   //pt
