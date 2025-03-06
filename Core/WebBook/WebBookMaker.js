@@ -4,7 +4,6 @@ const config = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
 // const WebIndex = require("./../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../Entity/WebBook/WebChapter");
-const { GetDataFromUrl } = require("../Utils/GetDataFromUrl");
 const RuleManager = require("./RuleManager");
 const EventManager = require("./../EventManager");
 const DO = require("./../OTO/DO");
@@ -77,7 +76,7 @@ class WebBookMaker {
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
                 this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
-                this.myWebBook.AddIndexUrl(curUrl);
+                await this.myWebBook.AddIndexUrl(curUrl);
             }
 
             if (result.has("ChapterList")) {    //爬到的每一章内容

@@ -4,7 +4,7 @@ const Ebook = require("./../../../Entity/Ebook/Ebook");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
-const SystemConfigService = require("../services/SystemConfig");
+const SystemConfigService = require("../../services/SystemConfig");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
 // const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
 // const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
@@ -177,7 +177,7 @@ class OTO_WebBook {
             let sourceUrls = await webModel.getWebBookIndexSourceURLs();
             let defaultIndex = webBook.defaultIndex;
             if (defaultIndex > sourceUrls.length) defaultIndex = 0;
-            const defaultHost = new URL(sourceUrls[defaultIndex].Path).host;
+            const defaultHost = sourceUrls.length > 0 ? new URL(sourceUrls[defaultIndex].Path).host : null;
 
             for (let i of eIndexs) {
                 let eI = i.WebBookIndex; //加载 WebBookChapter 内容，即取得每章网文的配置
@@ -243,6 +243,8 @@ class OTO_WebBook {
          * @param {*} orderNum 
          */
         webBook.MergeIndex = async ({ title, url }, orderNum) => {
+            const myModels = new Models();
+
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
                 webBook.tempMergeIndex.get(title).urls.push(url);
                 await myModels.EbookIndex.update({ OrderNum: orderNum }, { where: { BookId: webBook.BookId, Title: title } });//如果相同的章节重复出现，按最新的排序更新
@@ -250,7 +252,6 @@ class OTO_WebBook {
             }
             webBook.tempMergeIndex.set(title, { urls: [url] });
 
-            const myModels = new Models();
             let wbIndex = await myModels.WebBookIndex.findOne({
                 where: { WebTitle: title },
                 include: {
