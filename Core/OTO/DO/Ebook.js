@@ -11,24 +11,20 @@ class OTO_Ebook {
      * 获取图书列表
      */
     static async GetBookList(tagid) {
-        const myModels = new Models();
-        let bookListModels;
-        let param = { order: [["id", "DESC"]] }
-        if (tagid > 0) {
-            param.include = [{
-                model: myModels.EbookTag,
-                require: false,
-                where: {
-                    TagId: tagid
-                }
-            }];
-        }
-        bookListModels = await myModels.Ebook.findAll(param);
-        let bookList = [];
-        for (let b of bookListModels) {
-            bookList.push(new Ebook({ ...b.dataValues }));
-        }
-        return bookList;
+        const myModels = Models.GetPO();
+        const param = {
+            order: [["id", "DESC"]],
+            ...(tagid > 0 && {
+                include: [{
+                    model: myModels.EbookTag,
+                    required: true,     //false：left join
+                    where: { TagId: tagid }
+                }]
+            })
+        };
+
+        const bookListModels = await myModels.Ebook.findAll(param);
+        return bookListModels.map(b => new Ebook(b.dataValues));
     }
 
     /**
@@ -37,20 +33,32 @@ class OTO_Ebook {
      * @returns 
      */
     static async EBookObjToModel(book) {
-        let tbook = await DO.GetEBookByName(book.BookName);
-        if (tbook != null) DO.DeleteOneBook(tbook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
+        const PO = Models.GetPO();
+        try {
+            let existingBook = await DO.GetEBookByName(book.BookName);
+            if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
 
-        if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
-        let PO = Models.GetPO();
-        let poBook = await PO.Ebook.create({
-            ...book
-        });
+            if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
 
-        for (let i of book.Index) {
-            let result = await poBook.createEbookIndex({ ...i, Content: book.Chapters.get(i.Title) });
+            const t = PO.sequelize.transaction(); // 开启事务
+            let poBook = await PO.Ebook.create({
+                ...book
+            }, { transaction: t });
+
+            await Promise.all([...book.Index].map(async i =>
+                poBook.createEbookIndex({
+                    ...i,
+                    Content: book.Chapters.get(i.Title)
+                }, { transaction: t })
+            ));
+
+            await t.commit();
+            return true;
+        } catch (e) {
+            // console.log("存储书失败：", book, e);
+            await t.rollback();
+            return false;
         }
-
-        return true;
     }
 
     /**
@@ -276,7 +284,7 @@ class OTO_Ebook {
             };
         }
 
-        const myModels = new Models();
+        const myModels = Models.GetPO();
         let result = await myModels.EbookIndex.findAll({
             include: [{
                 model: myModels.Ebook,

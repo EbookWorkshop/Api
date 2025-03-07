@@ -412,4 +412,35 @@ module.exports = () => ({
         new ApiResponse(await DO.UpdateChapterOrder(param)).toCTX(ctx);
     },
 
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   delete:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 删除指定章节
+     *     description: 删除章节
+     *     parameters:
+     *     - name: chapterid
+     *       in: query
+     *       required: true
+     *       description: 需删除的章节ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete /book/chapter": async (ctx) => {
+        let chapterId = ctx.query.chapterid;
+        if (chapterId * 1 != chapterId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.DeleteChapter(chapterId * 1)).toCTX(ctx);
+    }
 });
