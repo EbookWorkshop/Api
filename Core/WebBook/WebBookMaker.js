@@ -83,7 +83,7 @@ class WebBookMaker {
                 let cl = result.get("ChapterList");
                 if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
                 for (let i of cl)
-                    this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
+                    await this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
             if (result.has("BookCover")) {  //保存封面
