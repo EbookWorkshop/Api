@@ -34,13 +34,13 @@ class OTO_Ebook {
      */
     static async EBookObjToModel(book) {
         const PO = Models.GetPO();
+        const t = await PO.sequelize.transaction(); // 开启事务
         try {
             let existingBook = await DO.GetEBookByName(book.BookName);
             if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
 
             if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
 
-            const t = PO.sequelize.transaction(); // 开启事务
             let poBook = await PO.Ebook.create({
                 ...book
             }, { transaction: t });

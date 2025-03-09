@@ -26,7 +26,6 @@ class OTO_WebBook {
 
         let bookList = [];
         for (let b of bookListModels) {
-            // console.log(...b.Ebook.dataValues, ...b.dataValues)
             bookList.push(new WebBook({ ...b.Ebook.dataValues, ...b.dataValues }));
         }
         return bookList;
@@ -90,6 +89,20 @@ class OTO_WebBook {
         let webBookIndex = await webBook;
 
         return webBookIndex.WebBookIndexURLs;
+    }
+
+    static async SetWebBookChapterSources(id, url) {
+        const myModels = Models.GetPO();
+        let rsl = await myModels.WebBookIndexURL.update(
+            {
+                Path: url,
+            },
+            {
+                where: {
+                    id: id
+                }
+            });
+        return rsl;
     }
 
     /**
@@ -181,11 +194,11 @@ class OTO_WebBook {
 
             for (let i of eIndexs) {
                 let eI = i.WebBookIndex; //加载 WebBookChapter 内容，即取得每章网文的配置
-
-                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost });
+                // console.log("ReloadIndex", i.dataValues, eI?.dataValues)
+                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
 
                 let urls = await eI?.getWebBookIndexURLs() || [];
-                for (let u of urls) tIdx.URL.push(u.Path);
+                for (let u of urls) tIdx.URL.push({ id: u.id, Path: u.Path });
 
                 // [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
                 [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.WebTitle])

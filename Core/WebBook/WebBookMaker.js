@@ -329,7 +329,7 @@ class WebBookMaker {
 
         //TODO:
         for (let u of urls) {
-            if (u.includes(hostName)) return u;
+            if (u.Path.includes(hostName)) return u.Path;
         }
 
         return urls[0];

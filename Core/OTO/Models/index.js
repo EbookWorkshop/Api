@@ -17,6 +17,7 @@ class Models {
         if (PO_MODELS != null) return PO_MODELS;
 
         PO_MODELS = this;
+        this.sequelize = sequelizeConnect;
 
         AutoInit(sequelizeConnect);
 
