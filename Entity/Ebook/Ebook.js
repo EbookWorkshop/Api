@@ -30,7 +30,7 @@ class Ebook {
         this.FontFamily = FontFamily;
 
         //字号
-        this.FontSize = FontSize || 22;   //pt
+        this.FontSize = FontSize || 29;   //pt
         //封面图片
         this.CoverImg = CoverImg;
 

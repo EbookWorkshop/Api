@@ -9,9 +9,9 @@ const path = require("path");
 const { dataPath } = require("../../config");
 const fs = require('fs');
 const { CheckAndMakeDir } = require("../Server")
-
+// const similarity = require('string-similarity'); // 新增相似度计算库
 const SystemConfigService = require("../services/SystemConfig");
-
+const Models = require("../OTO/Models");
 
 class BookMaker {
     /**
@@ -107,6 +107,80 @@ class BookMaker {
             }
             writeStream.end();
         });
+    }
+
+    /**
+     * 查找指定书籍中的重复/相似内容
+     * @param {number} bookId 书籍ID
+     * @param {number} [threshold=0.8] 相似度阈值（0-1）
+     * @returns {Promise<Array<{original: Chapter, duplicates: Chapter[], similarity: number}>>}
+     */
+    static async FindDuplicateContents(bookId, threshold = 0.5) {
+        const ebook = await Do2Po.GetEBookById(bookId);
+        if (!ebook) throw new Error('书籍不存在');
+
+        // 创建相似度映射表
+        const duplicates = [];
+        const processed = new Set();            // 已命中的章节索引
+
+        const myModels = Models.GetPO();
+        const chipLen = 100;
+        for (let i of ebook.Index) {
+            if (!i.IsHasContent) continue;//跳过没有内容的章节
+
+            let curChap = await ebook.ReloadChapter(i.IndexId);
+            if (processed.has(curChap.IndexId)) continue;//已处理过命中的
+
+            let simple = Array(5).fill(0).map(n => {
+                let t = Math.floor(Math.random() * 1000000000000000 % (curChap.Content.length - chipLen));
+                return curChap.Content.slice(t, t + chipLen);
+            });
+            let simpleWhere = simple.map(n => {
+                return {
+                    [Models.Op.like]: `%${n}%`
+                }
+            })
+
+            let res = await myModels.EbookIndex.findAll({
+                where: {
+                    BookId: ebook.BookId,
+                    id: {
+                        [Models.Op.ne]: i.IndexId
+                    },
+                    Content: {
+                        [Models.Op.or]: simpleWhere
+                    }
+                }
+            });
+
+            processed.add(i.IndexId);
+            if (res.length <= 0) continue;
+            let rslCount = [];
+            for (let r of res) {
+                let similarity = 0;
+                for (let s of simple) {
+                    if (r.Content.includes(s)) similarity += 1;
+                }
+
+                if (similarity / simple.length < threshold) continue;       // 相似度小于阈值，跳过
+
+                rslCount.push({
+                    id: r.id,
+                    title: r.Title,
+                    similarity: similarity / simple.length
+                });
+                processed.add(r.id);
+            }
+
+            duplicates.push({
+                original: {
+                    id: curChap.IndexId,
+                    title: curChap.Title,
+                },
+                duplicates: rslCount.sort((a, b) => b.similarity - a.similarity),
+            });
+        }
+        return duplicates;
     }
 }
 module.exports = BookMaker;

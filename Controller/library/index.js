@@ -304,6 +304,7 @@ module.exports = () => ({
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
+
     /**
      * @swagger
      * /library/emptybook:
@@ -442,5 +443,47 @@ module.exports = () => ({
         }
 
         new ApiResponse(await DO.DeleteChapter(chapterId * 1)).toCTX(ctx);
-    }
+    },
+
+    /**
+     * @swagger
+     * /library/book/duplicates:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 查找重复章节内容
+     *     description: 根据相似度阈值查找重复章节
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 书籍ID
+     *       schema:
+     *         type: integer
+     *     - name: threshold
+     *       in: query
+     *       required: false
+     *       description: 相似度阈值(0-1，默认0.5)
+     *       schema:
+     *         type: number
+     *     responses:
+     *       200:
+     *         description: 查重结果
+     */
+    "get /book/duplicates": async (ctx) => {
+        const bookId = ctx.query.bookid * 1;
+        const threshold = parseFloat(ctx.query.threshold) || 0.5;
+
+        if (isNaN(bookId)) {
+            new ApiResponse(null, "无效的书籍ID", 60000).toCTX(ctx);
+            return;
+        }
+
+        try {
+            const duplicates = await BookMaker.FindDuplicateContents(bookId, threshold);
+            new ApiResponse(duplicates).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, error.message, 50000).toCTX(ctx);
+        }
+    },
 });

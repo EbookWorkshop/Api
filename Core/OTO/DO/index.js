@@ -1,7 +1,7 @@
 const { readdir } = require('node:fs/promises');
 const path = require("path");
 const EventManager = require("../../EventManager");
-const Models = require("./../Models");
+const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
@@ -38,14 +38,16 @@ class DO {
 
         /**
          * 从数据库加载指定章节到当前对象
-         * @param {*} cId 章节ID
+         * @param {number} cId 章节ID
+         * @returns {Chapter|null}   返回已加载的章节内容
          */
         ebook.ReloadChapter = async (cId) => {
             let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: ebook.BookId } });
-            if (ebookIndex == null) return;
+            if (ebookIndex == null) return null;
             let cp = new Chapter({ ...ebookIndex.dataValues });
             // if (cp.Content) 
             ebook.Chapters.set(cp.Title, cp);
+            return cp;
         }
 
         /**
