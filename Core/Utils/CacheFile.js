@@ -17,8 +17,11 @@ function CacheFile(url, savePath) {
         const options = {
             method: "GET",
             headers: {
-                'Content-Type': `application/x-www-form-urlencoded`,
-                'Content-Length': 0
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Referer': tUrl.origin,
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
             },
             hostname: tUrl.hostname,
             path: tUrl.pathname + (tUrl.search || ""),
