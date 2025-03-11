@@ -8,7 +8,13 @@ const swaggerDefinition = {
         description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，<br/>`{"code":20000}`用于代表成功，`{"code":50000}`代表服务器执行失败，`{"code":60000}`代表用户引起的失败（如输入错误类型等）。',
     },
     host: 'localhost:8777',//http://localhost:8777/swagger
-    basePath: '/'
+    basePath: '/',
+    tags: [  // 排序控制
+      { name: 'Library —— 图书馆' },
+      { name: 'Library - WebBook —— 网文图书馆' },
+      { name: 'Library - Tag —— 图书馆管理' },
+      { name: 'Library - Bookmark —— 图书馆书签' },
+    ]
 };
 const options = {
     swaggerDefinition,

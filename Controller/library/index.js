@@ -442,7 +442,105 @@ module.exports = () => ({
             return;
         }
 
-        new ApiResponse(await DO.DeleteChapter(chapterId * 1)).toCTX(ctx);
+        new ApiResponse(/*await DO.DeleteChapter(chapterId * 1)*/"TODO: delete /book/chapter\n删除指定章节").toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/chapters/restructure:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 章节重组操作
+     *     description: 对书籍章节进行结构调整（拆分、合并、批量更新/删除）
+     *     parameters:
+     *     - name: body
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         properties:
+     *           baseChapter:
+     *             type: object
+     *             description: 基准章节（用于拆分/合并定位）
+     *             properties:
+     *               chapterId:
+     *                 type: integer
+     *                 format: int64
+     *               content:
+     *                 type: string
+     *               orderNum:
+     *                 type: integer
+     *               title:
+     *                 type: string
+     *           operations:
+     *             type: array
+     *             description: 操作指令集
+     *             items:
+     *               type: object
+     *               required: [operationType, chapters]
+     *               properties:
+     *                 operationType:
+     *                   type: string
+     *                   enum: [update, delete, create]
+     *                 chapters:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       chapterId:
+     *                         type: integer
+     *                         format: int64
+     *                       content:
+     *                         type: string
+     *                       orderNum:
+     *                         type: integer
+     *                       title:
+     *                         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 重组操作结果
+     *       600:
+     *         description: 无效的操作参数
+     */
+    "patch /book/chapters/restructure": async (ctx) => {
+        const param = await parseJsonFromBodyData(ctx, ["baseChapter", "operations"]);
+        /*
+            {
+                "baseChapter": {
+                    "chapterId": 1,
+                    "content": "",
+                    "orderNum": 1,
+                    "title": ""
+                },
+                "operations": [
+                    {
+                    "operationType": "update",
+                    "chapters": [
+                        {
+                        "chapterId": 1,
+                        "content": "",
+                        "orderNum": 1,
+                        "title": ""
+                        }
+                    ]
+                    }
+                ]
+            }
+        */
+        if (!Array.isArray(operations)) {
+            new ApiResponse(null, "操作列表格式错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        try {
+            const results = await BookMaker.RestructureChapters(operations);     //TODO: 
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `批量操作失败: ${error.message}`, 50000).toCTX(ctx);
+        }
     },
 
     /**
