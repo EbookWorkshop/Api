@@ -44,17 +44,16 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
     return new Promise(async (resolve, reject) => {
         try {
             // console.log("准备发送邮件：", title, content, files)
-
-            const mySystemConfig = new SystemConfigService();
+            // const mySystemConfig = new SystemConfigService();
 
             if (mailto === "") {
-                mailto =await mySystemConfig.getConfig(KINDLE_INBOX, "address");
+                mailto =await SystemConfigService.getConfig(KINDLE_INBOX, "address");
             }
             if (sender === "") {
-                sender = await mySystemConfig.getConfig(EMAIL_SETTING_GROUP, "address");
+                sender = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "address");
             }
             if (pass === "") {
-                pass = await mySystemConfig.getConfig(EMAIL_SETTING_GROUP, "password");
+                pass = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "password");
             }
             
             if (sender === "" || mailto === "" || pass === "") {

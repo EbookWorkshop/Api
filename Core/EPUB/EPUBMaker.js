@@ -49,12 +49,18 @@ class EPUBMaker {
             author: ebook.Author || "佚名", // *必需，作者名字。
             appendChapterTitles: embedTitle,
             lang: "zh",
-            tocTitle:"目  录",//默认 Table Of Contents
+            tocTitle: "目  录",//默认 Table Of Contents
             publisher: `EBook Workshop v${version}`, // 可选
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
             content: []
         }
-        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) option.cover = ebook.CoverImg;
+        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
+            if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
+                option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
+            } else {
+                option.cover = ebook.CoverImg;
+            }
+        }
 
         for (let i of ebook.showIndexId) {
             let c = ebook.GetChapter(i);
