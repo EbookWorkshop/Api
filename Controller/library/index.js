@@ -464,6 +464,9 @@ module.exports = () => ({
      *             type: object
      *             description: 基准章节（用于拆分/合并定位）
      *             properties:
+     *               bookId:
+     *                 type: integer
+     *                 format: int64
      *               chapterId:
      *                 type: integer
      *                 format: int64
@@ -488,15 +491,18 @@ module.exports = () => ({
      *                   items:
      *                     type: object
      *                     properties:
+     *                       bookId:
+     *                         type: integer?
+     *                         format: int64
      *                       chapterId:
-     *                         type: integer
+     *                         type: integer?
      *                         format: int64
      *                       content:
-     *                         type: string
+     *                         type: string?
      *                       orderNum:
-     *                         type: integer
+     *                         type: integer?
      *                       title:
-     *                         type: string
+     *                         type: string?
      *     consumes:
      *       - application/json
      *     responses:
@@ -507,6 +513,7 @@ module.exports = () => ({
      */
     "patch /book/chapters/restructure": async (ctx) => {
         const param = await parseJsonFromBodyData(ctx, ["baseChapter", "operations"]);
+        if (!param) return;
         /*
             {
                 "baseChapter": {
@@ -530,13 +537,9 @@ module.exports = () => ({
                 ]
             }
         */
-        if (!Array.isArray(operations)) {
-            new ApiResponse(null, "操作列表格式错误", 60000).toCTX(ctx);
-            return;
-        }
 
         try {
-            const results = await BookMaker.RestructureChapters(operations);     //TODO: 
+            const results = await BookMaker.RestructureChapters(param);     //TODO: 
             new ApiResponse(results).toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, `批量操作失败: ${error.message}`, 50000).toCTX(ctx);
