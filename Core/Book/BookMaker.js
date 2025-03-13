@@ -182,5 +182,86 @@ class BookMaker {
         }
         return duplicates;
     }
+
+    /**
+     * 章节重构
+     * @param {*} settings 
+     */
+    static async RestructureChapters(settings) {
+        const _setChapter = (baseCp) => {
+            let chapterSetting = {
+                updateTime: new Date()
+            };
+            if (baseCp.bookId) chapterSetting.BookId = baseCp.bookId;
+            if (baseCp.title) chapterSetting.Title = baseCp.title;
+            if (baseCp.content) chapterSetting.Content = baseCp.content;
+            if (baseCp.orderNum) chapterSetting.OrderNum = baseCp.orderNum;
+            return chapterSetting;
+        }
+
+        let myModels = Models.GetPO();
+        let t = await myModels.sequelize.transaction();
+        try {
+            const baseCp = settings?.baseChapter;
+            if (!baseCp.chapterId) return;
+            const chapterSetting = _setChapter(baseCp);
+
+            await myModels.EbookIndex.update(chapterSetting, {
+                where: {
+                    id: baseCp.chapterId
+                },
+                transaction: t
+            });
+
+            const operations = settings?.operations;
+            if (!operations || operations.length <= 0) {
+                await t.commit();
+                return;
+            }
+            await myModels.EbookIndex.update({
+                OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
+            }, {
+                where: {
+                    BookId: baseCp.bookId,
+                    OrderNum: {
+                        [Models.Op.gt]: baseCp.orderNum
+                    }
+                },
+                transaction: t
+            });
+            for (let chap of operations) {
+                for (let cp of chap.chapters) {
+                    const curChapSetting = _setChapter(cp);
+                    switch (chap.operationType) {        //[update, delete, create]
+                        case "delete":
+                            await myModels.EbookIndex.destroy({
+                                where: {
+                                    id: chap.chapterId
+                                },
+                                transaction: t
+                            });
+                            break;
+                        case "create":
+                            curChapSetting.BookId = baseCp.bookId;
+                            await myModels.EbookIndex.create(curChapSetting, { transaction: t });
+                            break;
+                        case "update":
+                            await myModels.EbookIndex.update(curChapSetting, {
+                                where: {
+                                    id: chap.chapterId
+                                },
+                                transaction: t
+                            });
+                            break;
+                    }
+                }
+            }
+
+            await t.commit();
+        } catch (err) {
+            t.rollback();
+            throw err;
+        }
+    }
 }
 module.exports = BookMaker;
