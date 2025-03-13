@@ -3,6 +3,8 @@ const path = require("path");
 const Sequelize = require("sequelize");
 const EventManager = require("../../EventManager");
 const Relational = require("./Relational");
+const SystemConfigService = require('../../services/SystemConfig');
+const packageJson = require('../../../package.json');
 
 
 let PO_MODELS = null;//PO对象
@@ -23,7 +25,7 @@ class Models {
 
         return this;
     }
-    
+
     /**
      * # PO 持久对象(Persistant Object)    
      * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
@@ -85,9 +87,10 @@ function AutoInit(sqlConnect) {
         console.log("正在初始化数据库......")
         sqlConnect.queryInterface.sequelize.query("PRAGMA foreign_keys = ON");
         sqlConnect.sync(/*{ alter: true }*/).then(result => {
+            initializeDatabase();
             em.emit("DB.Models.Init", sqlConnect.options.storage, result);
-        }).catch(err=>{
-            em.emit("Debug.Log","数据库同步失败！", "DATABASE", err);
+        }).catch(err => {
+            em.emit("Debug.Log", "数据库同步失败！", "DATABASE", err);
         })
     }).catch(err => {
         em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", err);
@@ -95,6 +98,26 @@ function AutoInit(sqlConnect) {
 
 }
 
+/**
+ * 数据库初始化-初始数据初始化
+ */
+async function initializeDatabase() {
+    // 记录数据库初始化时使用的项目版本-便于跟踪后续升级
+    const dbVersion = await SystemConfigService.getConfig(
+        SystemConfigService.Group.DATABASE_VERSION,
+        'create_version'
+    );
+    if (!dbVersion) {
+        await SystemConfigService.setConfig(
+            SystemConfigService.Group.DATABASE_VERSION,
+            'create_version',
+            packageJson.version
+        );
+    }
+}
+
+
 
 
 module.exports = Models;
+

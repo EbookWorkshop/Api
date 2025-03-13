@@ -22,6 +22,13 @@ class SystemConfigGroup {
     static get DEFAULT_FONT() {
         return 'system_default_font';
     }
+
+    /**
+     * 数据库版本相关
+     */
+    static get DATABASE_VERSION() {
+        return 'database_version';
+    }
 }
 
 module.exports = SystemConfigGroup;
