@@ -5,6 +5,11 @@ const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { dataPath } = require("../../../Config");
+
+/**
+ * # 初始化
+ */
 
 //数据库操作文档 https://www.sequelize.cn/
 
@@ -144,12 +149,17 @@ class DO {
 
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
-        let CoverImg = ebook.CoverImg;
-        if (CoverImg != null && !CoverImg.startsWith("#")) {
-            const fs = require("fs");
-            fs.unlinkSync(CoverImg);
-            let imgDir = path.dirname(CoverImg);
-            fs.rmdir(imgDir);
+        try {
+            let CoverImg = ebook.CoverImg;
+            if (CoverImg != null && !CoverImg.startsWith("#")) {
+                const fs = require("fs");
+                let thisCoverImg = path.join(dataPath, CoverImg);
+                fs.unlinkSync(thisCoverImg);
+                let imgDir = path.dirname(thisCoverImg);
+                fs.rmdir(imgDir);
+            }
+        } catch (err) {
+            console.error("删除封面出错：",err);
         }
 
         //删除书本
