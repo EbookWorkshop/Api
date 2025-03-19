@@ -9,7 +9,7 @@ import { Stream } from "stream";
 /**
  * 列出指定路径下的文件
  * @param {string} path 需要列出文件的路径 
- * @param {string[] | null} filetype 过滤的文件规则类型/小写字母的后缀名数组
+ * @param {string[] | null} filetype 过滤的文件规则类型:小写字母的后缀名数组
  */
 export async function ListFile(path, filetype = null) {
     // console.log(fs)
@@ -19,13 +19,14 @@ export async function ListFile(path, filetype = null) {
     const dir = fs.opendirSync(path);
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
-
-        let isFound = false;
-        if (filetype) for (let t of filetype) if (dirent.name.toLowerCase().endsWith(t)) isFound = true;
-        if (isFound) result.push(dirent.name);
+        if (filetype == null) {
+            result.push(dirent.name);
+        } else {
+            let { ext } = dirent;
+            ext = ext.replace(/^\./, "").toLowerCase();
+            if (filetype.includes(ext)) result.push(dirent.name);
+        }
     }
-
-    // console.log(result);
     return result;
 }
 
@@ -84,10 +85,11 @@ export async function FindFile(path, fileName) {
     if (!fs.existsSync(path)) return null;
 
     const dir = fs.opendirSync(path);
+    const lowerName = fileName.toLowerCase() + ".";
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
-
-        if (dirent.name.startsWith(fileName + '.')) return dirent;
+        const { name } = dirent;
+        if (name.toLowerCase() === lowerName) return dirent;
     }
 
     return null;
