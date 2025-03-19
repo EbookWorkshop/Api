@@ -5,7 +5,7 @@ const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
-const { dataPath } = require("../../../Config");
+const { dataPath } = require("../../../config");
 
 /**
  * # 初始化
