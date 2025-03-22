@@ -1,11 +1,11 @@
 
-const BookMaker = require("./../../Core/Book/BookMaker");
-const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
-const EPUBMaker = require("./../../Core/EPUB/EPUBMaker.js")
-const { parseJsonFromBodyData } = require("./../../Core/Server");
-const ApiResponse = require('../../Entity/ApiResponse');
-const { SendAMail } = require("./../../Core/services/email")
-const { dataPath } = require("./../../config");
+const BookMaker = require("../../Core/Book/BookMaker");
+const PDFMaker = require("../../Core/PDF/PDFMaker");
+const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { SendAMail } = require("../../Core/services/email");
+const { dataPath } = require("../../config");
 const path = require("path");
 
 module.exports = () => ({
