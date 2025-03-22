@@ -1,8 +1,13 @@
 //发邮件 邮箱管理
+const BookMaker = require("./../../Core/Book/BookMaker");
+const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
-const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email")
+const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email");
+const path = require("path");
+const { dataPath } = require("./../../config");
+
 
 
 module.exports = () => ({
@@ -14,31 +19,27 @@ module.exports = () => ({
      *       - Services - EMail —— 系统服务：邮件
      *     summary: 通过简易的SMTP服务发送邮件
      *     description: 可以发一封邮件，能带附件，如果没有发件人/收件人信息，则默认从系统配置里读取
-     *     parameters:
-     *       - in: body
-     *         name: email
-     *         description: 邮件信息
-     *         schema:
-     *             type: object
-     *             required:
-     *               - files
-     *             properties:
-     *               title:
-     *                 type: string
-     *               content:
-     *                 type: string
-     *               mailto:
-     *                 type: string
-     *               files:
-     *                 type: array
-     *                 items:
-     *                   type: string
-     *               sender:
-     *                 type: string
-     *               pass:
-     *                 type: string
      *     consumes:
-     *       - application/json
+     *       - multipart/form-data
+     *     parameters:
+     *       - in: formData
+     *         name: mailto
+     *         type: string
+     *         description: 收件人邮箱地址
+     *       - in: formData
+     *         name: sender
+     *         type: string
+     *         description: 发件人邮箱地址
+     *       - in: formData
+     *         name: bookFiles
+     *         type: array
+     *         items:
+     *           type: file
+     *         description: 附件文件列表
+     *       - in: formData
+     *         name: bookList
+     *         type: string
+     *         description: 书籍列表，JSON字符串格式
      *     responses:
      *       200:
      *         description: 请求成功
@@ -46,14 +47,55 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /send": async (ctx) => {
-        let param = await parseJsonFromBodyData(ctx, ["files"]);
+        let param = await parseJsonFromBodyData(ctx);
         if (param == null) return;
 
-        await SendAMail(param).then(result => {
-            new ApiResponse().toCTX(ctx);
-        }).catch((err) => {
-            new ApiResponse(null, err.message, 50000).toCTX(ctx);
-        })
+        try {
+            // let email = { ...param };
+            let { mailto, sender, bookFiles, bookList } = param;
+            let email = { mailto, sender, files: [] };
+
+            if (bookFiles) {
+                const { AddFile } = await import("./../../Core/services/file.mjs");
+                await Promise.all(bookFiles.map(file => {
+                    let filePath = path.join(dataPath, "temp", "email", file.originalFilename);
+                    AddFile(file, filePath);
+                    email.files.push(filePath)
+                }));
+            }
+            if (bookList) bookList = JSON.parse(bookList);
+            if (bookList && bookList.length > 0) {
+                const rsl = await Promise.all(bookList.map(bookSetting => {
+                    let booking;
+                    switch (bookSetting.filetype) {
+                        case "pdf":
+                            booking = PDFMaker.MakePdfFile(bookSetting.bookid);
+                            break;
+                        case "txt":
+                            booking = BookMaker.MakeTxtFile(bookSetting.bookid);
+                            break;
+                        case "epub":
+                            break;
+                    }
+                    return booking;
+                }));
+
+                email.files.push(...rsl.map(t => t.path));
+            }
+
+            if (email.files.length == 0) {
+                new ApiResponse(null, "发送邮件取消：没有可用于发送的书籍/附件，取消发邮件。", 50000).toCTX(ctx);
+                return
+            }
+
+            await SendAMail(email).then(result => {
+                new ApiResponse().toCTX(ctx);
+            }).catch((err) => {
+                new ApiResponse(null, err.message || err, 50000).toCTX(ctx);
+            });
+        } catch (err) {
+            new ApiResponse(null, err.message || err, 50000).toCTX(ctx);
+        }
     },
 
     /**
@@ -87,8 +129,7 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /account": async (ctx) => {
-        let backRsl = new ApiResponse();
-
+        // let backRsl = new ApiResponse();
         let param = await parseJsonFromBodyData(ctx, ["address", "password"]);
         if (param == null) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
@@ -96,12 +137,11 @@ module.exports = () => ({
         }
 
         const myModels = new Models();
-        let settings = await myModels.SystemConfig.findAll({
+        await myModels.SystemConfig.destroy({
             where: {
                 Group: EMAIL_SETTING_GROUP
             }
         });
-        for (let s of settings) s.destroy();
 
         await myModels.SystemConfig.create({
             Group: EMAIL_SETTING_GROUP,
@@ -170,7 +210,6 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "get /inbox": async (ctx) => {
-        let backRsl = new ApiResponse();
         const myModels = new Models();
         let settings = await myModels.SystemConfig.findAll({
             where: {
@@ -213,7 +252,6 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /inbox": async (ctx) => {
-        // let backRsl = new ApiResponse();
         let param = await parseJsonFromBodyData(ctx, ["address"]);
         if (param == null) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);

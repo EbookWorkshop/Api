@@ -27,7 +27,7 @@ module.exports = () => ({
         let rules = await myModels.ReviewRuleUsing.findAll({
             include: [myModels.Ebook, myModels.ReviewRule],
             order: [
-                [myModels.Ebook, 'id', 'ASC']
+                [myModels.Ebook, 'id', 'DESC']
             ]
         });
         let result = [];
@@ -35,8 +35,8 @@ module.exports = () => ({
             rules.map(item => {
                 result.push({
                     id: item.id,
-                    bookId: item.Ebook.id,
-                    bookName: item.Ebook.BookName,
+                    bookId: item.Ebook?.id,
+                    bookName: item.Ebook?.BookName,
                     ruleId: item.ReviewRule.id,
                     ruleName: item.ReviewRule.Name
                 })
@@ -131,10 +131,9 @@ module.exports = () => ({
             return;
         }
         const myModels = new Models();
-        let rules = await myModels.ReviewRuleUsing.findAll({
+        let rules = await myModels.ReviewRuleUsing.destroy({
             where: { id: id }
         });
-        rules.map((item) => item.destroy());
 
         new ApiResponse(rules).toCTX(ctx);
     },

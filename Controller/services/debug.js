@@ -102,10 +102,23 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /test": async (ctx) => {
-        let WorkerPool = require("./../../Core/Worker/WorkerPool");
-        console.log(WorkerPool.GetStatus());
-        // console.log(JSON.stringify(WorkerPool.GetStatus()));
-        ctx.body = WorkerPool.GetStatus();
+        const EPUB = require("epub-gen");
+
+        const options = {
+            title: "示例书籍",
+            author: "作者名",
+            publisher: "出版社",
+            cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg",
+            content: [
+                { title: "第一章", data: "<div>这是第一章内容</div>" },
+                { title: "第二章", data: "<div>这是第二章内容</div>" }
+            ]
+        };
+        
+        new EPUB(options, "output.epub").promise.then(
+            () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
+            err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
+        );
 
     },
 });

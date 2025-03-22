@@ -1,10 +1,15 @@
 const { readdir } = require('node:fs/promises');
 const path = require("path");
 const EventManager = require("../../EventManager");
-const Models = require("./../Models");
+const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { dataPath } = require("../../../config");
+
+/**
+ * # 初始化
+ */
 
 //数据库操作文档 https://www.sequelize.cn/
 
@@ -38,14 +43,16 @@ class DO {
 
         /**
          * 从数据库加载指定章节到当前对象
-         * @param {*} cId 章节ID
+         * @param {number} cId 章节ID
+         * @returns {Chapter|null}   返回已加载的章节内容
          */
         ebook.ReloadChapter = async (cId) => {
             let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: ebook.BookId } });
-            if (ebookIndex == null) return;
+            if (ebookIndex == null) return null;
             let cp = new Chapter({ ...ebookIndex.dataValues });
             // if (cp.Content) 
             ebook.Chapters.set(cp.Title, cp);
+            return cp;
         }
 
         /**
@@ -116,6 +123,15 @@ class DO {
             }
         }
 
+        /**
+         * 拿到最大的章节排序号
+         * @returns {number} 最大章节序号
+         */
+        ebook.GetMaxIndexOrder = async () => {
+            const myModels = Models.GetPO();
+            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
+            return lastIndex?.OrderNum || 1;
+        }
         await ebook.ReloadIndex();
 
         return ebook;
@@ -129,37 +145,26 @@ class DO {
      */
     static async DeleteOneBook(bookId) {
         const myModels = new Models();
+        // await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
 
         //取得eBook
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
-        if (ebook == null) return;
-        const index = await ebook.getEbookIndex();
-
-        //取得WebBook
-        const wbook = await ebook.getWebBook();
-        const wbSourceUrl = await wbook?.getWebBookIndexSourceURLs();
-
-        //开始删除
-        for (let i of index) {
-            if (wbook) {
-                const eIndex = await i.getWebBookIndex();
-                if (eIndex !== null) {
-                    const eIUrl = await eIndex.getWebBookIndexURLs() || [];
-                    for (let ei of eIUrl) {
-                        await ei.destroy();
-                    }
-                    await eIndex.destroy();
-                }
+        try {
+            let CoverImg = ebook.CoverImg;
+            if (CoverImg != null && !CoverImg.startsWith("#")) {
+                const fs = require("fs");
+                let thisCoverImg = path.join(dataPath, CoverImg);
+                fs.unlinkSync(thisCoverImg);
+                let imgDir = path.dirname(thisCoverImg);
+                fs.rmdir(imgDir);
             }
-            await i.destroy();
+        } catch (err) {
+            console.error("删除封面出错：",err);
         }
-        for (let wu of wbSourceUrl ?? []) {
-            await wu.destroy();
-        }
-        await wbook?.destroy();
+
+        //删除书本
         await ebook.destroy();
     }
-
 }
 
 /**

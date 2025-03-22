@@ -132,13 +132,11 @@ module.exports = () => ({
         let host = ctx.query.host;
 
         const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll({
+        await myModels.RuleForWeb.destroy({
             where: {
                 Host: host
             }
         });
-
-        for (let r of rules) r.destroy();
 
         new ApiResponse().toCTX(ctx);
     },

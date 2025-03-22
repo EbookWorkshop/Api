@@ -20,6 +20,8 @@ parentPort.on('message', (task) => {
             result.then((rsl) => {
                 parentPort.postMessage(rsl);//如果有不可序列化内容则会报错
             }).catch(err => {
+                if (err == null) err = { message: "线程错误：未知错误", param, taskfile };
+
                 let error = structuredClone(err);
                 //当err的属性不能被枚举时，上述方法只能拿到一个空对象
                 // 子线程返回结果对象中含有function方法时，会得到类似的一个错误对象(DataCloneError)

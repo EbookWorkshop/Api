@@ -1,7 +1,6 @@
 const DO = require("./index");
 const Ebook = require("../../../Entity/Ebook/Ebook");
 const Models = require("./../Models");
-// const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/RuleReview");
 
@@ -12,46 +11,54 @@ class OTO_Ebook {
      * 获取图书列表
      */
     static async GetBookList(tagid) {
-        const myModels = new Models();
-        let bookListModels;
-        let param = { order: [["id", "DESC"]] }
-        if (tagid > 0) {
-            param.include = [{
-                model: myModels.EbookTag,
-                require: false,
-                where: {
-                    TagId: tagid
-                }
-            }];
-        }
-        bookListModels = await myModels.Ebook.findAll(param);
-        let bookList = [];
-        for (let b of bookListModels) {
-            bookList.push(new Ebook({ ...b.dataValues }));
-        }
-        return bookList;
+        const myModels = Models.GetPO();
+        const param = {
+            order: [["id", "DESC"]],
+            ...(tagid > 0 && {
+                include: [{
+                    model: myModels.EbookTag,
+                    required: true,     //false：left join
+                    where: { TagId: tagid }
+                }]
+            })
+        };
+
+        const bookListModels = await myModels.Ebook.findAll(param);
+        return bookListModels.map(b => new Ebook(b.dataValues));
     }
 
     /**
-     * Ebook 持久化
+     * Ebook 持久化 DO to PO
      * @param {Ebook} book 
      * @returns 
      */
     static async EBookObjToModel(book) {
-        let tbook = await DO.GetEBookByName(book.BookName);
-        if (tbook != null) DO.DeleteOneBook(tbook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
+        const PO = Models.GetPO();
+        const t = await PO.sequelize.transaction(); // 开启事务
+        try {
+            let existingBook = await DO.GetEBookByName(book.BookName);
+            if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
 
-        if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
-        let PO = Models.GetPO();
-        let poBook = await PO.Ebook.create({
-            ...book
-        });
+            if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
 
-        for (let i of book.Index) {
-            let result = await poBook.createEbookIndex({ ...i, Content: book.Chapters.get(i.Title) });
+            let poBook = await PO.Ebook.create({
+                ...book
+            }, { transaction: t });
+
+            await Promise.all([...book.Index].map(async i =>
+                poBook.createEbookIndex({
+                    ...i,
+                    Content: book.Chapters.get(i.Title)
+                }, { transaction: t })
+            ));
+
+            await t.commit();
+            return true;
+        } catch (e) {
+            // console.log("存储书失败：", book, e);
+            await t.rollback();
+            return false;
         }
-
-        return true;
     }
 
     /**
@@ -65,6 +72,34 @@ class OTO_Ebook {
         if (book == null) return null;
         return await DO.ModelToEBook(book);
     }
+
+    /**
+     * 获取电子书信息
+     * @param {*} bookId 
+     * @returns 
+     */
+    static async GetEBookInfoById(bookId) {
+        const myModels = new Models();
+        let book = await myModels.Ebook.findByPk(bookId, {
+            attributes: ['id', 'BookName', 'Author', 'CoverImg', 'FontFamily']
+        });
+        if (book == null) return null;
+        return book.dataValues;
+    }
+
+    /**
+     * 修改电子书元数据
+     * @param {number} id 书ID
+     * @param {*} metadata 
+     * @returns 
+     */
+    static async EditEBookInfo(id, metadata) {
+        const myModels = Models.GetPO();
+
+        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
+        return rsl;
+    }
+
     /**
      * 通过书名查找书
      * @param {*} name 书名（强制去除空格）
@@ -167,10 +202,10 @@ class OTO_Ebook {
      */
     static async UpdateChapterOrder(chapterOrderList) {
         const myModels = new Models();
-        const rsl = await Promise.all(chapterOrderList.map(chapter => 
+        const rsl = await Promise.all(chapterOrderList.map(chapter =>
             myModels.EbookIndex.update(
-            { OrderNum: chapter.newOrder },
-            { where: { id: chapter.indexId } }
+                { OrderNum: chapter.newOrder },
+                { where: { id: chapter.indexId } }
             )
         ));
         return rsl;
@@ -188,6 +223,97 @@ class OTO_Ebook {
         chapter.OrderNum = maxOrderNum + 1;
         let rsl = await myModels.EbookIndex.create(chapter);
         return rsl;
+    }
+
+    /**
+     * 全库检索
+     * @param {string} keyword 搜索关键字
+     * @param {object|undefined} option 高级搜索选项
+     * @returns 
+     */
+    static async Search(keyword, option) {
+        let where = {};
+        if (!option) {      //默认搜索
+            where = {
+                [Models.Op.or]: [
+                    { Title: { [Models.Op.like]: `%${keyword}%` } },
+                    { Content: { [Models.Op.like]: `%${keyword}%` } },
+                ],
+            };
+        } else {
+            let typeParam = {};
+            if (option.type == "title") {
+                typeParam = {
+                    Title: {
+                        [Models.Op.like]: `%${keyword}%`,
+                    },
+                };
+            } else if (option.type == "content") {
+                typeParam = {
+                    Content: {
+                        [Models.Op.like]: `%${keyword}%`,
+                    },
+                };
+            } else {
+                typeParam = {
+                    [Models.Op.or]: [
+                        { Title: { [Models.Op.like]: `%${keyword}%` } },
+                        { Content: { [Models.Op.like]: `%${keyword}%` } },
+                    ],
+                };
+            }
+
+            let idParam = [];
+            if (option.bookId && option.bookId.length > 0) {
+                idParam.push({
+                    BookId: {
+                        [Models.Op.in]: option.bookId,
+                    },
+                });
+            }
+            if (option.notFind && option.notFind.length > 0) {
+                idParam.push({
+                    BookId: {
+                        [Models.Op.notIn]: option.notFind,
+                    },
+                });
+            }
+
+            where = {
+                [Models.Op.and]: [typeParam, idParam],
+            };
+        }
+
+        const myModels = Models.GetPO();
+        let result = await myModels.EbookIndex.findAll({
+            include: [{
+                model: myModels.Ebook,
+                as: "Ebook",
+                attributes: ["BookName"]
+            }],
+            where: where,
+            attributes: ["id", "Title", "BookId", "Content"],
+        });
+
+        //统计命中次数
+        const escapedWord = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedWord, "gi");
+        let newResult = result.map(item => {
+            const matchesTitle = item.Title?.match(regex);
+            const matchesContent = item.Content?.match(regex);
+
+            const { Ebook, ...rest } = item.dataValues;
+            return {
+                ...rest,
+                HitCount: (matchesTitle?.length ?? 0) + (matchesContent?.length ?? 0),
+                BookName: Ebook.BookName
+            };
+        });
+
+        //按命中次数倒序排序
+        newResult.sort((a, b) => b.HitCount - a.HitCount);
+
+        return newResult;
     }
 }
 

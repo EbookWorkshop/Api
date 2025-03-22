@@ -315,6 +315,41 @@ module.exports = () => ({
     },
     /**
      * @swagger
+     * /library/webbook/defsources:
+     *   get:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 拿到指定ID书目录的默认来源地址
+     *     description: 拿到指定ID书的，网页来源的默认地址
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取的书ID
+     *       schema:
+     *         type: integer
+     *         format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /defsources": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetWebBookDefaultSourcesById(bookId * 1)).toCTX(ctx);
+    },
+
+
+    /**
+     * @swagger
      * /library/webbook/chapter/sources:
      *   get:
      *     tags:
@@ -343,6 +378,35 @@ module.exports = () => ({
         }
 
         new ApiResponse(await DO.GetWebBookChapterSourcesById(chapterid * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/webbook/chapter/sources:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 拿到指定章节的来源地址
+     *     description: 拿到指定章节的网页来源的地址
+     *     parameters:
+     *     - name: chapterid
+     *       in: query
+     *       required: true
+     *       description: 章节ID
+     *       schema:
+     *         type: integer
+     *         format: int32
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /chapter/sources": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["id", "url"]);
+
+        if (!param) return;
+        new ApiResponse(await DO.SetWebBookChapterSources(param.id, param.url)).toCTX(ctx);
     },
 
 });

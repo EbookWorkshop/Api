@@ -1,13 +1,12 @@
 //发邮件 邮箱管理
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
-const EventManager = require("./../../Core/EventManager");
+const EventManager = require("../../Core/EventManager");
 const path = require('path')
-const Models = require("./../../Core/OTO/Models");
+const { version } = require("../../package.json");
 
-
-const EMAIL_SETTING_GROUP = "send_email_account";       //系统设置-邮箱的配置分组
-const KINDLE_INBOX = "kindle_inbox";                   //系统设置-收件箱-可用于kindle的收件箱
+const { EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("../../Entity/SystemConfigGroup");
+const SystemConfigService = require("./SystemConfig");
 
 
 /**
@@ -45,35 +44,18 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
     return new Promise(async (resolve, reject) => {
         try {
             // console.log("准备发送邮件：", title, content, files)
-
-            const myModels = new Models();
+            // const mySystemConfig = new SystemConfigService();
 
             if (mailto === "") {
-                let mt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: KINDLE_INBOX,
-                        Name: "address"
-                    }
-                });
-                if (mt) mailto = mt.Value;
+                mailto =await SystemConfigService.getConfig(KINDLE_INBOX, "address");
             }
             if (sender === "") {
-                let mt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: EMAIL_SETTING_GROUP,
-                        Name: "address"
-                    }
-                });
-                if (mt) sender = mt.Value;
-                let pt = await myModels.SystemConfig.findOne({
-                    where: {
-                        Group: EMAIL_SETTING_GROUP,
-                        Name: "password"
-                    }
-                });
-                if (pt) pass = pt.Value;
+                sender = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "address");
             }
-
+            if (pass === "") {
+                pass = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "password");
+            }
+            
             if (sender === "" || mailto === "" || pass === "") {
                 reject("默认邮箱配置不完整，不能发送邮件，请先在系统设置收/发件信息；或直接指定收/发件信息。");
                 return;
@@ -85,19 +67,30 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
                 to: mailto,
                 subject: title || "Send the e-mail by default",
                 text: content || "This e-mail sent by EBookWorkshop!",
-                attachments: []     //附件地址，需要相对地址
+                attachments: []// string[]
             };
 
             //添加附件-将附件按插件发送要求转换
             if (files) {        //NOTE: 这儿会有将服务器任意文件通过邮件发出去的bug，会泄露服务器信息。
-                //mailOptions.attachments = files.concat();
                 for (let f of files) {
+                    let filePath = path.resolve(__dirname, "./../../", f)
+                    let filename = path.basename(filePath);
                     mailOptions.attachments.push({
-                        filename: f.split("/").pop(),
-                        path: path.resolve(__dirname, "./../../", f)
+                        filename,
+                        path: filePath      //文件完整的路径
                     });
                 }
             }
+
+            if (!title) {
+                title = `${mailOptions.attachments[0].filename}等${mailOptions.attachments.length}本书`;
+                mailOptions.subject = title;
+            }
+            if (!content) {
+                content = `已发送下列书籍： \n${mailOptions.attachments.map(t => t.filename).join('\n')}`;
+                mailOptions.text = content;
+            }
+            mailOptions.text += `\n\n---------------------------------\n——邮件发送自：EBook Workshop v${version}`;
 
             CreateTransport(sender, pass).sendMail(mailOptions, function (error, info) {
                 if (error) {

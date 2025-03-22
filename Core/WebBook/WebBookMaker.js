@@ -4,7 +4,6 @@ const config = require("./../../config");
 const WebBook = require("./../../Entity/WebBook/WebBook");
 // const WebIndex = require("./../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../Entity/WebBook/WebChapter");
-const { GetDataFromUrl } = require("../Utils/GetDataFromUrl");
 const RuleManager = require("./RuleManager");
 const EventManager = require("./../EventManager");
 const DO = require("./../OTO/DO");
@@ -77,14 +76,14 @@ class WebBookMaker {
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
                 this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
-                this.myWebBook.AddIndexUrl(curUrl);
+                await this.myWebBook.AddIndexUrl(curUrl);
             }
 
             if (result.has("ChapterList")) {    //爬到的每一章内容
                 let cl = result.get("ChapterList");
                 if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
                 for (let i of cl)
-                    this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
+                    await this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
             }
 
             if (result.has("BookCover")) {  //保存封面
@@ -100,7 +99,8 @@ class WebBookMaker {
                     param: {
                         url: imgPath,
                         savePath: saveImageFilePath
-                    }
+                    },
+                    highPriority: true
                 }).then((result) => {
                     new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
                     this.myWebBook.SetCoverImg(coverImgPath);
@@ -116,7 +116,7 @@ class WebBookMaker {
                 if (npDataList.length == 0) return;
                 let npData = npDataList[0];
                 let nextPage = npData.url;
-                if (nextPage == "") {
+                if (nextPage == "" || nextPage == url) {
                     new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
                     return;
                 }
@@ -198,13 +198,26 @@ class WebBookMaker {
             //下一页
             if (result.has("ContentNextPage")) {
                 let nextPageResult = result.get("ContentNextPage")[0];
-                while (nextPageResult.text == nextPageResult.Rule.CheckSetting) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
-                    let npUrl = nextPageResult.url;
-                    if (!npUrl) break;
+                let nextPageUrl = url;
+                while (nextPageResult.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
+                    if (nextPageUrl == nextPageResult?.url) break;        //防止死循环
+                    nextPageUrl = nextPageResult.url;
+                    if (!nextPageUrl) break;
 
-                    let tempResult = await GetDataFromUrl(npUrl, option);
+                    // let tempResult = await GetDataFromUrl(npUrl, option);
+
+                    let tempResult = await wPool.RunTaskAsync({
+                        taskfile: "@/Core/Utils/GetDataFromUrl",
+                        param: {
+                            url: nextPageUrl,
+                            setting: option
+                        },
+                        taskType: "puppeteer",
+                        maxThreadNum: 10
+                    });
+
                     chap.Content += tempResult.get("Content")[0].text;
-                    nextPageResult = tempResult.get("ContentNextPage")[0];
+                    nextPageResult = tempResult.get("ContentNextPage")[0];          //TODO: 需要更合适的方式找到命中的那页
                 }
             }
 
@@ -316,7 +329,7 @@ class WebBookMaker {
 
         //TODO:
         for (let u of urls) {
-            if (u.includes(hostName)) return u;
+            if (u.Path.includes(hostName)) return u.Path;
         }
 
         return urls[0];

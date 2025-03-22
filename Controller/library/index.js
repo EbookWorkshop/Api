@@ -69,6 +69,141 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /library/book:
+     *   delete:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 删除指定的书
+     *     description: 删除书
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete /book": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        await DO.DeleteOneBook(bookId).then((rsl) => {
+            new ApiResponse(rsl).toCTX(ctx);
+        }).catch((err) => {
+            new ApiResponse(err, "删除出错：" + err.message, 50000).toCTX(ctx);
+        })
+    },
+
+    /**
+     * @swagger
+     * /library/book/metadata:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 拿到指定ID的书的信息
+     *     description: 拿到指定ID的书的信息
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需获取信息的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /book/metadata": async (ctx) => {
+        let bookId = ctx.query.bookid;
+        if (bookId * 1 != bookId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetEBookInfoById(bookId * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/metadata:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 修改元数据
+     *     description: 修改书的元数据
+     *     parameters:
+     *     - name: book
+     *       in: body
+     *       required: true
+     *       description: 书的元数据
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "patch /book/metadata": async (ctx) => {
+        let bookInfo = await parseJsonFromBodyData(ctx, ["id"]);
+        if (!bookInfo) return;
+
+        let metadata = {}
+        if (bookInfo.name) metadata.BookName = bookInfo.name;
+        if (bookInfo.author) metadata.Author = bookInfo.author;
+        if (bookInfo.font) metadata.FontFamily = bookInfo.font;
+        if(bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
+
+        let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
+
+        ApiResponse.GetResult(rsl).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/search:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 检索图书馆
+     *     description: 检索图书馆
+     *     parameters:
+     *     - name: data
+     *       in: body
+     *       required: true
+     *       description: 查询条件
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /book/search": async (ctx) => {
+        let bookInfo = await parseJsonFromBodyData(ctx, ["keyword"]);
+
+        let rsl = await DO.Search(bookInfo.keyword, bookInfo.option);
+
+        ApiResponse.GetResult(rsl).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
      * /library/book/chapter:
      *   get:
      *     tags:
@@ -170,6 +305,7 @@ module.exports = () => ({
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
+
     /**
      * @swagger
      * /library/emptybook:
@@ -278,4 +414,178 @@ module.exports = () => ({
         new ApiResponse(await DO.UpdateChapterOrder(param)).toCTX(ctx);
     },
 
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   delete:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 删除指定章节
+     *     description: 删除章节
+     *     parameters:
+     *     - name: chapterid
+     *       in: query
+     *       required: true
+     *       description: 需删除的章节ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "delete /book/chapter": async (ctx) => {
+        let chapterId = ctx.query.chapterid;
+        if (chapterId * 1 != chapterId) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(/*await DO.DeleteChapter(chapterId * 1)*/"TODO: delete /book/chapter\n删除指定章节").toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book/chapters/restructure:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 章节重组操作
+     *     description: 对书籍章节进行结构调整（拆分、合并、批量更新/删除）
+     *     parameters:
+     *     - name: body
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         properties:
+     *           baseChapter:
+     *             type: object
+     *             description: 基准章节（用于拆分/合并定位）
+     *             properties:
+     *               bookId:
+     *                 type: integer
+     *                 format: int64
+     *               chapterId:
+     *                 type: integer
+     *                 format: int64
+     *               content:
+     *                 type: string
+     *               orderNum:
+     *                 type: integer
+     *               title:
+     *                 type: string
+     *           operations:
+     *             type: array
+     *             description: 操作指令集
+     *             items:
+     *               type: object
+     *               required: [operationType, chapters]
+     *               properties:
+     *                 operationType:
+     *                   type: string
+     *                   enum: [update, delete, create]
+     *                 chapters:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       bookId:
+     *                         type: integer?
+     *                         format: int64
+     *                       chapterId:
+     *                         type: integer?
+     *                         format: int64
+     *                       content:
+     *                         type: string?
+     *                       orderNum:
+     *                         type: integer?
+     *                       title:
+     *                         type: string?
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 重组操作结果
+     *       600:
+     *         description: 无效的操作参数
+     */
+    "patch /book/chapters/restructure": async (ctx) => {
+        const param = await parseJsonFromBodyData(ctx, ["baseChapter", "operations"]);
+        if (!param) return;
+        /*
+            {
+                "baseChapter": {
+                    "chapterId": 1,
+                    "content": "",
+                    "orderNum": 1,
+                    "title": ""
+                },
+                "operations": [
+                    {
+                    "operationType": "update",
+                    "chapters": [
+                        {
+                        "chapterId": 1,
+                        "content": "",
+                        "orderNum": 1,
+                        "title": ""
+                        }
+                    ]
+                    }
+                ]
+            }
+        */
+
+        try {
+            const results = await BookMaker.RestructureChapters(param);     //TODO: 
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `批量操作失败: ${error.message}`, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /library/book/duplicates:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 查找重复章节内容
+     *     description: 根据相似度阈值查找重复章节
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 书籍ID
+     *       schema:
+     *         type: integer
+     *     - name: threshold
+     *       in: query
+     *       required: false
+     *       description: 相似度阈值(0-1，默认0.5)
+     *       schema:
+     *         type: number
+     *     responses:
+     *       200:
+     *         description: 查重结果
+     */
+    "get /book/duplicates": async (ctx) => {
+        const bookId = ctx.query.bookid * 1;
+        const threshold = parseFloat(ctx.query.threshold) || 0.5;
+
+        if (isNaN(bookId)) {
+            new ApiResponse(null, "无效的书籍ID", 60000).toCTX(ctx);
+            return;
+        }
+
+        try {
+            const duplicates = await BookMaker.FindDuplicateContents(bookId, threshold);
+            new ApiResponse(duplicates).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, error.message, 50000).toCTX(ctx);
+        }
+    },
 });

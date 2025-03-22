@@ -17,12 +17,13 @@ class Models {
         if (PO_MODELS != null) return PO_MODELS;
 
         PO_MODELS = this;
+        this.sequelize = sequelizeConnect;
 
         AutoInit(sequelizeConnect);
 
         return this;
     }
-    
+
     /**
      * # PO 持久对象(Persistant Object)    
      * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
@@ -82,10 +83,11 @@ function AutoInit(sqlConnect) {
 
         //同步所有模型
         console.log("正在初始化数据库......")
+        sqlConnect.queryInterface.sequelize.query("PRAGMA foreign_keys = ON");
         sqlConnect.sync(/*{ alter: true }*/).then(result => {
             em.emit("DB.Models.Init", sqlConnect.options.storage, result);
-        }).catch(err=>{
-            em.emit("Debug.Log","数据库同步失败！", "DATABASE", err);
+        }).catch(err => {
+            em.emit("Debug.Log", "数据库同步失败！", "DATABASE", err);
         })
     }).catch(err => {
         em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", err);
@@ -93,6 +95,5 @@ function AutoInit(sqlConnect) {
 
 }
 
-
-
 module.exports = Models;
+

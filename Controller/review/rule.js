@@ -29,7 +29,8 @@ module.exports = () => ({
             include: [{
                 model: myModels.ReviewRuleUsing,
                 as: 'ReviewRuleUsings'
-            }]
+            }],
+            order: [["createdAt", "DESC"]]
         });
         rules = rules.map(rule => {
             return {
@@ -75,7 +76,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["name", "rule"]);
         if (param == null) return;
 
-        const myModels = new Models();
+        const myModels = Models.GetPO();
         let whereParam = { Rule: param.rule };
         if (param.id != "") whereParam = { id: param.id };
         let [rule, created] = await myModels.ReviewRule.findOrCreate({
@@ -94,6 +95,20 @@ module.exports = () => ({
             rule.Rule = param.rule;
             rule.Replace = param.replace;
             rule.save();
+        }
+        if (param.bookId?.length > 0) {
+            const ruleId = rule.id;
+            Promise.all(param.bookId.map(async bookId => {
+                let whereParam = { BookId: bookId, RuleId: ruleId };
+                return await myModels.ReviewRuleUsing.findOrCreate({
+                    where: whereParam,
+                    defaults: {
+                        BookId: bookId,
+                        RuleId: ruleId,
+                    }
+                }).catch(err => {
+                });
+            }));
         }
         if (rule) new ApiResponse(rule).toCTX(ctx);
     },
@@ -128,10 +143,9 @@ module.exports = () => ({
             return;
         }
         const myModels = new Models();
-        let rules = await myModels.ReviewRule.findAll({
+        let rules = await myModels.ReviewRule.destroy({
             where: { id: id }
         });
-        rules.map((item) => item.destroy());
 
         new ApiResponse(rules).toCTX(ctx);
     },
