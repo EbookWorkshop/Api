@@ -236,7 +236,7 @@ class BookMaker {
                         case "delete":
                             await myModels.EbookIndex.destroy({
                                 where: {
-                                    id: chap.chapterId
+                                    id: cp
                                 },
                                 transaction: t
                             });
@@ -248,7 +248,7 @@ class BookMaker {
                         case "update":
                             await myModels.EbookIndex.update(curChapSetting, {
                                 where: {
-                                    id: chap.chapterId
+                                    id: cp.chapterId
                                 },
                                 transaction: t
                             });
