@@ -166,6 +166,7 @@ module.exports = () => ({
         if (bookInfo.name) metadata.BookName = bookInfo.name;
         if (bookInfo.author) metadata.Author = bookInfo.author;
         if (bookInfo.font) metadata.FontFamily = bookInfo.font;
+        if(bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
 
         let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
 

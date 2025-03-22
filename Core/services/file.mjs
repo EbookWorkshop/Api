@@ -8,21 +8,21 @@ import { Stream } from "stream";
 
 /**
  * 列出指定路径下的文件
- * @param {string} path 需要列出文件的路径 
+ * @param {string} sourcePath 需要列出文件的路径 
  * @param {string[] | null} filetype 过滤的文件规则类型:小写字母的后缀名数组
  */
-export async function ListFile(path, filetype = null) {
+export async function ListFile(sourcePath, filetype = null) {
     // console.log(fs)
-    if (!fs.existsSync(path)) return null;
+    if (!fs.existsSync(sourcePath)) return null;
 
     let result = [];
-    const dir = fs.opendirSync(path);
+    const dir = fs.opendirSync(sourcePath);
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
         if (filetype == null) {
             result.push(dirent.name);
         } else {
-            let { ext } = dirent;
+            let { ext } = path.parse(dirent.name);
             ext = ext.replace(/^\./, "").toLowerCase();
             if (filetype.includes(ext)) result.push(dirent.name);
         }
