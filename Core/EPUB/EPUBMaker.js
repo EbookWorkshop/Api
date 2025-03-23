@@ -52,7 +52,8 @@ class EPUBMaker {
             tocTitle: "目  录",//默认 Table Of Contents
             publisher: `EBook Workshop v${version}`, // 可选
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
-            content: []
+            content: [],
+            tempDir: path.join(dataPath, "temp/EPUB"),//非标配置，指定打包EPUB文件用的临时目录
         }
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
