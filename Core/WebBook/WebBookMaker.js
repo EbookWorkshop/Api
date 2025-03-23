@@ -1,13 +1,13 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 const path = require("path");
-const config = require("./../../config");
-const WebBook = require("./../../Entity/WebBook/WebBook");
-// const WebIndex = require("./../../Entity/WebBook/WebIndex");
-const WebChapter = require("./../../Entity/WebBook/WebChapter");
+const config = require("../../config");
+const WebBook = require("../../Entity/WebBook/WebBook");
+// const WebIndex = require("../../Entity/WebBook/WebIndex");
+const WebChapter = require("../../Entity/WebBook/WebChapter");
 const RuleManager = require("./RuleManager");
-const EventManager = require("./../EventManager");
-const DO = require("./../OTO/DO");
-const WorkerPool = require("./../Worker/WorkerPool");
+const EventManager = require("../EventManager");
+const DO = require("../OTO/DO");
+const WorkerPool = require("../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
@@ -16,13 +16,16 @@ const wPool = WorkerPool.GetWorkerPool();
 class WebBookMaker {
     /**
      * 创建一个Web电子书操作器
-     * @param { WebBook } webbook 待操作的WebBook对象，或根据提供的目录地址创建一本新书操作器
-     * @param { string } webbook 在线图书的网址，通过书目页创建或读取书的对象
-     * @param { int } webbook 已在库的书ID，通过ID
+     * @param { WebBook | string | number | undefined} 
+     * WebBook 待操作的WebBook对象，或根据提供的目录地址创建一本新书操作器
+     * string 在线图书的网址，通过书目页创建或读取书的对象
+     * number 已在库的书ID，通过ID
+     * undefined 空对象，创建空书对象
      * @returns 
      */
     constructor(webbook) {
-        if (typeof (webbook) === "string") {
+        this.isCreateBook = false;  //是否新创建的书
+        if (typeof (webbook) === "string") {     //传入网址
             this.myWebBook = this.InitEmptyFromIndex(webbook);
             return;
         } else if (typeof (webbook) === "number") {
@@ -30,12 +33,11 @@ class WebBookMaker {
                 this.myWebBook = book;
             });
             return;
-        }
-
-        if (webbook instanceof WebBook)
+        } else if (webbook instanceof WebBook) {
             this.myWebBook = webbook;
-        else
+        } else {
             this.myWebBook = new WebBook();
+        }
     }
 
     GetBook() {
@@ -76,6 +78,7 @@ class WebBookMaker {
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
                 this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
+                this.isCreateBook = this.myWebBook.isNewCreate;
                 await this.myWebBook.AddIndexUrl(curUrl);
             }
 
@@ -109,6 +112,8 @@ class WebBookMaker {
                 });
             }
 
+            let finishMsg = "WebBook.UpdateIndex.Finish";
+            if (this.isCreateBook) finishMsg = "WebBook.Create.Finish";
             //翻页——继续爬 CheckSetting
             if (result.has("IndexNextPage")) {
                 let npDataList = result.get("IndexNextPage");
@@ -117,14 +122,14 @@ class WebBookMaker {
                 let npData = npDataList[0];
                 let nextPage = npData.url;
                 if (nextPage == "" || nextPage == url) {
-                    new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
+                    new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
                     return;
                 }
 
                 // console.log(`开始爬下一页：${nextPage}`);
                 return this.UpdateIndex(nextPage, orderNum);
             } else {
-                new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
+                new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
             }
         });
     }
@@ -298,13 +303,9 @@ class WebBookMaker {
      * @returns {WebBook}
      */
     InitEmptyFromIndex(indexUrl) {
-
         let curbook = new WebBook();
-        //curbook.BookId = 
         curbook.IndexUrl.push(indexUrl);
-
         this.myWebBook = curbook;
-
         return curbook;
     }
 

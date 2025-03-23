@@ -48,9 +48,9 @@ class SocketIO {
    */
   initEM_WebBook() {
     if (this.myEM == null) return;
-    // myEM.on("WebBook.UpdateIndex.Finish", (bookid) => {
-    //   // console.log("目录更新完毕！！");
-    // })
+    this.myEM.on("WebBook.Create.Finish", (bookid, bookName) => {
+      myIO.emit(`WebBook.Create.Finish`, { bookid, bookName });
+    });
 
     this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
       myIO.emit(`WebBook.Chapter.Update.${bookid}`, {

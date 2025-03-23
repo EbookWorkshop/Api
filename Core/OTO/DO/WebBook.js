@@ -131,7 +131,9 @@ class OTO_WebBook {
             }
         }
 
-        return await DO.ModelToWebBook(book);
+        const webBook = await DO.ModelToWebBook(book);
+        webBook.isNewCreate = created;//是否是新创建的——临时的变量
+        return webBook;
     }
 
     /**
