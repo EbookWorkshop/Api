@@ -202,33 +202,37 @@ class BookMaker {
         let myModels = Models.GetPO();
         let t = await myModels.sequelize.transaction();
         try {
+            const bookId = settings.bookId;
+            if (!bookId) { console.error("章节重构需要提供书籍ID"); return; }
+
             const baseCp = settings?.baseChapter;
-            if (!baseCp.chapterId) return;
-            const chapterSetting = _setChapter(baseCp);
-
-            await myModels.EbookIndex.update(chapterSetting, {
-                where: {
-                    id: baseCp.chapterId
-                },
-                transaction: t
-            });
-
-            const operations = settings?.operations;
-            if (!operations || operations.length <= 0) {
-                await t.commit();
-                return;
+            if (baseCp.chapterId) {
+                const chapterSetting = _setChapter(baseCp);
+                await myModels.EbookIndex.update(chapterSetting, {
+                    where: {
+                        id: baseCp.chapterId
+                    },
+                    transaction: t
+                });
+                const operations = settings?.operations;
+                if (!operations || operations.length <= 0) {
+                    await t.commit();
+                    return;
+                }
+                //基准章节后续章节后移
+                await myModels.EbookIndex.update({
+                    OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
+                }, {
+                    where: {
+                        BookId: bookId,
+                        OrderNum: {
+                            [Models.Op.gt]: baseCp.orderNum
+                        }
+                    },
+                    transaction: t
+                });
             }
-            await myModels.EbookIndex.update({
-                OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
-            }, {
-                where: {
-                    BookId: baseCp.bookId,
-                    OrderNum: {
-                        [Models.Op.gt]: baseCp.orderNum
-                    }
-                },
-                transaction: t
-            });
+
             for (let chap of operations) {
                 for (let cp of chap.chapters) {
                     const curChapSetting = _setChapter(cp);
@@ -242,7 +246,7 @@ class BookMaker {
                             });
                             break;
                         case "create":
-                            curChapSetting.BookId = baseCp.bookId;
+                            curChapSetting.BookId = bookId;
                             await myModels.EbookIndex.create(curChapSetting, { transaction: t });
                             break;
                         case "update":

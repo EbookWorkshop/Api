@@ -166,7 +166,7 @@ module.exports = () => ({
         if (bookInfo.name) metadata.BookName = bookInfo.name;
         if (bookInfo.author) metadata.Author = bookInfo.author;
         if (bookInfo.font) metadata.FontFamily = bookInfo.font;
-        if(bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
+        if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
 
         let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
 
@@ -461,13 +461,13 @@ module.exports = () => ({
      *       schema:
      *         type: object
      *         properties:
+     *           bookId:
+     *             type: integer
+     *             format: int64
      *           baseChapter:
      *             type: object
-     *             description: 基准章节（用于拆分/合并定位）
+     *             description: 基准章节（用于拆分/合并定位）。使用基准章节可令后续章节排序序号后移。若不使用则可作为批量更新接口。
      *             properties:
-     *               bookId:
-     *                 type: integer
-     *                 format: int64
      *               chapterId:
      *                 type: integer
      *                 format: int64
@@ -489,12 +489,10 @@ module.exports = () => ({
      *                   enum: [update, delete, create]
      *                 chapters:
      *                   type: array
+     *                   description: 当operationType为delete时，chapters类型为数字数组
      *                   items:
      *                     type: object
      *                     properties:
-     *                       bookId:
-     *                         type: integer?
-     *                         format: int64
      *                       chapterId:
      *                         type: integer?
      *                         format: int64
@@ -513,34 +511,11 @@ module.exports = () => ({
      *         description: 无效的操作参数
      */
     "patch /book/chapters/restructure": async (ctx) => {
-        const param = await parseJsonFromBodyData(ctx, ["baseChapter", "operations"]);
+        const param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
-        /*
-            {
-                "baseChapter": {
-                    "chapterId": 1,
-                    "content": "",
-                    "orderNum": 1,
-                    "title": ""
-                },
-                "operations": [
-                    {
-                    "operationType": "update",
-                    "chapters": [
-                        {
-                        "chapterId": 1,
-                        "content": "",
-                        "orderNum": 1,
-                        "title": ""
-                        }
-                    ]
-                    }
-                ]
-            }
-        */
 
         try {
-            const results = await BookMaker.RestructureChapters(param);     //TODO: 
+            const results = await BookMaker.RestructureChapters(param);
             new ApiResponse(results).toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, `批量操作失败: ${error.message}`, 50000).toCTX(ctx);
