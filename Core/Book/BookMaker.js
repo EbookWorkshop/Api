@@ -206,7 +206,7 @@ class BookMaker {
             if (!bookId) { console.error("章节重构需要提供书籍ID"); return; }
 
             const baseCp = settings?.baseChapter;
-            if (baseCp.chapterId) {
+            if (baseCp?.chapterId) {
                 const chapterSetting = _setChapter(baseCp);
                 await myModels.EbookIndex.update(chapterSetting, {
                     where: {
@@ -233,7 +233,7 @@ class BookMaker {
                 });
             }
 
-            for (let chap of operations) {
+            for (let chap of settings?.operations) {
                 for (let cp of chap.chapters) {
                     const curChapSetting = _setChapter(cp);
                     switch (chap.operationType) {        //[update, delete, create]
