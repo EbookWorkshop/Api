@@ -32,7 +32,7 @@ class BookMaker {
             CoverImg: conver,
         });
 
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
+        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
 
         for (let c of chapters) {
             ebook.Index.push(new Index({
