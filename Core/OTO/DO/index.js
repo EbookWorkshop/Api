@@ -152,14 +152,14 @@ class DO {
         try {
             let CoverImg = ebook.CoverImg;
             if (CoverImg != null && !CoverImg.startsWith("#")) {
-                const fs = require("fs");
+                const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
-                fs.unlinkSync(thisCoverImg);
+                await fs.unlinkSync(thisCoverImg);
                 let imgDir = path.dirname(thisCoverImg);
-                fs.rmdir(imgDir);
+                await fs.rmdir(imgDir);
             }
         } catch (err) {
-            console.error("删除封面出错：",err);
+            console.error("删除封面出错：", err);
         }
 
         //删除书本
