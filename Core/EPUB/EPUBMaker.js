@@ -2,6 +2,7 @@ const EPUB = require("epub-gen");
 // const Ebook = require("../../Entity/Ebook/Ebook");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
+const fs = require("fs/promises");
 const { dataPath } = require("../../config");
 const { version } = require("../../package.json");
 
@@ -55,6 +56,13 @@ class EPUBMaker {
             content: [],
             tempDir: path.join(dataPath, "temp/EPUB"),//非标配置，指定打包EPUB文件用的临时目录
         }
+        //临时目录不存在则创建
+        try {
+            await fs.access(option.tempDir);
+        } catch {
+            await fs.mkdir(option.tempDir, { recursive: true });
+        }
+        
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));

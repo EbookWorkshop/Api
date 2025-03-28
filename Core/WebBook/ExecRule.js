@@ -48,7 +48,7 @@ async function ExecRule(page, rule, isVis = false) {
                     result = "cache::" + myNode[acExp[1]];
                     break;
                 case "fun":         //执行节点上的方法
-                    result = eval(acExp[1]);
+                    result = myNode[acExp[1]](...acExp.slice(2));
                     break;
                 case "reg":
                     result = "ToDo";
