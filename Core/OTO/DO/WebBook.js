@@ -120,7 +120,7 @@ class OTO_WebBook {
 
         if (created) {
             //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
-            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
+            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },
                 defaults: { FontFamily: FontFamily }
