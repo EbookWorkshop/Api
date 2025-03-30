@@ -144,11 +144,13 @@ class OTO_WebBook {
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
-        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues });
+        await ebookObj.LoadIntroduction();
+        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
         let urls = await webModel.getWebBookIndexSourceURLs();
         for (let u of urls) webBook.IndexUrl.push(u.Path);
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
+        webBook.LoadIntroduction = async () => { return await ebookObj.LoadIntroduction(); }
 
         /**
          * 添加来源地址
@@ -183,7 +185,8 @@ class OTO_WebBook {
                     where: { isHidden: false }
                 },
                 where: {
-                    BookId: webBook.BookId
+                    BookId: webBook.BookId,
+                    OrderNum: { [Models.Op.gt]: 0 } //大于0的章节
                 },
                 order: ["OrderNum"]
             });

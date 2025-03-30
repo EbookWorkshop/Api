@@ -30,11 +30,11 @@ class DO {
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
 
         /**
-         * 重新加载所有章节
+         * [LoadIndex]重新加载所有章节
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId }, order: ["OrderNum"] });
+            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gt]: 0 } }, order: ["OrderNum"] });
             for (let i of eIndexs) {
                 let index = new Index({ ...i.dataValues, HasContent: i.HasContent })
                 ebook.Index.push(index);
@@ -129,10 +129,26 @@ class DO {
          */
         ebook.GetMaxIndexOrder = async () => {
             const myModels = Models.GetPO();
-            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
+            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: ebook.BookId }, order: [["OrderNum", "DESC"]] });
             return lastIndex?.OrderNum || 1;
         }
         await ebook.ReloadIndex();
+
+        /**
+         * 加载书籍简介
+         */
+        ebook.LoadIntroduction = async () => {
+            const myModels = Models.GetPO();
+            const intro = await myModels.EbookIndex.findOne({
+                where: {
+                    BookId: ebook.BookId,
+                    Title: Chapter.IntroductionName
+                }
+            });
+            if (intro) {
+                ebook.Introduction = intro.Content;
+            }
+        }
 
         return ebook;
     }

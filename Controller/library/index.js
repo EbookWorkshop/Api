@@ -63,8 +63,9 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-
-        new ApiResponse(await DO.GetEBookById(bookId * 1)).toCTX(ctx);
+        const ebook = await DO.GetEBookById(bookId * 1);
+        await ebook.LoadIntroduction();
+        new ApiResponse(ebook).toCTX(ctx);
     },
 
     /**
@@ -167,6 +168,7 @@ module.exports = () => ({
         if (bookInfo.author) metadata.Author = bookInfo.author;
         if (bookInfo.font) metadata.FontFamily = bookInfo.font;
         if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
+        if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
 
         let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
 
