@@ -418,7 +418,7 @@ module.exports = () => ({
 
     /**
      * @swagger
-     * /library/book/chapterHide:
+     * /library/book/chapter/toggleHide:
      *   patch:
      *     tags:
      *       - Library —— 图书馆
@@ -441,7 +441,11 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["chapterId"]);
         if (!param) return;
 
-        new ApiResponse(await BookMaker.ToggleAChapterHide(param.chapterId)).toCTX(ctx);
+        try {
+            new ApiResponse(await BookMaker.ToggleAChapterHide(param.chapterId)).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse(null, `操作失败: ${err.message}`, 50000).toCTX(ctx);
+        }
     },
 
     /**
