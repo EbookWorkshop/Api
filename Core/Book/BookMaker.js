@@ -267,5 +267,44 @@ class BookMaker {
             throw err;
         }
     }
+
+    /**
+     * 删除指定章节
+     * @param {int} chapterId 
+     */
+    static async DeleteAChapter(chapterId) {
+        try {
+            const myModels = Models.GetPO();
+            return await myModels.EbookIndex.destroy({
+                where: {
+                    id: chapterId
+                }
+            });
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * 切换章节的隐藏状态
+     * 当章节排列序号小于0时不显示在列表，就是隐藏的
+     * @param {int} chapterId
+     * @param {*} chapterId 
+     * @returns 
+     */
+    static async ToggleAChapterHide(chapterId) {
+        try {
+            const myModels = Models.GetPO();
+            return await myModels.EbookIndex.update({
+                OrderNum: myModels.sequelize.literal('OrderNum * -1')
+            }, {
+                where: {
+                    id: chapterId
+                }
+            });
+        } catch (err) {
+            return false;
+        }
+    }
 }
 module.exports = BookMaker;

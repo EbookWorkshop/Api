@@ -418,6 +418,34 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /library/book/chapterHide:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 切换章节是否隐藏
+     *     description: 切换章节是否隐藏，设置隐藏状态为当前状态的反转
+     *     parameters:
+     *       - in: body
+     *         name: chapterId
+     *         description: 需要设置的章节ID
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "patch /book/chapter/toggleHide": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["chapterId"]);
+        if (!param) return;
+
+        new ApiResponse(await BookMaker.ToggleAChapterHide(param.chapterId)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
      * /library/book/chapter:
      *   delete:
      *     tags:
@@ -445,7 +473,7 @@ module.exports = () => ({
             return;
         }
 
-        new ApiResponse(/*await DO.DeleteChapter(chapterId * 1)*/"TODO: delete /book/chapter\n删除指定章节").toCTX(ctx);
+        new ApiResponse(await BookMaker.DeleteAChapter(chapterId)).toCTX(ctx);
     },
 
     /**

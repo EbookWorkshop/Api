@@ -3,7 +3,7 @@
 INSERT into  Ebooks select * from old.Ebooks;
 INSERT into  EbookChapters select * from old.EbookChapters;
 INSERT into  WebBooks select * from old.WebBooks;
-INSERT into  WebBookChapters(id,WebTitle,isHidden,createdAt,updatedAt,IndexId) select id,WebTitle,isHidden,createdAt,updatedAt,IndexId from old.WebBookChapters;
+INSERT into  WebBookChapters(id,WebTitle,createdAt,updatedAt,IndexId) select id,WebTitle,createdAt,updatedAt,IndexId from old.WebBookChapters;
 INSERT into  WebBookIndexSourceURLs select * from old.WebBookIndexSourceURLs;
 INSERT into  PDFBooks select * from old.PDFBooks;
 INSERT into  SystemConfigs select * from old.SystemConfigs;

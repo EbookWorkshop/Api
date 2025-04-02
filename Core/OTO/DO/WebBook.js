@@ -179,11 +179,6 @@ class OTO_WebBook {
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({
-                include: {
-                    model: myModels.WebBookIndex,
-                    as: 'WebBookIndex',
-                    where: { isHidden: false }
-                },
                 where: {
                     BookId: webBook.BookId,
                     OrderNum: { [Models.Op.gt]: 0 } //大于0的章节
