@@ -306,5 +306,104 @@ class BookMaker {
             return false;
         }
     }
+
+    /**
+     * 保存电子书简介
+     * @param {*} bookId 书籍ID
+     * @param {*} intro 简介
+     * @returns 
+     */
+    static async EditEbookIntroduction(bookId, intro) {
+        try {
+            //放弃：下列方法需要确保'BookId', 'Title'在模型定义中包含唯一约束（在模型定义中增加复合唯一索引）
+            //但考虑都可能存在书籍章节名称相同的情况，故不使用
+            // const myModels = Models.GetPO();
+            // let rsl = await myModels.EbookIndex.upsert({
+            //     BookId: bookId,
+            //     Title: Chapter.IntroductionName,
+            //     Content: intro,
+            //     OrderNum: -1
+            // }, {
+            //     fields: ['Content', 'OrderNum'], // 更新的字段
+            //     conflictFields: ['BookId', 'Title'] // 判断是否存在的字段
+            // });
+            // return rsl;
+            const myModels = Models.GetPO();
+            const t = await myModels.sequelize.transaction(); // 新增事务
+
+            // 先尝试查找现有记录
+            const existing = await myModels.EbookIndex.findOne({
+                where: {
+                    BookId: bookId,
+                    Title: Chapter.IntroductionName
+                },
+                transaction: t
+            });
+
+            let rsl;
+            if (existing) {
+                // 存在则更新
+                rsl = await myModels.EbookIndex.update({
+                    Content: intro,
+                    OrderNum: -1,
+                    // updatedAt: new Date()        //TODO：可以确认下updatedAt是否会自动更新
+                }, {
+                    where: { id: existing.id },
+                    transaction: t
+                });
+            } else {
+                // 不存在则创建
+                rsl = await myModels.EbookIndex.create({
+                    BookId: bookId,
+                    Title: Chapter.IntroductionName,
+                    Content: intro,
+                    OrderNum: -1,
+                    // createdAt: new Date(),
+                    // updatedAt: new Date()
+                }, { transaction: t });
+            }
+
+            await t.commit();
+            return rsl;
+        } catch (e) {
+            await t.rollback();
+            // console.log(e);
+            return null;
+        }
+    }
+
+    /**
+     * 修改电子书元数据
+     * @param {number} id 书ID
+     * @param {*} metadata 
+     * @returns 
+     */
+    static async EditEBookInfo(id, metadata) {
+        const myModels = Models.GetPO();
+
+        if (metadata.Introduction) {
+            await this.EditEbookIntroduction(id, metadata.Introduction);
+            delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
+        }
+
+        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
+        return rsl;
+    }
+
+    /**
+    * 将指定章节转换为书籍简介
+    * @param {number} chapterId - 需要转换的章节ID
+    * @returns {Promise<Array>} Sequelize 更新操作结果
+    */
+    static async Chapter2Introduction(chapterId) {
+        const myModels = Models.GetPO();
+        let rsl = await myModels.EbookIndex.update({
+            Title: Chapter.IntroductionName,
+            OrderNum: myModels.sequelize.literal('-ABS(OrderNum)')
+        }, {
+            where: { id: chapterId }
+        });
+        return rsl;
+    }
 }
 module.exports = BookMaker;

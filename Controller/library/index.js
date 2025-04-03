@@ -170,7 +170,7 @@ module.exports = () => ({
         if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
 
-        let rsl = DO.EditEBookInfo(bookInfo.id, metadata);
+        let rsl = BookMaker.EditEBookInfo(bookInfo.id, metadata);
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },
@@ -555,6 +555,49 @@ module.exports = () => ({
             new ApiResponse(null, `批量操作失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
+
+    /**
+     * @swagger
+     * /library/book/chapter/tointroduction:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 转换章节为书籍简介
+     *     description: 将指定章节内容设置为书籍简介
+     *     parameters:
+     *     - name: body
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         required: [chapterId]
+     *         properties:
+     *           chapterId:
+     *             type: integer
+     *             format: int64
+     *             description: 需要转换的章节ID
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 转换成功
+     *       600:
+     *         description: 参数错误（缺少章节ID或格式错误）
+     *       500:
+     *         description: 服务器内部错误
+     */
+    "post /book/chapter/tointroduction": async (ctx) => {
+        const param = await parseJsonFromBodyData(ctx, ["chapterId"]);
+        const chapterId = param.chapterId * 1;
+
+        try {
+            const results = await BookMaker.Chapter2Introduction(chapterId);
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `转化章节为书籍简介失败: ${error.message}`, 50000).toCTX(ctx);
+        }
+    },
+
 
     /**
      * @swagger
