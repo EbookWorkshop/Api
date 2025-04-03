@@ -203,7 +203,7 @@ class OTO_WebBook {
                 });
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
                 for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
-                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.WebTitle])
+                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
 
                 webBook.Index.push(tIdx);
             }
