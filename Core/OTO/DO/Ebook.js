@@ -34,7 +34,7 @@ class OTO_Ebook {
      */
     static async EBookObjToModel(book) {
         const PO = Models.GetPO();
-        const t = await PO.sequelize.transaction(); // 开启事务
+        const t = await PO.BeginTrans(); // 开启事务
         try {
             let existingBook = await DO.GetEBookByName(book.BookName);
             if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍

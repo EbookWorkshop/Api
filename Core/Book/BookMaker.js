@@ -200,7 +200,7 @@ class BookMaker {
         }
 
         let myModels = Models.GetPO();
-        let t = await myModels.sequelize.transaction();
+        let t = await myModels.BeginTrans();
         try {
             const bookId = settings.bookId;
             if (!bookId) { console.error("章节重构需要提供书籍ID"); return; }
@@ -329,8 +329,7 @@ class BookMaker {
             // });
             // return rsl;
             const myModels = Models.GetPO();
-            const t = await myModels.sequelize.transaction(); // 新增事务
-
+            const t = await myModels.BeginTrans();
             // 先尝试查找现有记录
             const existing = await myModels.EbookIndex.findOne({
                 where: {
