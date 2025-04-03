@@ -22,7 +22,7 @@ const options = {
 };
 const swaggerSpec = jsdoc(options)
 
-const CDN = "https://unpkg.com";
+const CDN = "https://s4.zstatic.net/npm";//国内自动缓存国外CDN的一个CDN服务https://www.zstatic.net/docs/getting-started.html
 
 module.exports = () => ({
     /**
@@ -63,7 +63,7 @@ module.exports = () => ({
     <script
       id="api-reference"
       data-url="/swagger.json"></script>
-    <script src="${CDN}/@scalar/api-reference"></script>
+    <script src="${CDN}/@scalar/api-reference@latest/dist/browser/standalone.js">/*${CDN}/@scalar/api-reference*/</script>
   </body>
 </html>`;
     },

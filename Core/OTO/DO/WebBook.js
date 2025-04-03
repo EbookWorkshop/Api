@@ -192,15 +192,17 @@ class OTO_WebBook {
             if (defaultIndex > sourceUrls.length) defaultIndex = 0;
             const defaultHost = sourceUrls.length > 0 ? new URL(sourceUrls[defaultIndex].Path).host : null;
 
+            //加载每章的网址
             for (let i of eIndexs) {
-                let eI = i.WebBookIndex; //加载 WebBookChapter 内容，即取得每章网文的配置
-                // console.log("ReloadIndex", i.dataValues, eI?.dataValues)
+                const eI = await myModels.WebBookIndex.findOne({
+                    where: { IndexId: i.id },
+                    include: {
+                        model: myModels.WebBookIndexURL,
+                        as: "WebBookIndexURLs"
+                    }
+                });
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
-
-                let urls = await eI?.getWebBookIndexURLs() || [];
-                for (let u of urls) tIdx.URL.push({ id: u.id, Path: u.Path });
-
-                // [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
+                for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
                 [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.WebTitle])
 
                 webBook.Index.push(tIdx);
