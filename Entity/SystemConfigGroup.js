@@ -29,6 +29,13 @@ class SystemConfigGroup {
     static get DATABASE_VERSION() {
         return 'database_version';
     }
+
+    /**
+     * 获取网站的超时设置
+     */
+    static get WEBSITE_TIMEOUT() {
+        return 'website_timeout';
+    }
 }
 
 module.exports = SystemConfigGroup;

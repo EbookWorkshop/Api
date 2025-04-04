@@ -53,7 +53,7 @@ class WebBookMaker {
     async UpdateIndex(url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = await RuleManager.GetRuleByURL(curUrl);
-        const option = { RuleList: webRule.index.GetRuleList() }
+        const option = { RuleList: webRule.index.GetRuleList(), timeout: webRule.timeout };
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -161,7 +161,7 @@ class WebBookMaker {
         if (!url) return false;
 
         const webRule = await RuleManager.GetRuleByURL(url);
-        const option = { RuleList: webRule.chapter.GetRuleList() }
+        const option = { RuleList: webRule.chapter.GetRuleList(), timeout: webRule.timeout };
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -180,13 +180,7 @@ class WebBookMaker {
             let chap = new WebChapter(curIndex);
             if (result.has("CapterTitle")) {
                 let cTitleResult = result.get("CapterTitle")[0];
-                if (!cTitleResult.text) {
-                    let errAdd = "";
-                    if (!cTitleResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节标题失败" + errAdd, jobId);
-                    return;
-                }
-                chap.Title = cTitleResult.text;
+                if (cTitleResult?.text) chap.Title = cTitleResult.text;
             }
 
             if (result.has("Content")) {

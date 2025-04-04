@@ -103,7 +103,7 @@ class BookMaker {
             for (let i of ebook.showIndexId) {
                 let c = ebook.GetChapter(i);
                 if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
-                else writeStream.write(`${c.Content}\n`);
+                else if (c.Content) writeStream.write(`${c.Content}\n`);//不嵌入标题时同时正文无内容时不写入
             }
             writeStream.end();
         });

@@ -22,62 +22,67 @@ async function ExecRule(page, rule, isVis = false) {
     let querySelector = page.$eval;
     if (rule.Type === "List") querySelector = page.$$eval;
 
-    //注意：下述代码块运行在浏览器端
-    let rsl = await querySelector.call(page, rule.Selector, (node, option, isVis) => {
-        /**
-         * 动作表达式解释处理器 
-         * 只能定义在浏览器端，对象不能序列化
-         * 在服务器执行会失效
-         * @param {*} action 动作表达式，如：attr/innerText
-         * @param {*} myNode 已命中的node对象
-         * @returns {text,url}
-         */
-        let ActionHandle = (action, myNode) => {
-            if (action == undefined) return;
-            let result;
-
+    try {
+        //注意：下述代码块运行在浏览器端
+        let rsl = await querySelector.call(page, rule.Selector, (node, option, isVis) => {
             /**
-             * 配置的动作表达式
+             * 动作表达式解释处理器 
+             * 只能定义在浏览器端，对象不能序列化
+             * 在服务器执行会失效
+             * @param {*} action 动作表达式，如：attr/innerText
+             * @param {*} myNode 已命中的node对象
+             * @returns {text,url}
              */
-            let acExp = action.split("/");
-            switch (acExp[0]) {
-                case "attr":
-                    result = myNode[acExp[1]];
-                    break;
-                case "cache":       //缓存的
-                    result = "cache::" + myNode[acExp[1]];
-                    break;
-                case "fun":         //执行节点上的方法
-                    result = myNode[acExp[1]](...acExp.slice(2));
-                    break;
-                case "reg":
-                    result = "ToDo";
-                    break;
+            let ActionHandle = (action, myNode) => {
+                if (action == undefined) return;
+                let result;
+
+                /**
+                 * 配置的动作表达式
+                 */
+                let acExp = action.split("/");
+                switch (acExp[0]) {
+                    case "attr":
+                        result = myNode[acExp[1]];
+                        break;
+                    case "cache":       //缓存的
+                        result = "cache::" + myNode[acExp[1]];
+                        break;
+                    case "fun":         //执行节点上的方法
+                        result = myNode[acExp[1]](...acExp.slice(2));
+                        break;
+                    case "reg":
+                        result = "ToDo";
+                        break;
+                }
+                return result;
             }
-            return result;
-        }
 
 
-        let myRsl = [];
-        if (option.Type !== "List") {
-            node = [node];
-        }
-
-        for (let n of node) {
-            let curObj = { Rule: option };
-            curObj.text = ActionHandle(option.GetContentAction, n);
-            curObj.url = ActionHandle(option.GetUrlAction, n);
-            myRsl.push(curObj);
-
-            if (isVis) {
-                n.style.border = "5px solid red";
-                n.title = `${curObj.url}\n${curObj.text}`
+            let myRsl = [];
+            if (option.Type !== "List") {
+                node = [node];
             }
-        }
-        return myRsl;
-    }, rule, isVis);
 
-    return rsl;
+            for (let n of node) {
+                let curObj = { Rule: option };
+                curObj.text = ActionHandle(option.GetContentAction, n);
+                curObj.url = ActionHandle(option.GetUrlAction, n);
+                myRsl.push(curObj);
+
+                if (isVis) {
+                    n.style.border = "5px solid red";
+                    n.title = `${curObj.url}\n${curObj.text}`
+                }
+            }
+            return myRsl;
+        }, rule, isVis);
+
+        return rsl;
+    } catch (err) {
+        //没抓到数据
+        return [null];
+    }
 }
 
 module.exports = {

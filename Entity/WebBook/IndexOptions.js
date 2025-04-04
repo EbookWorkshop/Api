@@ -28,7 +28,12 @@ class IndexOptions {
         /**
          * 爬简介的规则
          */
-        //...
+        this.IntroductionRule = new Rule("Introduction");
+
+        /**
+         * 爬作者的规则
+         */
+        this.AuthorRule = new Rule("Author");
     }
 
     /**
@@ -39,7 +44,9 @@ class IndexOptions {
             this.BookNameRule,
             this.ChapterListRule,
             this.NextPageRule,
-            this.BookCoverRule
+            this.BookCoverRule,
+            this.IntroductionRule,
+            this.AuthorRule
         ];
     }
 }
