@@ -36,11 +36,14 @@ class RuleManager {
                 case "ChapterList": curRule = result.index.ChapterListRule; break;
                 case "IndexNextPage": curRule = result.index.NextPageRule; break;
                 case "BookCover": curRule = result.index.BookCoverRule; break;
+                //作者、简介等
+                case "Author": curRule = result.index.AuthorRule; break;
+                case "Introduction": curRule = result.index.IntroductionRule; break;
 
                 case "CapterTitle": curRule = result.chapter.CapterTitleRule; break;
                 case "Content": curRule = result.chapter.ContentRule; break;
                 case "ContentNextPage": curRule = result.chapter.NextPageRule; break;
-                //TODO: 作者、简介等
+
             }
 
             curRule.RuleName = r.RuleName;

@@ -8,6 +8,7 @@ const RuleManager = require("./RuleManager");
 const EventManager = require("../EventManager");
 const DO = require("../OTO/DO");
 const WorkerPool = require("../Worker/WorkerPool");
+const BookMaker = require("../Book/BookMaker");
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
@@ -21,7 +22,7 @@ class WebBookMaker {
      * string 在线图书的网址，通过书目页创建或读取书的对象
      * number 已在库的书ID，通过ID
      * undefined 空对象，创建空书对象
-     * @returns 
+     * @returns {WebBookMaker} 返回一个WebBookMaker对象
      */
     constructor(webbook) {
         this.isCreateBook = false;  //是否新创建的书
@@ -40,12 +41,17 @@ class WebBookMaker {
         }
     }
 
+    /**
+     * 根据目录地址创建一本新书
+     * @param {*} url 目录地址
+     * @returns {WebBook} 返回新创建的书对象
+     */
     GetBook() {
         return this.myWebBook;
     }
 
     /**
-     * 更新章节目录
+     * 更新章节目录 抓目录
      *  更新封面
      * @param {*} url 默认为空，在章节分页时递归往下找
      * @returns 
@@ -110,6 +116,23 @@ class WebBookMaker {
                 }).catch(err => {
                     new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", err);
                 });
+            }
+
+            if (result.has("Author")) {  //保存作者
+                let authorRule = result.get("Author")[0];
+                if (authorRule) {
+                    let tempAuthor = authorRule.text;
+                    for (let rm of authorRule.Rule.RemoveSelector) {
+                        tempAuthor = tempAuthor.replace(rm, "");
+                    }
+                    if (!this.myWebBook.Author) BookMaker.EditEBookInfo(this.myWebBook.BookId, { "Author": tempAuthor });
+                    this.myWebBook.Author = tempAuthor;
+                }
+            }
+
+            if (result.has("Introduction")) {  //保存简介
+                let desc = result.get("Introduction")[0];
+                if (desc?.text) BookMaker.EditEbookIntroduction(this.myWebBook.BookId, desc.text);
             }
 
             let finishMsg = "WebBook.UpdateIndex.Finish";
