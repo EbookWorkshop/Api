@@ -62,13 +62,25 @@ class EPUBMaker {
         } catch {
             await fs.mkdir(option.tempDir, { recursive: true });
         }
-        
+
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
             } else {
                 option.cover = ebook.CoverImg;
             }
+        }
+
+        //加入简介
+        await ebook.LoadIntroduction();
+        if (ebook.Introduction) {
+            option.content.push({
+                title: "简介",
+                data: "<p>" + ebook.Introduction.split("\n").join("</p>\n<p>") + "</p>",
+                // TODO: iphone 图书应用直接不会显示
+                excludeFromToc: true,//不加入目录
+                beforeToc: true,//先于目录之前显示: 
+            });
         }
 
         for (let i of ebook.showIndexId) {

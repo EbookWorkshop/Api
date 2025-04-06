@@ -11,13 +11,15 @@ async function ExecRule(page, rule, isVis = false) {
     //先尝试删除干扰元素
     if (typeof (rule.RemoveSelector) === "string") rule.RemoveSelector = [rule.RemoveSelector];
     for (let sR of rule.RemoveSelector)
-        await page.$$eval(sR, (node, isVis) => {
-            for (let nO of node)
-                if (!isVis)
-                    nO.parentNode.removeChild(nO);
-                else
-                    nO.style.border = "5px solid blue";
-        }, isVis);
+        try {
+            await page.$$eval(sR, (node, isVis) => {
+                for (let nO of node)
+                    if (!isVis)
+                        nO.parentNode.removeChild(nO);
+                    else
+                        nO.style.border = "5px solid blue";
+            }, isVis);
+        } catch (err) { }//尝试删除干扰元素，失败不管
 
     let querySelector = page.$eval;
     if (rule.Type === "List") querySelector = page.$$eval;

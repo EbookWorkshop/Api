@@ -170,7 +170,7 @@ class DO {
             if (CoverImg != null && !CoverImg.startsWith("#")) {
                 const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
-                await fs.unlinkSync(thisCoverImg);
+                await fs.unlink(thisCoverImg);
                 let imgDir = path.dirname(thisCoverImg);
                 await fs.rmdir(imgDir);
             }
