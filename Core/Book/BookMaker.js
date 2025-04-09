@@ -385,6 +385,16 @@ class BookMaker {
             delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
         }
 
+        if (metadata.converFile) {    //存储封面文件
+            const coverPath = `/Cover/${metadata.converFile.originalFilename}`;
+
+            const { AddFile } = await import("../../Core/services/file.mjs");
+            await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+
+            delete metadata.converFile;
+            metadata.CoverImg = coverPath;
+        }
+
         let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
         return rsl;
     }

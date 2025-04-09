@@ -168,6 +168,7 @@ module.exports = () => ({
         if (bookInfo.author) metadata.Author = bookInfo.author;
         if (bookInfo.font) metadata.FontFamily = bookInfo.font;
         if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
+        if (bookInfo.coverFile) { metadata.converFile = bookInfo.coverFile[0]; }
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
 
         let rsl = BookMaker.EditEBookInfo(bookInfo.id, metadata);
