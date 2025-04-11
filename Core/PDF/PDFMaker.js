@@ -18,6 +18,7 @@ class PDFMaker {
             showChpaters = ebook.Index.map(item => item.IndexId);
         }
         await ebook.SetShowChapters(showChpaters);
+        await ebook.LoadIntroduction();
 
         const pdf = Object.keys(ebook)
             .filter(key => typeof ebook[key] !== 'function')

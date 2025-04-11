@@ -82,6 +82,8 @@ class BookMaker {
         }
         await ebook.SetShowChapters(showChpaters);
 
+        await ebook.LoadIntroduction();
+
         return new Promise((resolve, reject) => {
             const fileInfo = {
                 filename: ebook.BookName + ".txt",
@@ -99,6 +101,10 @@ class BookMaker {
             });
             const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
             writeStream.write(`${ebook.BookName}\n${author}\n`);
+
+            if (ebook.Introduction) {
+                writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+            }
 
             for (let i of ebook.showIndexId) {
                 let c = ebook.GetChapter(i);
@@ -314,6 +320,8 @@ class BookMaker {
      * @returns 
      */
     static async EditEbookIntroduction(bookId, intro) {
+        const myModels = Models.GetPO();
+        const t = await myModels.BeginTrans();
         try {
             //放弃：下列方法需要确保'BookId', 'Title'在模型定义中包含唯一约束（在模型定义中增加复合唯一索引）
             //但考虑都可能存在书籍章节名称相同的情况，故不使用
@@ -328,8 +336,7 @@ class BookMaker {
             //     conflictFields: ['BookId', 'Title'] // 判断是否存在的字段
             // });
             // return rsl;
-            const myModels = Models.GetPO();
-            const t = await myModels.BeginTrans();
+
             // 先尝试查找现有记录
             const existing = await myModels.EbookIndex.findOne({
                 where: {
@@ -340,6 +347,9 @@ class BookMaker {
             });
 
             let rsl;
+            if (intro?.includes("简介：")) {
+                intro = intro.substring(intro.indexOf("简介：") + 3);
+            }
             if (existing) {
                 // 存在则更新
                 rsl = await myModels.EbookIndex.update({

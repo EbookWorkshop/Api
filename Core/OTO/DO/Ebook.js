@@ -37,7 +37,11 @@ class OTO_Ebook {
         const t = await PO.BeginTrans(); // 开启事务
         try {
             let existingBook = await DO.GetEBookByName(book.BookName);
-            if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
+            if (!existingBook?.CoverImg?.startsWith("#")) {
+                book.CoverImg = existingBook.CoverImg; // 继承已有封面
+                existingBook.CoverImg = "";
+            }
+            if (existingBook) await DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
 
             if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
 
