@@ -419,6 +419,40 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /library/book/chapter/listhidden:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 找到指定书下面已隐藏的章节
+     *     description: 找到指定书下面已隐藏的章节，如简介等
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 需要获取的书ID
+     *       schema:
+     *         type: integer
+     *         format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /book/chapter/listhidden": async (ctx) => {
+        let bookid = ctx.query.bookid;
+        if (bookid * 1 != bookid) {
+            new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
+            return;
+        }
+
+        new ApiResponse(await DO.GetEbookHiddenChapterList(bookid * 1)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
      * /library/book/chapter/toggleHide:
      *   patch:
      *     tags:

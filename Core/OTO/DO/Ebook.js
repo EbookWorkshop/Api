@@ -123,6 +123,19 @@ class OTO_Ebook {
         return chapterObj;
     }
 
+    static async GetEbookHiddenChapterList(bookid) {
+        const myModels = Models.GetPO();
+        let hiddenChapters = await myModels.EbookIndex.findAll({
+            attributes: ["id", "Title", "BookId"],
+            where: {
+                BookId: bookid,
+                OrderNum: { [Models.Op.lte]: 0 }
+            },
+            order: [["OrderNum", "ASC"]],
+        });
+        return hiddenChapters.map(c => new Chapter(c.dataValues));
+    }
+
     /**
      * 获取当前章节的相邻章节ID
      * @param {*} chapterId 
