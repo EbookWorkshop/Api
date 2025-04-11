@@ -3,6 +3,7 @@ const EPUB = require("epub-gen");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
 const fs = require("fs/promises");
+const sharp = require("sharp");     //提供图像格式转换
 const { dataPath } = require("../../config");
 const { version } = require("../../package.json");
 
@@ -63,9 +64,18 @@ class EPUBMaker {
             await fs.mkdir(option.tempDir, { recursive: true });
         }
 
+        let useTempCover = false;
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
+
+                //进行文件格式兼容
+                if (option.cover.endsWith(".webp")) {
+                    const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
+                    await sharp(option.cover).png().toFile(tempFile);
+                    option.cover = tempFile;
+                    useTempCover = true;
+                }
             } else {
                 option.cover = ebook.CoverImg;
             }
@@ -96,6 +106,13 @@ class EPUBMaker {
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
         return new Promise((resolve, reject) => {
             new EPUB(option, output).promise
+                .then(
+                    () => {
+                        if (useTempCover) { //删除临时文件
+                            fs.rm(option.cover, { recursive: true, force: true });
+                        }
+                    }, err => reject(err)
+                )
                 .then(
                     () => resolve({ path: output }),
                     err => reject(err)
