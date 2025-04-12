@@ -159,7 +159,7 @@ class DO {
      * TODO: 删除其它格式的数据 如PDF
      * @param {*} bookId 书ID
      */
-    static async DeleteOneBook(bookId) {
+    static async DeleteOneBook(bookId, deleteCover = true) {
         const myModels = new Models();
         // await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
 
@@ -167,7 +167,7 @@ class DO {
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
         try {
             let CoverImg = ebook.CoverImg;
-            if (CoverImg != null && !CoverImg.startsWith("#")) {
+            if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
                 const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
                 await fs.unlink(thisCoverImg);
