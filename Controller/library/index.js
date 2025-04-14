@@ -154,7 +154,7 @@ module.exports = () => ({
      *       schema:
      *         type: object
      *     consumes:
-     *       - application/json
+     *       - multipart/form-data
      *     responses:
      *       200:
      *         description: 请求成功

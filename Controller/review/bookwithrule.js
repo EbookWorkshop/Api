@@ -46,6 +46,57 @@ module.exports = () => ({
     },
     /**
     * @swagger
+    * /review/bookwithrule/book:
+    *   get:
+    *     tags:
+    *       - Review - BookWithRule —— 自助校阅 - 书与规则绑定
+    *     summary: 提供一本书，列出所有规则
+    *     description: 提供一本书，列出所有规则
+    *     parameters:
+    *     - name: bookid
+    *       in: query
+    *       required: true
+    *       description: 将要删除规则ID
+    *       schema:
+    *         type: integer
+    *         format: int32
+    *     consumes:
+    *       - application/json
+    *     responses:
+    *       200:
+    *         description: 请求成功
+    *       600:
+    *         description: 参数错误，参数类型错误
+    */
+    "get /book": async (ctx) => {
+        let bookid = ctx.query.bookid;
+        if (!bookid) {
+            new ApiResponse(null, "缺少参数bookid", 60000).toCTX(ctx);
+            return;
+        }
+        const myModels = Models.GetPO();
+        let rules = await myModels.ReviewRuleUsing.findAll({
+            include: [myModels.Ebook, myModels.ReviewRule],
+            where: { BookId: bookid },
+        });
+        let result = [];
+        if (rules) {
+            rules.map(item => {
+                result.push({
+                    id: item.id,
+                    bookId: item.Ebook?.id,
+                    bookName: item.Ebook?.BookName,
+                    ruleId: item.ReviewRule.id,
+                    ruleName: item.ReviewRule.Name
+                })
+            })
+        }
+        new ApiResponse(result).toCTX(ctx);
+    },
+
+
+    /**
+    * @swagger
     * /review/bookwithrule:
     *   post:
     *     tags:

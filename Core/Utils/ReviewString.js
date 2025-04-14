@@ -2,7 +2,7 @@
 /**
  * 替换的执行规则
  *     如果自动校阅功能出问题了，需要检修这里
- * @param {Rule[]} rules 
+ * @param {ReviewRule[]} rules 
  * @param {String[]} sourceText 
  * @returns 
  */
@@ -26,7 +26,7 @@ function Run(rules, sourceText) {
 
 /**
  * 测试规则
- * @param { Rule } ruleId 需测试的规则
+ * @param { ReviewRule } rule 需测试的规则
  * @param { string } testText 测试用的文本
  */
 function Test(rule, testText) {

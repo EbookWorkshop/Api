@@ -4,7 +4,7 @@ const EventManager = require("../../EventManager");
 const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/ReviewString");
 const { dataPath } = require("../../../config");
 
 /**
@@ -112,6 +112,7 @@ class DO {
 
         /**
          * 设置包含的章节
+         * 章节内容已校阅
          * @param {Array<number>} chapters 需要的章节Id
          */
         ebook.SetShowChapters = async (chapters) => {
