@@ -1,6 +1,7 @@
 //发邮件 邮箱管理
 const BookMaker = require("./../../Core/Book/BookMaker");
 const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
+const EPUBMaker = require("./../../Core/EPUB/EPUBMaker.js");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
@@ -75,6 +76,7 @@ module.exports = () => ({
                             booking = BookMaker.MakeTxtFile(bookSetting.bookid);
                             break;
                         case "epub":
+                            booking = EPUBMaker.MakeEPUBFile(bookSetting.bookid);
                             break;
                     }
                     return booking;

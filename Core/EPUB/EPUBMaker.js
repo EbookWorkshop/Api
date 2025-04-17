@@ -1,5 +1,4 @@
 const EPUB = require("epub-gen");
-// const Ebook = require("../../Entity/Ebook/Ebook");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
 const fs = require("fs/promises");
@@ -37,7 +36,7 @@ const { version } = require("../../package.json");
 */
 
 class EPUBMaker {
-    static async MakeEPUBFile(bookId, showChpaters, fontFamliy, embedTitle) {
+    static async MakeEPUBFile(bookId, showChpaters, fontFamliy, embedTitle=true) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
