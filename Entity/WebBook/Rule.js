@@ -1,4 +1,5 @@
 /**
+ * # BotRule
  * 爬站规则-内容提取规则
  */
 class Rule {
@@ -18,11 +19,21 @@ class Rule {
          */
         this.Selector = "";
         /**
-         * 获取文本的方法
+         * ## 获取文本的方法
+         * ### 格式：前缀/方式[/参数]
+         *  如： 
+         *    + attr/innerText          读取属性 innerText
+         *    + fun/getAttribute/attr   相当于node.getAttribute("attr")
+         *    + reg/match/Regexp        匹配正则表达式
          */
         this.GetContentAction = "";
         /**
-         * 获取地址的方法 如 attr/innerText
+         * ## 获取地址的方法
+         * ### 格式：前缀/方式[/参数]
+         *  如： 
+         *    + attr/innerText          读取属性 innerText
+         *    + fun/getAttribute/attr   相当于node.getAttribute("attr")
+         *    + reg/match/Regexp        匹配正则表达式
          */
         this.GetUrlAction = "";
 
@@ -43,24 +54,5 @@ class Rule {
         this.CheckSetting = null;
     }
 }
-
-class Action {
-    constructor() {
-        /**
-        方案1： 格式字符串
-            前缀/方式[/参数]
-            如： 
-                attr/innerText  读取属性 innerText
-                fun/onclick     执行onclick属性
-                reg/match/Regexp    匹配正则表达式
-
-        方案2： 类对象配置
-            this.type = "attr";
-            this.action = "innerHTML";
-            this.param = "";
-         */
-    }
-}
-
 
 module.exports = Rule;

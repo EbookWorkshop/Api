@@ -23,6 +23,7 @@ const options = {
 const swaggerSpec = jsdoc(options)
 
 const CDN = "https://unpkg.com";
+//"https://s4.zstatic.net/npm"; //国内自动缓存国外CDN的一个CDN服务 https://www.zstatic.net/docs/getting-started.html
 
 module.exports = () => ({
     /**
@@ -50,6 +51,7 @@ module.exports = () => ({
     // })
 
     "get /scalar":async (ctx)=>{
+        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
@@ -63,12 +65,13 @@ module.exports = () => ({
     <script
       id="api-reference"
       data-url="/swagger.json"></script>
-    <script src="${CDN}/@scalar/api-reference"></script>
+    <script src="${myCDN}/@scalar/api-reference@latest/dist/browser/standalone.js">/*${myCDN}/@scalar/api-reference*/</script>
   </body>
 </html>`;
     },
 
     "get /stoplight":async (ctx)=>{//
+        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
@@ -78,8 +81,8 @@ module.exports = () => ({
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Elements in HTML</title>
     <!-- Embed elements Elements via Web Component -->
-    <script src="${CDN}/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="${CDN}/@stoplight/elements/styles.min.css">
+    <script src="${myCDN}/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="${myCDN}/@stoplight/elements/styles.min.css">
   </head>
   <body>
 
@@ -94,6 +97,7 @@ module.exports = () => ({
     },
 
     "get ../swagger-ui-dist":async (ctx)=>{
+        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
@@ -105,7 +109,7 @@ module.exports = () => ({
   </head>
   <body>
 <div id="openapi-ui-container" spec-url="/swagger.json" theme="light"></div>
-<script src="${CDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
+<script src="${myCDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
 
   </body>
 </html>`;

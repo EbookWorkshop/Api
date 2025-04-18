@@ -1,13 +1,14 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 const path = require("path");
-const config = require("./../../config");
-const WebBook = require("./../../Entity/WebBook/WebBook");
-// const WebIndex = require("./../../Entity/WebBook/WebIndex");
-const WebChapter = require("./../../Entity/WebBook/WebChapter");
+const config = require("../../config");
+const WebBook = require("../../Entity/WebBook/WebBook");
+// const WebIndex = require("../../Entity/WebBook/WebIndex");
+const WebChapter = require("../../Entity/WebBook/WebChapter");
 const RuleManager = require("./RuleManager");
-const EventManager = require("./../EventManager");
-const DO = require("./../OTO/DO");
-const WorkerPool = require("./../Worker/WorkerPool");
+const EventManager = require("../EventManager");
+const DO = require("../OTO/DO");
+const WorkerPool = require("../Worker/WorkerPool");
+const BookMaker = require("../Book/BookMaker");
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
@@ -16,13 +17,16 @@ const wPool = WorkerPool.GetWorkerPool();
 class WebBookMaker {
     /**
      * 创建一个Web电子书操作器
-     * @param { WebBook } webbook 待操作的WebBook对象，或根据提供的目录地址创建一本新书操作器
-     * @param { string } webbook 在线图书的网址，通过书目页创建或读取书的对象
-     * @param { int } webbook 已在库的书ID，通过ID
-     * @returns 
+     * @param { WebBook | string | number | undefined} 
+     * WebBook 待操作的WebBook对象，或根据提供的目录地址创建一本新书操作器
+     * string 在线图书的网址，通过书目页创建或读取书的对象
+     * number 已在库的书ID，通过ID
+     * undefined 空对象，创建空书对象
+     * @returns {WebBookMaker} 返回一个WebBookMaker对象
      */
     constructor(webbook) {
-        if (typeof (webbook) === "string") {
+        this.isCreateBook = false;  //是否新创建的书
+        if (typeof (webbook) === "string") {     //传入网址
             this.myWebBook = this.InitEmptyFromIndex(webbook);
             return;
         } else if (typeof (webbook) === "number") {
@@ -30,20 +34,24 @@ class WebBookMaker {
                 this.myWebBook = book;
             });
             return;
-        }
-
-        if (webbook instanceof WebBook)
+        } else if (webbook instanceof WebBook) {
             this.myWebBook = webbook;
-        else
+        } else {
             this.myWebBook = new WebBook();
+        }
     }
 
+    /**
+     * 根据目录地址创建一本新书
+     * @param {*} url 目录地址
+     * @returns {WebBook} 返回新创建的书对象
+     */
     GetBook() {
         return this.myWebBook;
     }
 
     /**
-     * 更新章节目录
+     * 更新章节目录 抓目录
      *  更新封面
      * @param {*} url 默认为空，在章节分页时递归往下找
      * @returns 
@@ -51,7 +59,7 @@ class WebBookMaker {
     async UpdateIndex(url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = await RuleManager.GetRuleByURL(curUrl);
-        const option = { RuleList: webRule.index.GetRuleList() }
+        const option = { RuleList: webRule.index.GetRuleList(), timeout: webRule.timeout };
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -76,6 +84,7 @@ class WebBookMaker {
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
                 this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
+                this.isCreateBook = this.myWebBook.isNewCreate;
                 await this.myWebBook.AddIndexUrl(curUrl);
             }
 
@@ -109,6 +118,25 @@ class WebBookMaker {
                 });
             }
 
+            if (result.has("Author")) {  //保存作者
+                let authorRule = result.get("Author")[0];
+                if (authorRule) {
+                    let tempAuthor = authorRule.text;
+                    for (let rm of authorRule.Rule.RemoveSelector) {
+                        tempAuthor = tempAuthor.replace(rm, "");
+                    }
+                    if (!this.myWebBook.Author) BookMaker.EditEBookInfo(this.myWebBook.BookId, { "Author": tempAuthor });
+                    this.myWebBook.Author = tempAuthor;
+                }
+            }
+
+            if (result.has("Introduction")) {  //保存简介
+                let desc = result.get("Introduction")[0];
+                if (desc?.text) BookMaker.EditEbookIntroduction(this.myWebBook.BookId, desc.text);
+            }
+
+            let finishMsg = "WebBook.UpdateIndex.Finish";
+            if (this.isCreateBook) finishMsg = "WebBook.Create.Finish";
             //翻页——继续爬 CheckSetting
             if (result.has("IndexNextPage")) {
                 let npDataList = result.get("IndexNextPage");
@@ -117,14 +145,14 @@ class WebBookMaker {
                 let npData = npDataList[0];
                 let nextPage = npData.url;
                 if (nextPage == "" || nextPage == url) {
-                    new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
+                    new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
                     return;
                 }
 
                 // console.log(`开始爬下一页：${nextPage}`);
                 return this.UpdateIndex(nextPage, orderNum);
             } else {
-                new EventManager().emit("WebBook.UpdateIndex.Finish", this.myWebBook.BookId);
+                new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
             }
         });
     }
@@ -156,7 +184,7 @@ class WebBookMaker {
         if (!url) return false;
 
         const webRule = await RuleManager.GetRuleByURL(url);
-        const option = { RuleList: webRule.chapter.GetRuleList() }
+        const option = { RuleList: webRule.chapter.GetRuleList(), timeout: webRule.timeout };
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -175,13 +203,7 @@ class WebBookMaker {
             let chap = new WebChapter(curIndex);
             if (result.has("CapterTitle")) {
                 let cTitleResult = result.get("CapterTitle")[0];
-                if (!cTitleResult.text) {
-                    let errAdd = "";
-                    if (!cTitleResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节标题失败" + errAdd, jobId);
-                    return;
-                }
-                chap.Title = cTitleResult.text;
+                if (cTitleResult?.text) chap.Title = cTitleResult.text;
             }
 
             if (result.has("Content")) {
@@ -298,13 +320,9 @@ class WebBookMaker {
      * @returns {WebBook}
      */
     InitEmptyFromIndex(indexUrl) {
-
         let curbook = new WebBook();
-        //curbook.BookId = 
         curbook.IndexUrl.push(indexUrl);
-
         this.myWebBook = curbook;
-
         return curbook;
     }
 

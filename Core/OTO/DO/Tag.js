@@ -148,7 +148,8 @@ class OTO_TAG {
                 Count: t.EBookTags.length
             };
             return tag;
-        })
+        });
+        result.sort((a, b) => b.Count - a.Count);
         return result;
     }
 }

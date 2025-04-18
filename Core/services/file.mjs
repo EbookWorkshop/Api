@@ -82,14 +82,14 @@ export async function DeleteFile(fileFullPath) {
  * @returns {Dirent|null} 返回文件的Dirent对象
  */
 export async function FindFile(path, fileName) {
-    if (!fs.existsSync(path)) return null;
+    if (!fs.existsSync(path) || !fileName) return null;
 
     const dir = fs.opendirSync(path);
-    const lowerName = fileName.toLowerCase() + ".";
+    const lowerName = fileName.toLowerCase() + ".";//不含后缀
     for await (const dirent of dir) {
         if (!dirent.isFile()) continue;
-        const { name } = dirent;
-        if (name.toLowerCase() === lowerName) return dirent;
+        const { name } = dirent;//文件名，含后缀（Linux下）
+        if (name.toLowerCase().startsWith(lowerName)) return dirent;
     }
 
     return null;

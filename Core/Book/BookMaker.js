@@ -32,7 +32,7 @@ class BookMaker {
             CoverImg: conver,
         });
 
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
+        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
 
         for (let c of chapters) {
             ebook.Index.push(new Index({
@@ -62,7 +62,7 @@ class BookMaker {
             Author: author,
             CoverImg: conver || "#212f30",//灰色封面
         });
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
+        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
         return await Do2Po.EBookObjToModel(ebook);
     }
 
@@ -82,6 +82,8 @@ class BookMaker {
         }
         await ebook.SetShowChapters(showChpaters);
 
+        await ebook.LoadIntroduction();
+
         return new Promise((resolve, reject) => {
             const fileInfo = {
                 filename: ebook.BookName + ".txt",
@@ -100,10 +102,14 @@ class BookMaker {
             const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
             writeStream.write(`${ebook.BookName}\n${author}\n`);
 
+            if (ebook.Introduction) {
+                writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+            }
+
             for (let i of ebook.showIndexId) {
                 let c = ebook.GetChapter(i);
                 if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
-                else writeStream.write(`${c.Content}\n`);
+                else if (c.Content) writeStream.write(`${c.Content}\n`);//不嵌入标题时同时正文无内容时不写入
             }
             writeStream.end();
         });
@@ -200,36 +206,40 @@ class BookMaker {
         }
 
         let myModels = Models.GetPO();
-        let t = await myModels.sequelize.transaction();
+        let t = await myModels.BeginTrans();
         try {
+            const bookId = settings.bookId;
+            if (!bookId) { console.error("章节重构需要提供书籍ID"); return; }
+
             const baseCp = settings?.baseChapter;
-            if (!baseCp.chapterId) return;
-            const chapterSetting = _setChapter(baseCp);
-
-            await myModels.EbookIndex.update(chapterSetting, {
-                where: {
-                    id: baseCp.chapterId
-                },
-                transaction: t
-            });
-
-            const operations = settings?.operations;
-            if (!operations || operations.length <= 0) {
-                await t.commit();
-                return;
+            if (baseCp?.chapterId) {
+                const chapterSetting = _setChapter(baseCp);
+                await myModels.EbookIndex.update(chapterSetting, {
+                    where: {
+                        id: baseCp.chapterId
+                    },
+                    transaction: t
+                });
+                const operations = settings?.operations;
+                if (!operations || operations.length <= 0) {
+                    await t.commit();
+                    return;
+                }
+                //基准章节后续章节后移
+                await myModels.EbookIndex.update({
+                    OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
+                }, {
+                    where: {
+                        BookId: bookId,
+                        OrderNum: {
+                            [Models.Op.gt]: baseCp.orderNum
+                        }
+                    },
+                    transaction: t
+                });
             }
-            await myModels.EbookIndex.update({
-                OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
-            }, {
-                where: {
-                    BookId: baseCp.bookId,
-                    OrderNum: {
-                        [Models.Op.gt]: baseCp.orderNum
-                    }
-                },
-                transaction: t
-            });
-            for (let chap of operations) {
+
+            for (let chap of settings?.operations) {
                 for (let cp of chap.chapters) {
                     const curChapSetting = _setChapter(cp);
                     switch (chap.operationType) {        //[update, delete, create]
@@ -242,7 +252,7 @@ class BookMaker {
                             });
                             break;
                         case "create":
-                            curChapSetting.BookId = baseCp.bookId;
+                            curChapSetting.BookId = bookId;
                             await myModels.EbookIndex.create(curChapSetting, { transaction: t });
                             break;
                         case "update":
@@ -262,6 +272,157 @@ class BookMaker {
             t.rollback();
             throw err;
         }
+    }
+
+    /**
+     * 删除指定章节
+     * @param {int} chapterId 
+     */
+    static async DeleteAChapter(chapterId) {
+        try {
+            const myModels = Models.GetPO();
+            return await myModels.EbookIndex.destroy({
+                where: {
+                    id: chapterId
+                }
+            });
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * 切换章节的隐藏状态
+     * 当章节排列序号小于0时不显示在列表，就是隐藏的
+     * @param {int} chapterId
+     * @param {*} chapterId 
+     * @returns 
+     */
+    static async ToggleAChapterHide(chapterId) {
+        try {
+            const myModels = Models.GetPO();
+            return await myModels.EbookIndex.update({
+                OrderNum: myModels.sequelize.literal('OrderNum * -1')
+            }, {
+                where: {
+                    id: chapterId
+                }
+            });
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * 保存电子书简介
+     * @param {*} bookId 书籍ID
+     * @param {*} intro 简介
+     * @returns 
+     */
+    static async EditEbookIntroduction(bookId, intro) {
+        const myModels = Models.GetPO();
+        const t = await myModels.BeginTrans();
+        try {
+            //放弃：下列方法需要确保'BookId', 'Title'在模型定义中包含唯一约束（在模型定义中增加复合唯一索引）
+            //但考虑都可能存在书籍章节名称相同的情况，故不使用
+            // const myModels = Models.GetPO();
+            // let rsl = await myModels.EbookIndex.upsert({
+            //     BookId: bookId,
+            //     Title: Chapter.IntroductionName,
+            //     Content: intro,
+            //     OrderNum: -1
+            // }, {
+            //     fields: ['Content', 'OrderNum'], // 更新的字段
+            //     conflictFields: ['BookId', 'Title'] // 判断是否存在的字段
+            // });
+            // return rsl;
+
+            // 先尝试查找现有记录
+            const existing = await myModels.EbookIndex.findOne({
+                where: {
+                    BookId: bookId,
+                    Title: Chapter.IntroductionName
+                },
+                transaction: t
+            });
+
+            let rsl;
+            if (intro?.includes("简介：")) {
+                intro = intro.substring(intro.indexOf("简介：") + 3);
+            }
+            if (existing) {
+                // 存在则更新
+                rsl = await myModels.EbookIndex.update({
+                    Content: intro,
+                    OrderNum: -1,
+                    // updatedAt: new Date()        //TODO：可以确认下updatedAt是否会自动更新
+                }, {
+                    where: { id: existing.id },
+                    transaction: t
+                });
+            } else {
+                // 不存在则创建
+                rsl = await myModels.EbookIndex.create({
+                    BookId: bookId,
+                    Title: Chapter.IntroductionName,
+                    Content: intro,
+                    OrderNum: -1,
+                    // createdAt: new Date(),
+                    // updatedAt: new Date()
+                }, { transaction: t });
+            }
+
+            await t.commit();
+            return rsl;
+        } catch (e) {
+            await t.rollback();
+            // console.log(e);
+            return null;
+        }
+    }
+
+    /**
+     * 修改电子书元数据
+     * @param {number} id 书ID
+     * @param {*} metadata 
+     * @returns 
+     */
+    static async EditEBookInfo(id, metadata) {
+        const myModels = Models.GetPO();
+
+        if (metadata.Introduction) {
+            await this.EditEbookIntroduction(id, metadata.Introduction);
+            delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
+        }
+
+        if (metadata.converFile) {    //存储封面文件
+            const coverPath = `/Cover/${metadata.converFile.originalFilename}`;
+
+            const { AddFile } = await import("../../Core/services/file.mjs");
+            await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+
+            delete metadata.converFile;
+            metadata.CoverImg = coverPath;
+        }
+
+        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
+        return rsl;
+    }
+
+    /**
+    * 将指定章节转换为书籍简介
+    * @param {number} chapterId - 需要转换的章节ID
+    * @returns {Promise<Array>} Sequelize 更新操作结果
+    */
+    static async Chapter2Introduction(chapterId) {
+        const myModels = Models.GetPO();
+        let rsl = await myModels.EbookIndex.update({
+            Title: Chapter.IntroductionName,
+            OrderNum: myModels.sequelize.literal('-ABS(OrderNum)')
+        }, {
+            where: { id: chapterId }
+        });
+        return rsl;
     }
 }
 module.exports = BookMaker;

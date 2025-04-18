@@ -3,7 +3,8 @@ const Models = require("./../../Core/OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
-
+const { WEBSITE_TIMEOUT } = require("../../Entity/SystemConfigGroup");
+const SystemConfigService = require("../services/SystemConfig");
 
 /**
  * 规则管理器 
@@ -17,7 +18,8 @@ class RuleManager {
         const host = RuleManager.GetHost(url);
         let result = {
             index: new IndexOptions(),
-            chapter: new ChapterOptions()
+            chapter: new ChapterOptions(),
+            timeout: undefined,
         };
 
         let myModels = new Models();
@@ -34,11 +36,14 @@ class RuleManager {
                 case "ChapterList": curRule = result.index.ChapterListRule; break;
                 case "IndexNextPage": curRule = result.index.NextPageRule; break;
                 case "BookCover": curRule = result.index.BookCoverRule; break;
+                //作者、简介等
+                case "Author": curRule = result.index.AuthorRule; break;
+                case "Introduction": curRule = result.index.IntroductionRule; break;
 
                 case "CapterTitle": curRule = result.chapter.CapterTitleRule; break;
                 case "Content": curRule = result.chapter.ContentRule; break;
                 case "ContentNextPage": curRule = result.chapter.NextPageRule; break;
-                //TODO: 作者、简介等
+
             }
 
             curRule.RuleName = r.RuleName;
@@ -48,6 +53,12 @@ class RuleManager {
             curRule.GetUrlAction = r.GetUrlAction;
             curRule.CheckSetting = r.CheckSetting;
             curRule.Type = r.Type;
+        }
+
+        //超时设置
+        let timeout = await SystemConfigService.getConfig(WEBSITE_TIMEOUT, host);
+        if (timeout) {
+            result.timeout = timeout * 1;
         }
 
         return result;
@@ -114,38 +125,65 @@ class RuleManager {
             if (r.RemoveSelector) temp.removeSelector = r.RemoveSelector.split(",");
             rsl.push(temp)
         }
+
+        //超时设置
+        let timeout = await SystemConfigService.getConfig(WEBSITE_TIMEOUT, host);
+        if (timeout) {
+            rsl.push({
+                ruleName: "Timeout",
+                selector: timeout * 1,
+            })
+        }
         return rsl;
     }
 
+    /**
+     * 保存/更新网站爬取规则
+     * @param { Array<Rule> } rules 
+     * @returns 
+     */
     static async SaveRules(rules) {
         //全套规则删除并更新
-        const myModels = new Models();
+        const myModels = Models.GetPO();
+        const trans = await myModels.BeginTrans();
 
-        for (let p of rules) {
-            await myModels.RuleForWeb.destroy({
-                where: {
+        try {
+            const timeoutRule = rules.find(r => r.ruleName == "Timeout");
+            if (timeoutRule) {
+                await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector);
+                rules = rules.filter(r => r.ruleName != "Timeout");
+            }
+            for (let p of rules) {
+                await myModels.RuleForWeb.destroy({
+                    where: {
+                        Host: p.host,
+                        RuleName: p.ruleName
+                    },
+                    transaction: trans
+                });
+
+                let rule = {
                     Host: p.host,
-                    RuleName: p.ruleName
+                    RuleName: p.ruleName,
+                    Selector: p.selector
                 }
-            });
-            
-            let rule = {
-                Host: p.host,
-                RuleName: p.ruleName,
-                Selector: p.selector
-            }
-            if (Array.isArray(p.removeSelector) && p.removeSelector.length > 0) {
-                rule.RemoveSelector = p.removeSelector.join(",");
-            }
-            if (p.getContentAction) rule.GetContentAction = p.getContentAction;
-            if (p.getUrlAction) rule.GetUrlAction = p.getUrlAction;
-            if (p.type == "Object" || p.type == "List") rule.Type = p.type;
-            if (p.checkSetting) rule.CheckSetting = p.checkSetting;
+                if (Array.isArray(p.removeSelector) && p.removeSelector.length > 0) {
+                    rule.RemoveSelector = p.removeSelector.join(",");
+                }
+                if (p.getContentAction) rule.GetContentAction = p.getContentAction;
+                if (p.getUrlAction) rule.GetUrlAction = p.getUrlAction;
+                if (p.type == "Object" || p.type == "List") rule.Type = p.type;
+                if (p.checkSetting) rule.CheckSetting = p.checkSetting;
 
-            let ret = await myModels.RuleForWeb.create(rule);
+                let ret = await myModels.RuleForWeb.create(rule, { transaction: trans });
+            }
+
+            trans.commit();
+            return true;
+        } catch (e) {
+            await trans.rollback();
+            return false;
         }
-
-        return true;
     }
 
 }

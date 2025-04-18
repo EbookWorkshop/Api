@@ -4,7 +4,7 @@ const EventManager = require("../../EventManager");
 const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/ReviewString");
 const { dataPath } = require("../../../config");
 
 /**
@@ -30,11 +30,11 @@ class DO {
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
 
         /**
-         * 重新加载所有章节
+         * [LoadIndex]重新加载所有章节
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId }, order: ["OrderNum"] });
+            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gt]: 0 } }, order: ["OrderNum"] });
             for (let i of eIndexs) {
                 let index = new Index({ ...i.dataValues, HasContent: i.HasContent })
                 ebook.Index.push(index);
@@ -112,6 +112,7 @@ class DO {
 
         /**
          * 设置包含的章节
+         * 章节内容已校阅
          * @param {Array<number>} chapters 需要的章节Id
          */
         ebook.SetShowChapters = async (chapters) => {
@@ -129,10 +130,26 @@ class DO {
          */
         ebook.GetMaxIndexOrder = async () => {
             const myModels = Models.GetPO();
-            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: webBook.BookId }, order: [["OrderNum", "DESC"]] });
+            let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: ebook.BookId }, order: [["OrderNum", "DESC"]] });
             return lastIndex?.OrderNum || 1;
         }
         await ebook.ReloadIndex();
+
+        /**
+         * 加载书籍简介
+         */
+        ebook.LoadIntroduction = async () => {
+            const myModels = Models.GetPO();
+            const intro = await myModels.EbookIndex.findOne({
+                where: {
+                    BookId: ebook.BookId,
+                    Title: Chapter.IntroductionName
+                }
+            });
+            if (intro) {
+                ebook.Introduction = intro.Content;
+            }
+        }
 
         return ebook;
     }
@@ -143,7 +160,7 @@ class DO {
      * TODO: 删除其它格式的数据 如PDF
      * @param {*} bookId 书ID
      */
-    static async DeleteOneBook(bookId) {
+    static async DeleteOneBook(bookId, deleteCover = true) {
         const myModels = new Models();
         // await myModels.ReviewRuleUsing.destroy({ where: { BookId: bookId } });
 
@@ -151,15 +168,15 @@ class DO {
         const ebook = await myModels.Ebook.findOne({ where: { id: bookId } });
         try {
             let CoverImg = ebook.CoverImg;
-            if (CoverImg != null && !CoverImg.startsWith("#")) {
-                const fs = require("fs");
+            if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
+                const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
-                fs.unlinkSync(thisCoverImg);
+                await fs.unlink(thisCoverImg);
                 let imgDir = path.dirname(thisCoverImg);
-                fs.rmdir(imgDir);
+                await fs.rmdir(imgDir);
             }
         } catch (err) {
-            console.error("删除封面出错：",err);
+            console.error("删除封面出错：", err);
         }
 
         //删除书本

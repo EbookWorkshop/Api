@@ -5,7 +5,7 @@ const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
 const SystemConfigService = require("../../services/SystemConfig");
-const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/ReviewString");
 // const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
 // const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
 
@@ -118,9 +118,9 @@ class OTO_WebBook {
             where: { WebBookName: bookName }
         });
 
-        if (created) {
+        if (created || book.BookId == null) {//若创建WebBook出错没能创建EBook时，重试创建EBook
             //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
-            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont");
+            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },
                 defaults: { FontFamily: FontFamily }
@@ -131,7 +131,9 @@ class OTO_WebBook {
             }
         }
 
-        return await DO.ModelToWebBook(book);
+        const webBook = await DO.ModelToWebBook(book);
+        webBook.isNewCreate = created;//是否是新创建的——临时的变量
+        return webBook;
     }
 
     /**
@@ -142,11 +144,13 @@ class OTO_WebBook {
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
-        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues });
+        await ebookObj.LoadIntroduction();
+        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
         let urls = await webModel.getWebBookIndexSourceURLs();
         for (let u of urls) webBook.IndexUrl.push(u.Path);
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
+        webBook.LoadIntroduction = async () => { return await ebookObj.LoadIntroduction(); }
 
         /**
          * 添加来源地址
@@ -175,13 +179,9 @@ class OTO_WebBook {
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
             let eIndexs = await myModels.EbookIndex.findAll({
-                include: {
-                    model: myModels.WebBookIndex,
-                    as: 'WebBookIndex',
-                    where: { isHidden: false }
-                },
                 where: {
-                    BookId: webBook.BookId
+                    BookId: webBook.BookId,
+                    OrderNum: { [Models.Op.gt]: 0 } //大于0的章节
                 },
                 order: ["OrderNum"]
             });
@@ -192,18 +192,21 @@ class OTO_WebBook {
             if (defaultIndex > sourceUrls.length) defaultIndex = 0;
             const defaultHost = sourceUrls.length > 0 ? new URL(sourceUrls[defaultIndex].Path).host : null;
 
+            //加载每章的网址
             for (let i of eIndexs) {
-                let eI = i.WebBookIndex; //加载 WebBookChapter 内容，即取得每章网文的配置
-                // console.log("ReloadIndex", i.dataValues, eI?.dataValues)
+                const eI = await myModels.WebBookIndex.findOne({
+                    where: { IndexId: i.id },
+                    include: {
+                        model: myModels.WebBookIndexURL,
+                        as: "WebBookIndexURLs"
+                    }
+                });
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
-
-                let urls = await eI?.getWebBookIndexURLs() || [];
-                for (let u of urls) tIdx.URL.push({ id: u.id, Path: u.Path });
-
-                // [tIdx.WebTitle] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
-                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.WebTitle])
-
+                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
                 webBook.Index.push(tIdx);
+                
+                if (eI == null) continue; //没有对应的章节时跳过
+                for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
             }
         }
 

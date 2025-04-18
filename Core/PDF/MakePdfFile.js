@@ -13,6 +13,7 @@ async function MakePdfFile(fileInfo) {
 
             const { doc: pdfDoc, stream: fileStream } = await PDFToolkit.CreateNewDocFile(fileInfo.path, pdfSetting);
             await PDFToolkit.AddBookCoverToPdf(thePdf, pdfDoc);//制作封面
+            await PDFToolkit.AddIntrocutionToPdf(thePdf, pdfDoc);
             await PDFToolkit.AddChaptersToPdf(thePdf, pdfDoc, fileInfo.embedTitle);
 
             //关闭结束文档

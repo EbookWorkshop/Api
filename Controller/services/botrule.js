@@ -16,7 +16,7 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
-     *     summary: 创建一套用于爬站的规则
+     *     summary: 创建/更新一套用于爬站的规则
      *     description: 根据提供的信息保存爬站的规则
      *     parameters:
      *       - in: body
@@ -36,10 +36,14 @@ module.exports = () => ({
      *               ruleName:
      *                 type: string
      *                 enum:
+     *                   - Author
+     *                   - BookCover
      *                   - BookName
      *                   - ChapterList
      *                   - CapterTitle
      *                   - Content
+     *                   - Timeout
+     *                   - Introduction
      *                   - IndexNextPage
      *                   - ContentNextPage
      *               selector:
@@ -72,9 +76,9 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["host", "ruleName", "selector"]);
         if (param == null) return;
 
-        await RuleManager.SaveRules(param);
+        let result = await RuleManager.SaveRules(param);
 
-        new ApiResponse().toCTX(ctx);
+        new ApiResponse(result, null, result ? 20000 : 50000).toCTX(ctx);
 
     },
 

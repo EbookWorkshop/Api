@@ -2,7 +2,7 @@
 
 const Models = require("../../Core/OTO/Models");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
-const { Test } = require("./../../Core/Utils/RuleReview");
+const { Test } = require("./../../Core/Utils/ReviewString");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 

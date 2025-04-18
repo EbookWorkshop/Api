@@ -3,7 +3,7 @@
 const Models = require("./../Models");
 
 
-class OTO_PDF {
+class OTO_Review {
 
     static async GetReviewRules(bookid) {
         let result = [];
@@ -19,11 +19,11 @@ class OTO_PDF {
                 Replace: rr.Replace
             });
         }
-
         return result;
     }
+
 
 }
 
 
-module.exports = OTO_PDF;
+module.exports = OTO_Review;

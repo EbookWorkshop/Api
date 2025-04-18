@@ -25,9 +25,18 @@ class Models {
     }
 
     /**
+     * 开启事务
+     * @param {*} sqlConnect 数据库链接
+     */
+    async BeginTrans() {
+        return await this.sequelize.transaction();
+    }
+
+    /**
      * # PO 持久对象(Persistant Object)    
      * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
      * __注意；PO中应该不包含任何对数据的操作__
+     * @returns {Models} PO对象
      */
     static GetPO() {
         return PO_MODELS;

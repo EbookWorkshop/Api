@@ -56,6 +56,21 @@ async function CreateNewDoc(setting, defaultText = null) {
 }
 
 /**
+ * 在开始前加入简介章节
+ * @param {*} pdfBook 
+ * @param {*} pdfDoc 
+ * @returns 
+ */
+async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
+    //加入简介
+    if (!pdfBook.Introduction) return;
+
+    pdfDoc.text("简介", { align: 'center' }).moveDown();
+    pdfDoc.text(pdfBook.Introduction, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
+}
+
+
+/**
  * 将范围内的章节加入到pdf文档文件中     
  * 注意：用到了 `pdfBook.GetChapter` 方法，需要pdfBook对象已实现了GetChapter
  * @param {PDFBook|Object} pdfBook PDFBook|Object 电子书对象
@@ -112,7 +127,7 @@ async function CreateImageCover(pdfBook, pdfDoc) {
         await sharp(realDir).png().toFile(imgFile);
     }
 
-    pdfDoc.image(imgFile, 0, 0, { width: pdfBook.pageWidth, align: 'center', valign: 'center' }).addPage();
+    pdfDoc.image(imgFile, 0, 0, { width: pdfBook.pageWidth || 580, align: 'center', valign: 'center' }).addPage();//TODO：pdf默认尺寸的设置
 
     if (imgFile != realDir) {
         fs.unlink(imgFile, () => { });
@@ -146,4 +161,11 @@ module.exports = {
      * @param {PDFDocument} pdfDoc pdf文档对象
      */
     AddChaptersToPdf,
+
+    /**
+     * 在开始前加入简介章节
+     * @param {PDFBook} pdfBook PDFBook 电子书对象
+     * @param {PDFDocument} pdfDoc pdf文档对象
+     */
+    AddIntrocutionToPdf,
 }

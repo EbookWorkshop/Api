@@ -2,7 +2,7 @@ const DO = require("./index");
 const Ebook = require("../../../Entity/Ebook/Ebook");
 const Models = require("./../Models");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/RuleReview");
+const { Run: Reviewer } = require("./../../Utils/ReviewString");
 
 class OTO_Ebook {
 
@@ -34,10 +34,14 @@ class OTO_Ebook {
      */
     static async EBookObjToModel(book) {
         const PO = Models.GetPO();
-        const t = await PO.sequelize.transaction(); // 开启事务
+        const t = await PO.BeginTrans(); // 开启事务
         try {
             let existingBook = await DO.GetEBookByName(book.BookName);
-            if (existingBook) DO.DeleteOneBook(existingBook.BookId);//已有同名的书先删除 -- 以覆盖方式导入书籍
+            if (existingBook && !existingBook?.CoverImg?.startsWith("#")) {
+                book.CoverImg = existingBook.CoverImg; // 继承已有封面
+                existingBook.CoverImg = "";
+            }
+            if (existingBook) await DO.DeleteOneBook(existingBook.BookId, false);//已有同名的书先删除 -- 以覆盖方式导入书籍
 
             if (!book.CoverImg) book.CoverImg = "#f2e3a4";//设定白锦封面
 
@@ -79,25 +83,18 @@ class OTO_Ebook {
      * @returns 
      */
     static async GetEBookInfoById(bookId) {
-        const myModels = new Models();
-        let book = await myModels.Ebook.findByPk(bookId, {
+        const myModels = Models.GetPO();
+        const book = await myModels.Ebook.findByPk(bookId, {
             attributes: ['id', 'BookName', 'Author', 'CoverImg', 'FontFamily']
         });
         if (book == null) return null;
-        return book.dataValues;
-    }
+        //简介：
+        let intro = await myModels.EbookIndex.findOne({ where: { BookId: bookId, Title: Chapter.IntroductionName } });
+        if (intro == null) return book.dataValues;
 
-    /**
-     * 修改电子书元数据
-     * @param {number} id 书ID
-     * @param {*} metadata 
-     * @returns 
-     */
-    static async EditEBookInfo(id, metadata) {
-        const myModels = Models.GetPO();
-
-        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
-        return rsl;
+        let bookData = book.dataValues;
+        bookData.Introduction = intro.Content;
+        return bookData;
     }
 
     /**
@@ -130,6 +127,19 @@ class OTO_Ebook {
         return chapterObj;
     }
 
+    static async GetEbookHiddenChapterList(bookid) {
+        const myModels = Models.GetPO();
+        let hiddenChapters = await myModels.EbookIndex.findAll({
+            attributes: ["id", "Title", "BookId"],
+            where: {
+                BookId: bookid,
+                OrderNum: { [Models.Op.lte]: 0 }
+            },
+            order: [["OrderNum", "ASC"]],
+        });
+        return hiddenChapters.map(c => new Chapter(c.dataValues));
+    }
+
     /**
      * 获取当前章节的相邻章节ID
      * @param {*} chapterId 
@@ -149,7 +159,10 @@ class OTO_Ebook {
             where: {
                 bookId: BookId,
                 OrderNum: {
-                    [Models.Op.lt]: OrderNum
+                    [Models.Op.and]: [
+                        { [Models.Op.lt]: OrderNum },
+                        { [Models.Op.gt]: 0 }
+                    ]
                 }
             },
             order: [

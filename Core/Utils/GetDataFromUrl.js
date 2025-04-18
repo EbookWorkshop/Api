@@ -4,13 +4,14 @@ const { dataPath, debugSwitcher } = require("../../config");
 const puppeteer = require('puppeteer')
 const EventManager = require("../EventManager");
 const { ExecRule } = require("../WebBook/ExecRule");
+const { timeout } = require("puppeteer");
 
 const isDEBUG = debugSwitcher.puppeteer;
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
  * @param {string} url 目标地址
- * @param {{RuleList:Rule[]}} setting 爬取的站点配置
+ * @param {{RuleList:Rule[],timeout:Number?}} setting 爬取的站点配置
  */
 async function GetDataFromUrl(url, setting) {
     //无界面浏览器性能更高更快，有界面一般用于调试开发
@@ -23,6 +24,7 @@ async function GetDataFromUrl(url, setting) {
         headless: "new",    //默认值new：新无头模式，https://developer.chrome.com/articles/new-headless/
         slowMo: 233,        //设置放慢每个步骤的毫秒数
         ignoreDefaultArgs: ['--enable-automation'],      //去掉自动化提示-可能对部分反爬策略有帮助
+        timeout: setting.timeout
     }
     if (isDEBUG) {
         options.headless = false;//设置为有界面，如果为true，即为无界面
@@ -34,7 +36,7 @@ async function GetDataFromUrl(url, setting) {
     try {
         let page = await browser.newPage();
         // 配置需要访问网址
-        await page.goto(url);
+        await page.goto(url, { timeout: setting.timeout });
         //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
         //接管console 网站在浏览器上发的空调信息转发到服务器控台
