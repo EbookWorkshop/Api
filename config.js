@@ -19,7 +19,7 @@ module.exports = {
     /**
      * 输出调试信息，监听debug消息
      */
-    debug: true,
+    debug: false,
 
     debugSwitcher: {            //调试开关-当打开时将接收打印该模块的调试信息
         /**
@@ -33,11 +33,11 @@ module.exports = {
         /**
          * 是否开启线程池调试
          */
-        workerPool: true,
+        workerPool: false,
         /**
          * 是否开启邮件服务调试
          */
-        email: true,
+        email: false,
         /**
          * 是否开启爬虫调试
          */
@@ -49,19 +49,19 @@ module.exports = {
         /**
          * 是否开启PDF制作调试
          */
-        pdf: true,
+        pdf: false,
         /**
          * 是否开启书籍目录更新调试
          */
-        bookIndex: true,
+        bookIndex: false,
         /**
          * 是否开启书籍章节更新调试
          */
-        bookChapter: true,
+        bookChapter: false,
         /**
          * 是否开启书书籍封面抓取调试
          */
-        saveBookCover: true,
+        saveBookCover: false,
     },
 
 }
