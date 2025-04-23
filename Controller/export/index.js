@@ -33,7 +33,7 @@ module.exports = () => ({
      *               type: boolean
      *             embedTitle:
      *               type: boolean
-     *             fontFamliy:
+     *             fontFamily:
      *               type: string
      *             chapterIds:
      *               type: array
@@ -52,7 +52,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
 
-        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, param.fontFamliy, param.embedTitle).then(async (rsl) => {
+        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, param.fontFamily, param.embedTitle).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
@@ -91,7 +91,7 @@ module.exports = () => ({
      *               type: boolean
      *             embedTitle:
      *               type: boolean
-     *             fontFamliy:
+     *             fontFamily:
      *               type: string
      *             chapterIds:
      *               type: array
@@ -152,7 +152,7 @@ module.exports = () => ({
      *               type: boolean
      *             embedTitle:
      *               type: boolean
-     *             fontFamliy:
+     *             fontFamily:
      *               type: string
      *             chapterIds:
      *               type: array
@@ -171,7 +171,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
 
-        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, param.fontFamliy, param.embedTitle).then(async (rsl) => {
+        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, param.fontFamily, param.embedTitle).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,

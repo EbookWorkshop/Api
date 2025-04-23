@@ -11,13 +11,13 @@ class PDFMaker {
     /**
      * 按当前内容制作Pdf的文件
      */
-    static async MakePdfFile(bookId, showChpaters, fontFamliy,embedTitle) {
+    static async MakePdfFile(bookId, showChapters, fontFamily, embedTitle) {
         let ebook = await DO.GetPDFById(bookId);
-        if (fontFamliy) ebook.FontFamily = fontFamliy;
-        if (!showChpaters || showChpaters.length == 0) {
-            showChpaters = ebook.Index.map(item => item.IndexId);
+        if (fontFamily) ebook.FontFamily = fontFamily;
+        if (!showChapters || showChapters.length == 0) {
+            showChapters = ebook.Index.map(item => item.IndexId);
         }
-        await ebook.SetShowChapters(showChpaters);
+        await ebook.SetShowChapters(showChapters);
         await ebook.LoadIntroduction();
 
         const pdf = Object.keys(ebook)

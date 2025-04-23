@@ -36,14 +36,14 @@ const { version } = require("../../package.json");
 */
 
 class EPUBMaker {
-    static async MakeEPUBFile(bookId, showChpaters, fontFamliy, embedTitle=true) {
+    static async MakeEPUBFile(bookId, showChapters, fontFamily, embedTitle = true) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
-        if (!showChpaters || showChpaters.length <= 0) {
-            showChpaters = ebook.Index.map(item => item.IndexId);
+        if (!showChapters || showChapters.length <= 0) {
+            showChapters = ebook.Index.map(item => item.IndexId);
         }
-        await ebook.SetShowChapters(showChpaters);
+        await ebook.SetShowChapters(showChapters);
 
         let option = {
             title: ebook.BookName, // *必需，书籍标题。
@@ -86,7 +86,7 @@ class EPUBMaker {
             option.content.push({
                 title: "简介",
                 data: "<p>" + ebook.Introduction.split("\n").join("</p>\n<p>") + "</p>",
-                // TODO: iphone 图书应用直接不会显示
+                // TODO: iPhone 图书应用直接不会显示
                 excludeFromToc: true,//不加入目录
                 beforeToc: true,//先于目录之前显示: 
             });
