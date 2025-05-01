@@ -170,9 +170,10 @@ module.exports = () => ({
     "post /epub": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
+        const { sendByEmail, ...setting } = param;
 
-        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, param.fontFamily, param.embedTitle).then(async (rsl) => {
-            if (param.sendByEmail) {
+        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, setting).then(async (rsl) => {
+            if (sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
                     content: rsl.filename,
