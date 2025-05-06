@@ -33,6 +33,8 @@ module.exports = () => ({
      *               type: boolean
      *             embedTitle:
      *               type: boolean
+     *             enableIndent:
+     *               type: boolean
      *             fontFamily:
      *               type: string
      *             chapterIds:
@@ -52,8 +54,9 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return;
 
-        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, param.fontFamily, param.embedTitle).then(async (rsl) => {
-            if (param.sendByEmail) {
+        const { sendByEmail, ...setting } = param;
+        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, setting).then(async (rsl) => {
+            if (sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
                     content: rsl.filename,

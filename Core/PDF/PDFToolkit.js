@@ -75,13 +75,15 @@ async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
  * 注意：用到了 `pdfBook.GetChapter` 方法，需要pdfBook对象已实现了GetChapter
  * @param {PDFBook|Object} pdfBook PDFBook|Object 电子书对象
  * @param {PDFDocument} pdfDoc pdf文档对象
- * @param {boolean} embedTitle 是否嵌入章节标题
+ * @param {*} setting 文件生成设置
  */
-async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
+async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
     for (let cId of pdfBook.showIndexId.values()) {
         let curContent = pdfBook.GetChapter(cId);
 
         if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
+
+        let { embedTitle = false, enableIndent = false } = setting;
 
         //加到大纲（pdf的目录）
         pdfDoc.outline.addItem(curContent.Title);
@@ -95,6 +97,15 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
         let txt = curContent.Content;
         if (!txt) {
             txt = `${curContent.Title}\n当前章节内容缺失。`;
+        } else if (enableIndent) {
+            //加入缩进
+            let indent = " ".repeat(pdfBook.indentSize || 4);
+            txt = txt.split("\n").map(line => {
+                if (line.trimStart().length > 0) {
+                    return indent + line;
+                }
+                return line;
+            }).join("\n");
         }
 
         //加入整段正文
