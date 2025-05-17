@@ -317,6 +317,8 @@ class OTO_WebBook {
             webBook.Chapters.set(chapter.WebTitle, chapter);
         }
 
+        webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
+
         await webBook.ReloadIndex();
         return webBook;
     }
