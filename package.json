@@ -18,7 +18,7 @@
   "dependencies": {
     "async_hooks": "^1.0.0",
     "epub-gen": "^0.1.0",
-    "koa": "^2.16.0",
+    "koa": "^3.0.0",
     "koa-body": "^6.0.1",
     "koa-router": "^13.0.0",
     "koa-send": "^5.0.1",
@@ -32,6 +32,7 @@
     "sharp": "^0.34.1",
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
+    "string-similarity": "^4.0.4",
     "swagger-jsdoc": "^6.2.8"
   },
   "engines": {

@@ -661,7 +661,7 @@ module.exports = () => ({
      */
     "get /book/duplicates": async (ctx) => {
         const bookId = ctx.query.bookid * 1;
-        const threshold = parseFloat(ctx.query.threshold) || 0.5;
+        const threshold = parseFloat(ctx.query.threshold) || 0.36;
 
         if (isNaN(bookId)) {
             new ApiResponse(null, "无效的书籍ID", 60000).toCTX(ctx);
