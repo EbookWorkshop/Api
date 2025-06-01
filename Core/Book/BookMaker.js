@@ -401,5 +401,20 @@ class BookMaker {
         });
         return rsl;
     }
+    
+    /**
+     * 更新书的热度
+     * @param {*} bookId 
+     */
+    static async Heat(bookId) {
+        const myModels = Models.GetPO();
+        const book = await myModels.Ebook.findByPk(bookId);
+        if(book){
+            book.Hotness = (book.Hotness || 0) + 1; // 热度+1
+            await book.save();
+            return true;
+        }
+        return false;
+    }
 }
 module.exports = BookMaker;

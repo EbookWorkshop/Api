@@ -26,5 +26,9 @@ module.exports = function (sqlConnect) {
             type: DataTypes.STRING(50),
             allowNull: true
         },
+        Hotness: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0
+        }
     });
 }

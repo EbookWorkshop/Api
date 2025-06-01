@@ -633,7 +633,6 @@ module.exports = () => ({
         }
     },
 
-
     /**
      * @swagger
      * /library/book/duplicates:
@@ -673,6 +672,43 @@ module.exports = () => ({
             new ApiResponse(duplicates).toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, error.message, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /library/book/heat:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 热度-更新热度
+     *     description: 为当前书籍热度加1
+     *     parameters:
+     *     - name: bookid
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         properties:
+     *           bookId:
+     *             type: integer
+     *             format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 
+     */
+    "post /book/heat": async (ctx) => {
+        const param = await parseJsonFromBodyData(ctx, ["bookId"]);
+        if (!param) return;
+        const bookId = param.bookId;
+
+        try {
+            const results = await BookMaker.Heat(bookId);
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `更新热度失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
 });

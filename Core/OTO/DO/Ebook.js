@@ -13,7 +13,7 @@ class OTO_Ebook {
     static async GetBookList(tagid) {
         const myModels = Models.GetPO();
         const param = {
-            order: [["id", "DESC"]],
+            order: [["Hotness","DESC"],["id", "DESC"]],
             ...(tagid > 0 && {
                 include: [{
                     model: myModels.EbookTag,

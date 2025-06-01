@@ -51,7 +51,7 @@ module.exports = () => ({
     // })
 
     "get /scalar":async (ctx)=>{
-        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
+        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
@@ -71,7 +71,7 @@ module.exports = () => ({
     },
 
     "get /stoplight":async (ctx)=>{//
-        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
+        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
@@ -97,7 +97,7 @@ module.exports = () => ({
     },
 
     "get ../swagger-ui-dist":async (ctx)=>{
-        const myCDN = decodeURIComponent(ctx.query.cdn) || CDN;
+        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
         ctx.set('Content-Type', 'text/html');
         ctx.body = `
 <!doctype html>
