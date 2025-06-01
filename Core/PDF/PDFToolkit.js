@@ -101,8 +101,9 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
             //加入缩进
             let indent = " ".repeat(pdfBook.indentSize || 4);
             txt = txt.split("\n").map(line => {
-                if (line.trimStart().length > 0) {
-                    return indent + line;
+                const tempTest = line.trimStart();
+                if (tempTest.length > 0) {
+                    return indent + tempTest;
                 }
                 return line;
             }).join("\n");
@@ -119,28 +120,22 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
  * @param {PDFDocument} pdfDoc pdf对象
  */
 async function AddBookCoverToPdf(pdfBook, pdfDoc) {
-    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#"))      //#开头的为线装本封面底色
-        await CreateImageCover(pdfBook, pdfDoc);
-    //TODO：做一个线装本封面
-}
-
-/**
- * 用图片生成一个封面
- * @param {*} pdfBook 
- * @param {*} pdfDoc 
- */
-async function CreateImageCover(pdfBook, pdfDoc) {
-    const realDir = path.join(config.dataPath, pdfBook.CoverImg);
-
-    let imgFile = realDir;
-    if (realDir.endsWith(".webp")) {
-        imgFile = realDir.replace(/webp$/, "png");
-        await sharp(realDir).png().toFile(imgFile);
+    let imgFile = null;
+    let realDir = null;
+    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#")) {     //#开头的为线装本封面底色
+        realDir = path.join(config.dataPath, pdfBook.CoverImg);
+        imgFile = realDir;
+        if (realDir.endsWith(".webp")) {
+            imgFile = realDir.replace(/webp$/, "png");
+            await sharp(realDir).png().toFile(imgFile);
+        }
+    } else if (pdfBook.coverImageData) {        //做一个线装本封面
+        imgFile = Buffer.from(pdfBook.coverImageData, 'base64');
     }
 
     pdfDoc.image(imgFile, 0, 0, { width: pdfBook.pageWidth || 580, align: 'center', valign: 'center' }).addPage();//TODO：pdf默认尺寸的设置
 
-    if (imgFile != realDir) {
+    if (imgFile && realDir && imgFile != realDir) {
         fs.unlink(imgFile, () => { });
     }
 }

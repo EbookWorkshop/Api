@@ -60,6 +60,11 @@ class EPUBMaker {
             } else {
                 option.cover = ebook.CoverImg;
             }
+        } else if (setting.coverImageData) {
+            const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
+            await fs.writeFile(tempFile, setting.coverImageData, "base64");
+            option.cover = tempFile;
+            useTempCover = true;
         }
 
         //加入简介

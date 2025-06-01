@@ -37,6 +37,8 @@ module.exports = () => ({
      *               type: boolean
      *             fontFamily:
      *               type: string
+     *             coverImageData:
+     *               type: string
      *             chapterIds:
      *               type: array
      *               items:
@@ -95,6 +97,8 @@ module.exports = () => ({
      *             embedTitle:
      *               type: boolean
      *             fontFamily:
+     *               type: string
+     *             coverImageData:
      *               type: string
      *             chapterIds:
      *               type: array
@@ -156,6 +160,8 @@ module.exports = () => ({
      *             embedTitle:
      *               type: boolean
      *             fontFamily:
+     *               type: string
+     *             coverImageData:
      *               type: string
      *             chapterIds:
      *               type: array

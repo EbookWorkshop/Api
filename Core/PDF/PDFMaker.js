@@ -12,7 +12,7 @@ class PDFMaker {
      * 按当前内容制作Pdf的文件
      */
     static async MakePdfFile(bookId, showChapters, setting) {
-        let { fontFamily, embedTitle = true, enableIndent } = setting;
+        let { fontFamily, embedTitle = true, enableIndent, coverImageData } = setting;
         let ebook = await DO.GetPDFById(bookId);
         if (fontFamily) ebook.FontFamily = fontFamily;
         if (!showChapters || showChapters.length == 0) {
@@ -34,7 +34,8 @@ class PDFMaker {
             embedTitle,
             enableIndent,
             chapterCount: ebook.showIndexId.length,           //含有多少章
-            defaultFont: await GetDefaultFont()
+            defaultFont: await GetDefaultFont(),
+            coverImageData,
         };
 
         return new Promise(async (resolve, reject) => {
