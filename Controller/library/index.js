@@ -20,6 +20,13 @@ module.exports = () => ({
      *       schema:
      *         type: integer
      *         format: int64
+     *     - name: nottag
+     *       in: query
+     *       required: false
+     *       description: 排除的标签ID，多个用逗号分隔
+     *       schema:
+     *         type: integer
+     *         format: string
      *     consumes:
      *       - application/json
      *     responses:
@@ -30,7 +37,13 @@ module.exports = () => ({
      */
     "get /booklist": async (ctx) => {
         let tagid = ctx.query.tagid * 1;
-        new ApiResponse(await DO.GetBookList(tagid)).toCTX(ctx);
+        let nottag = ctx.query.nottag;
+        if (nottag?.split(",").length > 0) {
+            nottag = nottag.split(",").map((item) => {
+                return item * 1;
+            });
+        }
+        new ApiResponse(await DO.GetBookList(tagid, nottag)).toCTX(ctx);
     },
 
     /**

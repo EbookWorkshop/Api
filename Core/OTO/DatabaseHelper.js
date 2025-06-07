@@ -22,7 +22,7 @@ class DB {
         return new Sequelize({
             dialect: 'sqlite',
             storage: this.myDbPath,
-            logging: false,
+            logging: false,            // console.log,//在控制台输出sql
             //timezone: '+08:00',
             pool: {
                 max: 5,
