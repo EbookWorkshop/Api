@@ -1,8 +1,8 @@
 /**
  * 通用的文件上传、下载、列出等逻辑
  */
-// const fs = require("fs");
 import fs from "fs";
+import fsPromises from "fs/promises";
 import path from "path";
 import { Stream } from "stream";
 
@@ -11,23 +11,39 @@ import { Stream } from "stream";
  * @param {string} sourcePath 需要列出文件的路径 
  * @param {string[] | null} filetype 过滤的文件规则类型:小写字母的后缀名数组
  */
-export async function ListFile(sourcePath, filetype = null) {
-    // console.log(fs)
-    if (!fs.existsSync(sourcePath)) return null;
+export async function ListFile(sourcePath, options = { filetype: null, detail: false }) {
+    try {
+        await fsPromises.access(sourcePath);
 
-    let result = [];
-    const dir = fs.opendirSync(sourcePath);
-    for await (const dirent of dir) {
-        if (!dirent.isFile()) continue;
-        if (filetype == null) {
-            result.push(dirent.name);
-        } else {
-            let { ext } = path.parse(dirent.name);
-            ext = ext.replace(/^\./, "").toLowerCase();
-            if (filetype.includes(ext)) result.push(dirent.name);
+        let result = [];
+        const dir = await fsPromises.opendir(sourcePath);
+        for await (const dirent of dir) {
+            if (!dirent.isFile()) continue;
+            let item = {
+                name: dirent.name,
+                path: dirent.path,
+            }
+            if (!options?.filetype) {
+                result.push(item);
+            } else {
+                let { ext, name } = path.parse(dirent.name);
+                item.sortName = name;
+                ext = ext.replace(/^\./, "").toLowerCase();
+                if (options?.filetype.includes(ext)) result.push(item);
+            }
         }
+
+        if (!options?.detail) return result.map(item => item.name);
+
+        for (let item of result) {
+            item.size = (await fsPromises.stat(path.join(item.path, item.name))).size;
+            delete item.path;
+        }
+
+        return result;
+    } catch (err) {
+        return null;
     }
-    return result;
 }
 
 /**
