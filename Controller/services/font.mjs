@@ -35,7 +35,7 @@ export default {
         let resPath = fontPath;
         let data = await ListFile(resPath, { filetype: ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"], detail: true });
         new ApiResponse(data.map(d => {
-            d.url = "/font/" + d.name;//根目录就已开启了静态文件
+            d.url = "/font/" + d.file;//根目录就已开启了静态文件
             return d;
         })).toCTX(ctx);
     },

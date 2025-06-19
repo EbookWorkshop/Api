@@ -20,14 +20,14 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         for await (const dirent of dir) {
             if (!dirent.isFile()) continue;
             let item = {
-                name: dirent.name,
+                file: dirent.name,
                 path: dirent.path,
             }
             if (!options?.filetype) {
                 result.push(item);
             } else {
                 let { ext, name } = path.parse(dirent.name);
-                item.sortName = name;
+                item.name = name;
                 ext = ext.replace(/^\./, "").toLowerCase();
                 if (options?.filetype.includes(ext)) result.push(item);
             }
@@ -36,7 +36,7 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         if (!options?.detail) return result.map(item => item.name);
 
         for (let item of result) {
-            item.size = (await fsPromises.stat(path.join(item.path, item.name))).size;
+            item.size = (await fsPromises.stat(path.join(item.path, item.file))).size;
             delete item.path;
         }
 
