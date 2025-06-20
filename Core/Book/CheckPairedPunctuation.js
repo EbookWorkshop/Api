@@ -6,7 +6,7 @@ const Models = require("../OTO/Models");
  * @param {number[]|null} chapterIds 只查指定章节
  * @returns 
  */
-export async function checkPairedPunctuation(bookId, chapterIds = null) {
+async function checkPairedPunctuation(bookId, chapterIds = null) {
     let where = {
         BookId: bookId,
         OrderNum: { [Models.Op.gt]: 0 },  // 只查找正序章节
@@ -34,7 +34,7 @@ export async function checkPairedPunctuation(bookId, chapterIds = null) {
         ['《', '》'],
         ['「', '」'],
         ['『', '』'],
-    ];
+    ];//注意：成对的符号要排除[]，与正则表达式冲突
 
     const punchtuationLeft = new RegExp(`[${pairedPunctuation.map(p => p[0]).join('')}]`, "g");
     const punchtuationRight = new RegExp(`[${pairedPunctuation.map(p => p[1]).join('')}]`, "g");
@@ -54,8 +54,8 @@ export async function checkPairedPunctuation(bookId, chapterIds = null) {
 
         let punCheck = {
             BookId: bookId,
-            ChapterId: chapter.Id,
-            ChapterName: chapter.Name,
+            ChapterId: chapter.id,
+            ChapterName: chapter.Title ,
             CheckResult: []
         };
         for (let pun of pairedPunctuation) {
@@ -76,3 +76,7 @@ export async function checkPairedPunctuation(bookId, chapterIds = null) {
     }
     return results;
 }
+
+module.exports = {
+    checkPairedPunctuation
+};

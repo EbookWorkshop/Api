@@ -697,7 +697,7 @@ module.exports = () => ({
      *     summary: 热度-更新热度
      *     description: 为当前书籍热度加1
      *     parameters:
-     *     - name: bookid
+     *     - name: bookId
      *       in: body
      *       required: true
      *       schema:
@@ -724,4 +724,43 @@ module.exports = () => ({
             new ApiResponse(null, `更新热度失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
+
+    /**
+     * @swagger
+     * /library/book/pairedpunctuation:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 查找不匹配的标点符号
+     *     description: 检查成对的标点符号，统计数量不匹配的情况
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 书籍ID
+     *       schema:
+     *         type: integer
+     *     - name: chapterids
+     *       in: query
+     *       required: false
+     *       description: 在限定章节内查找，缺省为全部章节
+     *       schema:
+     *         type: number[]
+     *     responses:
+     *       200:
+     *         description: 执行结果
+     */
+    "get /book/pairedpunctuation": async (ctx) => {
+        try {
+            const bookId = ctx.query.bookid * 1;
+            const chapterids = ctx.query.chapterids;
+            const {checkPairedPunctuation} = require("./../../Core/Book/CheckPairedPunctuation");
+            
+
+            const results = await checkPairedPunctuation(bookId, chapterids);
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `查找不匹配的标点符号失败: ${error.message}`, 50000).toCTX(ctx);
+        }
+    }
 });
