@@ -754,10 +754,16 @@ module.exports = () => ({
         try {
             const bookId = ctx.query.bookid * 1;
             const chapterids = ctx.query.chapterids;
-            const {checkPairedPunctuation} = require("./../../Core/Book/CheckPairedPunctuation");
-            
+            const { checkPairedPunctuation } = require("./../../Core/Book/CheckPairedPunctuation");
 
-            const results = await checkPairedPunctuation(bookId, chapterids);
+            let cpIds = null;
+            try {
+                cpIds = JSON.parse(chapterids);
+            } catch (e) {
+                cpIds = null;
+            }
+
+            const results = await checkPairedPunctuation(bookId, cpIds);
             new ApiResponse(results).toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, `查找不匹配的标点符号失败: ${error.message}`, 50000).toCTX(ctx);
