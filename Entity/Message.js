@@ -23,7 +23,7 @@ class Message {
         /**
          * 消息头像图标
          */
-        this.avatar = avatar || "/src/assets/logo.svg?msg_logo_mark=1";
+        this.avatar = avatar || "logo.svg?msg_logo_mark=1";
 
         /**
          * 消息正文

@@ -20,6 +20,13 @@ module.exports = () => ({
      *       schema:
      *         type: integer
      *         format: int64
+     *     - name: nottag
+     *       in: query
+     *       required: false
+     *       description: 排除的标签ID，多个用逗号分隔
+     *       schema:
+     *         type: integer
+     *         format: string
      *     consumes:
      *       - application/json
      *     responses:
@@ -30,7 +37,13 @@ module.exports = () => ({
      */
     "get /booklist": async (ctx) => {
         let tagid = ctx.query.tagid * 1;
-        new ApiResponse(await DO.GetBookList(tagid)).toCTX(ctx);
+        let nottag = ctx.query.nottag;
+        if (nottag?.split(",").length > 0) {
+            nottag = nottag.split(",").map((item) => {
+                return item * 1;
+            });
+        }
+        new ApiResponse(await DO.GetBookList(tagid, nottag)).toCTX(ctx);
     },
 
     /**
@@ -633,7 +646,6 @@ module.exports = () => ({
         }
     },
 
-
     /**
      * @swagger
      * /library/book/duplicates:
@@ -661,7 +673,7 @@ module.exports = () => ({
      */
     "get /book/duplicates": async (ctx) => {
         const bookId = ctx.query.bookid * 1;
-        const threshold = parseFloat(ctx.query.threshold) || 0.5;
+        const threshold = parseFloat(ctx.query.threshold) || 0.36;
 
         if (isNaN(bookId)) {
             new ApiResponse(null, "无效的书籍ID", 60000).toCTX(ctx);
@@ -675,4 +687,86 @@ module.exports = () => ({
             new ApiResponse(null, error.message, 50000).toCTX(ctx);
         }
     },
+
+    /**
+     * @swagger
+     * /library/book/heat:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 热度-更新热度
+     *     description: 为当前书籍热度加1
+     *     parameters:
+     *     - name: bookId
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         properties:
+     *           bookId:
+     *             type: integer
+     *             format: int64
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 
+     */
+    "post /book/heat": async (ctx) => {
+        const param = await parseJsonFromBodyData(ctx, ["bookId"]);
+        if (!param) return;
+        const bookId = param.bookId;
+
+        try {
+            const results = await BookMaker.Heat(bookId);
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `更新热度失败: ${error.message}`, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /library/book/pairedpunctuation:
+     *   get:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 查找不匹配的标点符号
+     *     description: 检查成对的标点符号，统计数量不匹配的情况
+     *     parameters:
+     *     - name: bookid
+     *       in: query
+     *       required: true
+     *       description: 书籍ID
+     *       schema:
+     *         type: integer
+     *     - name: chapterids
+     *       in: query
+     *       required: false
+     *       description: 在限定章节内查找，缺省为全部章节
+     *       schema:
+     *         type: number[]
+     *     responses:
+     *       200:
+     *         description: 执行结果
+     */
+    "get /book/pairedpunctuation": async (ctx) => {
+        try {
+            const bookId = ctx.query.bookid * 1;
+            const chapterids = ctx.query.chapterids;
+            const { checkPairedPunctuation } = require("./../../Core/Book/CheckPairedPunctuation");
+
+            let cpIds = null;
+            try {
+                cpIds = JSON.parse(chapterids);
+            } catch (e) {
+                cpIds = null;
+            }
+
+            const results = await checkPairedPunctuation(bookId, cpIds);
+            new ApiResponse(results).toCTX(ctx);
+        } catch (error) {
+            new ApiResponse(null, `查找不匹配的标点符号失败: ${error.message}`, 50000).toCTX(ctx);
+        }
+    }
 });

@@ -8,12 +8,15 @@ class OTO_Ebook {
 
 
     /**
-     * 获取图书列表
+     * 获取电子书列表
+     * @param {number} tagid 筛选的标签
+     * @param {number[]} nottag 排除的标签
+     * @returns 
      */
-    static async GetBookList(tagid) {
+    static async GetBookList(tagid, nottag) {
         const myModels = Models.GetPO();
         const param = {
-            order: [["id", "DESC"]],
+            order: [["Hotness", "DESC"], ["id", "DESC"]],
             ...(tagid > 0 && {
                 include: [{
                     model: myModels.EbookTag,
@@ -22,6 +25,18 @@ class OTO_Ebook {
                 }]
             })
         };
+
+        if (nottag?.length > 0) {
+            param.include = null;
+
+            let bookid = await myModels.EbookTag.findAll({
+                where: { TagId: { [Models.Op.in]: nottag } },
+                attributes: ["BookId"]
+            });
+
+            param.where = { id: { [Models.Op.notIn]: bookid.map(b => b.BookId) } };
+            // param.logging = console.log;
+        }
 
         const bookListModels = await myModels.Ebook.findAll(param);
         return bookListModels.map(b => new Ebook(b.dataValues));

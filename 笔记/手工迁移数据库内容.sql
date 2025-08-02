@@ -6,7 +6,7 @@ INSERT into  WebBooks select * from old.WebBooks;
 INSERT into  WebBookChapters(id,WebTitle,createdAt,updatedAt,IndexId) select id,WebTitle,createdAt,updatedAt,IndexId from old.WebBookChapters;
 INSERT into  WebBookIndexSourceURLs select * from old.WebBookIndexSourceURLs;
 INSERT into  PDFBooks select * from old.PDFBooks;
-INSERT into  SystemConfigs select * from old.SystemConfigs;
+INSERT into  SystemConfigs select * from old.SystemConfigs where [Group] != 'database_version';
 INSERT into  ReviewRules select * from old.ReviewRules;
 INSERT into  ReviewRuleUsings(id,createdAt,updatedAt,RuleId,BookId)
 select u.id,u.createdAt,u.updatedAt,u.RuleId,u.BookId from old.ReviewRuleUsings u INNER JOIN old.Ebooks b on u.BookId = b.id;

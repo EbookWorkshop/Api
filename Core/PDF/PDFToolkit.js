@@ -75,13 +75,15 @@ async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
  * 注意：用到了 `pdfBook.GetChapter` 方法，需要pdfBook对象已实现了GetChapter
  * @param {PDFBook|Object} pdfBook PDFBook|Object 电子书对象
  * @param {PDFDocument} pdfDoc pdf文档对象
- * @param {boolean} embedTitle 是否嵌入章节标题
+ * @param {*} setting 文件生成设置
  */
-async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
+async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
     for (let cId of pdfBook.showIndexId.values()) {
         let curContent = pdfBook.GetChapter(cId);
 
         if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
+
+        let { embedTitle = false, enableIndent = false } = setting;
 
         //加到大纲（pdf的目录）
         pdfDoc.outline.addItem(curContent.Title);
@@ -95,6 +97,16 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
         let txt = curContent.Content;
         if (!txt) {
             txt = `${curContent.Title}\n当前章节内容缺失。`;
+        } else if (enableIndent) {
+            //加入缩进
+            let indent = " ".repeat(pdfBook.indentSize || 4);
+            txt = txt.split("\n").map(line => {
+                const tempTest = line.trimStart();
+                if (tempTest.length > 0) {
+                    return indent + tempTest;
+                }
+                return line;
+            }).join("\n");
         }
 
         //加入整段正文
@@ -108,28 +120,22 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, embedTitle = false) {
  * @param {PDFDocument} pdfDoc pdf对象
  */
 async function AddBookCoverToPdf(pdfBook, pdfDoc) {
-    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#"))      //#开头的为线装本封面底色
-        await CreateImageCover(pdfBook, pdfDoc);
-    //TODO：做一个线装本封面
-}
-
-/**
- * 用图片生成一个封面
- * @param {*} pdfBook 
- * @param {*} pdfDoc 
- */
-async function CreateImageCover(pdfBook, pdfDoc) {
-    const realDir = path.join(config.dataPath, pdfBook.CoverImg);
-
-    let imgFile = realDir;
-    if (realDir.endsWith(".webp")) {
-        imgFile = realDir.replace(/webp$/, "png");
-        await sharp(realDir).png().toFile(imgFile);
+    let imgFile = null;
+    let realDir = null;
+    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#")) {     //#开头的为线装本封面底色
+        realDir = path.join(config.dataPath, pdfBook.CoverImg);
+        imgFile = realDir;
+        if (realDir.endsWith(".webp")) {
+            imgFile = realDir.replace(/webp$/, "png");
+            await sharp(realDir).png().toFile(imgFile);
+        }
+    } else if (pdfBook.coverImageData) {        //做一个线装本封面
+        imgFile = Buffer.from(pdfBook.coverImageData, 'base64');
     }
 
     pdfDoc.image(imgFile, 0, 0, { width: pdfBook.pageWidth || 580, align: 'center', valign: 'center' }).addPage();//TODO：pdf默认尺寸的设置
 
-    if (imgFile != realDir) {
+    if (imgFile && realDir && imgFile != realDir) {
         fs.unlink(imgFile, () => { });
     }
 }

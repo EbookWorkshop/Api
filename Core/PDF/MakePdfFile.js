@@ -9,12 +9,13 @@ async function MakePdfFile(fileInfo) {
             const thePdf = fileInfo.pdf;
             delete fileInfo.pdf;//含不可序列化对象，完成后发回主线程会出错，直接删了不发了。
             let { FontFamily, FontSize } = thePdf;
-            const pdfSetting = { fontFamily: FontFamily, fontSize: FontSize, defaultFont: fileInfo.defaultFont };
+            const pdfSetting = { fontFamily: FontFamily, fontSize: FontSize, defaultFont: fileInfo.defaultFont, enableIndent: fileInfo.enableIndent };
+            thePdf.coverImageData = fileInfo.coverImageData;
 
             const { doc: pdfDoc, stream: fileStream } = await PDFToolkit.CreateNewDocFile(fileInfo.path, pdfSetting);
             await PDFToolkit.AddBookCoverToPdf(thePdf, pdfDoc);//制作封面
             await PDFToolkit.AddIntrocutionToPdf(thePdf, pdfDoc);
-            await PDFToolkit.AddChaptersToPdf(thePdf, pdfDoc, fileInfo.embedTitle);
+            await PDFToolkit.AddChaptersToPdf(thePdf, pdfDoc, pdfSetting);
 
             //关闭结束文档
             pdfDoc.text("（完）", { align: 'center' }).moveDown();

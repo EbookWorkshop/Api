@@ -269,7 +269,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
         let wbm = new WebBookMaker(param.bookId);
-        await wbm.loadFromDB;
+        await wbm.loadFromDB;   //这是个 Promise 对象，要等数据都加载好
         let curBook = wbm.GetBook();
 
         let lastIndex = await curBook.GetMaxIndexOrder();
