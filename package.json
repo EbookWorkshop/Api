@@ -1,6 +1,6 @@
 {
   "name": "ebookworkshop",
-  "version": "3.9.0-α",
+  "version": "3.9.0",
   "description": "电子书工具",
   "main": "app.js",
   "scripts": {
