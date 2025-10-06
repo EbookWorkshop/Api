@@ -51,7 +51,7 @@ class EPUBMaker {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
 
                 //进行文件格式兼容
-                if (option.cover.endsWith(".webp")) {
+                if (option.cover.endsWith(".webp") || option.cover.endsWith(".jpg")) {
                     const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
                     await sharp(option.cover).png().toFile(tempFile);
                     option.cover = tempFile;
