@@ -9,7 +9,7 @@ const Models = require("../OTO/Models");
 async function checkPairedPunctuation(bookId, chapterIds = null) {
     let where = {
         BookId: bookId,
-        OrderNum: { [Models.Op.gt]: 0 },  // 只查找正序章节
+        OrderNum: { [Models.Op.gte]: 0 },  // 只查找正序章节
         Content: { [Models.Op.ne]: null } // 确保内容不为空
     };
 

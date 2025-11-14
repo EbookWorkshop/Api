@@ -38,7 +38,7 @@ module.exports = () => ({
     "get /booklist": async (ctx) => {
         let tagid = ctx.query.tagid * 1;
         let nottag = ctx.query.nottag;
-        if (nottag?.split(",").length > 0) {
+        if (nottag?.length > 0 && nottag?.split(",").length > 0) {
             nottag = nottag.split(",").map((item) => {
                 return item * 1;
             });

@@ -34,7 +34,7 @@ class DO {
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gt]: 0 } }, order: ["OrderNum"] });
+            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } }, order: ["OrderNum"] });
             for (let i of eIndexs) {
                 let index = new Index({ ...i.dataValues, HasContent: i.HasContent })
                 ebook.Index.push(index);

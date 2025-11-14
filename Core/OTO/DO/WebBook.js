@@ -15,9 +15,10 @@ class OTO_WebBook {
 
     /**
      * 取得网文列表
-     * @returns 网文对象
+     * @param {int} tagid 标签ID
+     * @param {int[]} nottag 不包含的标签ID
      */
-    static async GetWebBookList() {
+    static async GetWebBookList(tagid, nottag) {
         const myModels = new Models();
         let bookListModels = await myModels.WebBook.findAll({
             include: myModels.Ebook,            //关联查询 webbook join ebook
@@ -181,7 +182,7 @@ class OTO_WebBook {
             let eIndexs = await myModels.EbookIndex.findAll({
                 where: {
                     BookId: webBook.BookId,
-                    OrderNum: { [Models.Op.gt]: 0 } //大于0的章节
+                    OrderNum: { [Models.Op.gte]: 0 } //大于0的章节
                 },
                 order: ["OrderNum"]
             });

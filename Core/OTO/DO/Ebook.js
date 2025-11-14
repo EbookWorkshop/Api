@@ -148,7 +148,7 @@ class OTO_Ebook {
             attributes: ["id", "Title", "BookId"],
             where: {
                 BookId: bookid,
-                OrderNum: { [Models.Op.lte]: 0 }
+                OrderNum: { [Models.Op.lt]: 0 }
             },
             order: [["OrderNum", "ASC"]],
         });
@@ -248,7 +248,7 @@ class OTO_Ebook {
         if (chapter.BookId * 1 !== chapter.BookId) return;
         const myModels = new Models();
         let maxOrderNum = await myModels.EbookIndex.max('OrderNum', { where: { BookId: chapter.BookId } });//获取最大的OrderNum 最大值
-        chapter.OrderNum = maxOrderNum + 1;
+        chapter.OrderNum = maxOrderNum + 1 || 1;//起始章节序号为1
         let rsl = await myModels.EbookIndex.create(chapter);
         return rsl;
     }

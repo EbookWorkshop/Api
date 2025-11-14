@@ -23,7 +23,14 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /list": async (ctx) => {
-        new ApiResponse(await DO.GetWebBookList()).toCTX(ctx);
+        let tagid = ctx.query.tagid * 1;
+        let nottag = ctx.query.nottag;
+        if (nottag?.length > 0 && nottag?.split(",").length > 0) {
+            nottag = nottag.split(",").map((item) => {
+                return item * 1;
+            });
+        }
+        new ApiResponse(await DO.GetWebBookList(tagid, nottag)).toCTX(ctx);
     },
     /**
      * @swagger
