@@ -7,6 +7,7 @@ const path = require("path");
 const system = require("./Core/System");
 const router = require('./Controller/router');
 const EventManager = require("./Core/EventManager");
+const ApiResponse = require("./Entity/ApiResponse");
 
 const app = new Koa();
 
@@ -26,19 +27,20 @@ app.use(koaSwagger({
     }
 }));
 
-// process.on('unhandledRejection', (reason, promise) => {     //全局监听Promise未捕获的Rejection
-//     em.emit("Debug.Log", reason, "unhandledRejection", reason, promise); 
-// });
+//在Koa框架中，app.on("error")主要用于日志记录，而不会改变HTTP响应。
 app.on("error", (err, ctx) => {
-    if (ctx) CtxSetAllowHead(ctx);  //处理500错误到前端时会有跨域拦截
     let em = new EventManager();
     em.emit("Debug.Log", err?.message || err, "KOAERR", err);
 });
 
-//设置跨域
+
 app.use(async (ctx, next) => {
-    CtxSetAllowHead(ctx);
-    await next();
+    try {
+        CtxSetAllowHead(ctx);//设置跨域
+        await next();
+    } catch (err) {// 全局错误处理中间件
+        new ApiResponse(err, err?.message || String(err), 50000).toCTX(ctx);
+    }
 });
 
 //注册路由

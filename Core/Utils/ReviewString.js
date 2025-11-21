@@ -30,6 +30,7 @@ function Run(rules, sourceText) {
  * @param { string } testText 测试用的文本
  */
 function Test(rule, testText) {
+    if (!rule || !testText) return { match: false, source: testText, result: null };
     let testRegExp = new RegExp(rule.Rule, "gm");
 
     let rTarget = rule.Replace;

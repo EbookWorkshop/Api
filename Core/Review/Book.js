@@ -6,6 +6,7 @@ const ReviewRule = require("../../Entity/ReviewRule");
 // const Do2Po = require("../OTO/DO");
 const Models = require("../OTO/Models");
 const { Test: ExecReview } = require("./../../Core/Utils/ReviewString");
+const SmartCharacterAnalyzer = require("./SmartCharacterAnalyzer");
 
 class ReviewBook {
     constructor() { }
@@ -50,7 +51,8 @@ class ReviewBook {
         const myModels = Models.GetPO();
         let chapters = await myModels.EbookIndex.findAll({
             where: {
-                BookId: setting.bookid
+                BookId: setting.bookid,
+                ...(setting?.chapterids?.length > 0 && { id: { [Models.Op.in]: setting.chapterids } })
             }
         });
         const testRule = new ReviewRule({ Name: "测试", Rule: setting.regex, Replace: setting.replace });
@@ -61,6 +63,7 @@ class ReviewBook {
             if (!cpRsl.match || cpRsl.match.length == 0) continue; //如果没有匹配到，就不保存
             const rsl = await myModels.EbookIndex.update({ Content: cpRsl.result }, { where: { id: chp.id } });
             result.push({
+                id: chp.id,
                 title: chp.Title,
                 content: chp.Content,
                 newText: cpRsl.result,
@@ -68,6 +71,35 @@ class ReviewBook {
             });
         }
 
+        return result;
+    }
+
+
+    /**
+     * 分析文本中的可疑字符
+     * @param {*} setting 
+     * @returns 
+     */
+    static async SuspiciousChar(setting) {
+        if (!setting.bookid) return [];
+        const myModels = Models.GetPO();
+        let chapters = await myModels.EbookIndex.findAll({
+            where: {
+                BookId: setting.bookid,
+                ...(setting?.chapterids?.length > 0 && { id: { [Models.Op.in]: setting.chapterids } })
+            }
+        });
+
+        let analyzer = new SmartCharacterAnalyzer();
+        let result = [];
+        for (let chp of chapters) {
+            const suspiciousChars = (!chp.Content || chp.Content.trim() == "") ? [] : analyzer.detectSuspiciousCharacters(chp.Content);
+            result.push({
+                id: chp.id,
+                title: chp.Title,
+                suspiciousChars,
+            });
+        }
         return result;
     }
 }
