@@ -28,6 +28,23 @@ class SmartCharacterAnalyzer {
             'Enclosed Alphanumerics',           // 包围字母数字
             'Enclosed CJK Letters and Months',  // 包围CJK文字和月份
         ]);
+
+        this.specialChars = {
+            0x2028: { en: 'Line Separator', zh: '行分隔符' },
+            0x2029: { en: 'Paragraph Separator', zh: '段落分隔符' },
+            0x0085: { en: 'Next Line', zh: '下一行' },
+            0x200C: { en: 'Zero Width Non-Joiner', zh: '零宽非连接符' },
+            0x200D: { en: 'Zero Width Joiner', zh: '零宽连接符' },
+            0x200E: { en: 'Left-To-Right Mark', zh: '左至右标记' },
+            0x200F: { en: 'Right-To-Left Mark', zh: '右至左标记' },
+            0x2029: { en: 'Paragraph Separator', zh: '段落分隔符' },
+            0x202A: { en: 'Left-To-Right Embedding', zh: '左至右嵌入' },
+            0x202B: { en: 'Right-To-Left Embedding', zh: '右至左嵌入' },
+            0x202C: { en: 'Pop Directional Formatting', zh: '弹出方向格式化' },
+            0x202D: { en: 'Left-To-Right Override', zh: '左至右覆盖' },
+            0x202E: { en: 'Right-To-Left Override', zh: '右至左覆盖' },
+            0x2060: { en: 'Word Joiner', zh: '词连接符' },
+        };
     }
 
     /**
@@ -83,28 +100,29 @@ class SmartCharacterAnalyzer {
     detectSuspiciousCharacters(text) {
         const charMap = new Map(); // 使用Map来存储每个字符的结果
         const freqMap = this.analyzeCharacterFrequency(text);
-    
+
         // 计算总字符数（非空格）
         const totalChars = Array.from(freqMap.values()).reduce((sum, count) => sum + count, 0);
-    
+
         for (let i = 0; i < text.length; i++) {
             const char = text[i];
+            const charCodePoint = char.codePointAt(0);
             if (char.trim() === '') continue;
-    
+
             const block = this.getUnicodeBlock(char);
             const frequency = freqMap.get(char);
             const frequencyPercent = (frequency / totalChars) * 100;
-    
+
             // 检测逻辑
             let suspicionLevel = 0;
             let reasons = [];
-    
+
             // 规则1: 字符位于可疑区块
             if (this.suspiciousBlocks.has(block)) {
                 suspicionLevel += 3;
                 reasons.push(`位于可疑Unicode区块: ${block}`);
             }
-    
+
             // // 规则2: 字符频率极低（在全文出现次数很少）
             // if (frequency === 1 && totalChars > 100) {
             //     suspicionLevel += 2;
@@ -113,47 +131,53 @@ class SmartCharacterAnalyzer {
             //     suspicionLevel += 1;
             //     reasons.push('出现频率极低');
             // }
-    
+
             // 规则3: 字符不在常见区块
             if (!this.commonBlocks.has(block) && !this.suspiciousBlocks.has(block)) {
                 suspicionLevel += 1;
                 reasons.push(`位于非常见区块: ${block}`);
             }
-    
+
             // 规则4: 私有区域字符（通常是字体图标等）
             if (block === 'Private Use Area') {
                 suspicionLevel += 4;
                 reasons.push('位于私有使用区域（可能显示异常）');
             }
-    
+
+            // 规则5: 标点符号区不可见字符
+            if (block === 'General Punctuation' && this.specialChars[charCodePoint]) {
+                suspicionLevel += 2;
+                reasons.push(`位于不可见标点符号区: ${this.specialChars[charCodePoint].en}`);
+            }
+
             if (suspicionLevel >= 2) {
                 const start = Math.max(0, i - 15);
                 const end = Math.min(text.length, i + 15);
                 const context = text.slice(start, end).replace(/\n/g, '\\n');
-                
+
                 // 检查字符是否已经在Map中
                 if (charMap.has(char)) {
                     // 合并现有结果
                     const existing = charMap.get(char);
-                    
+
                     // 合并reasons并去重
                     const reasonSet = new Set([...existing.reasons, ...reasons]);
                     existing.reasons = Array.from(reasonSet);
-                    
+
                     // 合并context
                     existing.context.push(context);
-                    
+
                     // 更新最高可疑度（如果当前字符的可疑度更高）
                     if (suspicionLevel > existing.suspicionLevel) {
                         existing.suspicionLevel = suspicionLevel;
                     }
-                    
+
                     charMap.set(char, existing);
                 } else {
                     // 创建新结果
                     charMap.set(char, {
                         character: char,
-                        codePoint: `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`,
+                        codePoint: `U+${charCodePoint.toString(16).toUpperCase().padStart(4, '0')}`,
                         unicodeBlock: block,
                         suspicionLevel: suspicionLevel,
                         frequency: frequency,
@@ -164,13 +188,13 @@ class SmartCharacterAnalyzer {
                 }
             }
         }
-    
+
         // 将Map转换为数组并按可疑程度排序
         const results = Array.from(charMap.values());
-        
+
         // 对context数组进行处理，连接成字符串或保留为数组
         // 这里选择保留为数组，以便调用者可以灵活处理
-        
+
         return results.sort((a, b) => b.suspicionLevel - a.suspicionLevel);
     }
 
