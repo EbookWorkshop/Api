@@ -1,6 +1,3 @@
-
-
-
 /**
  * 电子书
  */
@@ -15,6 +12,10 @@ class Ebook {
          * @prop {Array<number>} 目录
          */
         this.Index = [];
+        /**
+         * @prop {Array<Volume>} 卷集合
+         */
+        this.Volumes = [];
         /**
          * 书Id
          */
@@ -47,6 +48,5 @@ class Ebook {
         this.showIndexId = new Set();
     }
 }
-
 
 module.exports = Ebook;

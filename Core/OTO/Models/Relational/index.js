@@ -1,10 +1,17 @@
-
 /**
  * 设置模型之间的关系
  * 临时的做法 以后看要怎么优化
  * @param {*} models 
  */
 module.exports = function (models) {
+
+    // Ebook <-- --> Volume
+    models.Ebook.hasMany(models.Volume, { foreignKey: 'BookId', sourceKey: 'id', as: "Volumes", onDelete: 'CASCADE' });
+    models.Volume.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id', as: "Ebook" });
+
+    // Volume <-- --> EbookIndex
+    models.Volume.hasMany(models.EbookIndex, { foreignKey: 'VolumeId', sourceKey: 'id', as: "EbookIndex", onDelete: 'SET NULL' });
+    models.EbookIndex.belongsTo(models.Volume, { foreignKey: 'VolumeId', targetKey: 'id', as: "Volume", onDelete: 'SET NULL' });
 
     // Ebook <-- --> EbookIndex
     models.Ebook.hasMany(models.EbookIndex, { foreignKey: 'BookId', sourceKey: 'id', as: "EbookIndex", onDelete: 'CASCADE' });

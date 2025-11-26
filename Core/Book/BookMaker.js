@@ -4,6 +4,7 @@
 const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
+const Volume = require("../../Entity/Ebook/Volume"); // 添加Volume引用
 const Do2Po = require("../OTO/DO");
 const path = require("path");
 const { dataPath } = require("../../config");
@@ -415,6 +416,215 @@ class BookMaker {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * 创建一个新卷
+     * @param {number} bookId 书籍ID
+     * @param {string} title 卷标题
+     * @param {string} introduction 卷简介（可选）
+     * @returns {Promise<Volume>} 创建的卷对象
+     */
+    static async CreateVolume(bookId, title, introduction = '') {
+        try {
+            const myModels = Models.GetPO();
+            const t = await myModels.BeginTrans();
+            
+            // 获取当前书籍最大卷序号
+            const maxOrderNum = await myModels.Volume.max('OrderNum', {
+                where: { BookId: bookId },
+                transaction: t
+            });
+            
+            // 创建新卷
+            const volume = await myModels.Volume.create({
+                BookId: bookId,
+                Title: title,
+                Introduction: introduction,
+                OrderNum: (maxOrderNum || -1) + 1
+            }, { transaction: t });
+            
+            await t.commit();
+            return new Volume(volume.dataValues);
+        } catch (err) {
+            console.error('创建卷失败:', err);
+            throw err;
+        }
+    }
+    
+    /**
+     * 更新卷信息
+     * @param {number} volumeId 卷ID
+     * @param {Object} updates 更新内容
+     * @param {string} [updates.title] 新标题
+     * @param {string} [updates.introduction] 新简介
+     * @returns {Promise<boolean>} 更新是否成功
+     */
+    static async UpdateVolume(volumeId, { title, introduction }) {
+        try {
+            const myModels = Models.GetPO();
+            const updates = {};
+            
+            if (title !== undefined) updates.Title = title;
+            if (introduction !== undefined) updates.Introduction = introduction;
+            
+            if (Object.keys(updates).length === 0) {
+                return true; // 没有需要更新的内容
+            }
+            
+            const result = await myModels.Volume.update(updates, {
+                where: { id: volumeId }
+            });
+            
+            return result[0] > 0;
+        } catch (err) {
+            console.error('更新卷失败:', err);
+            return false;
+        }
+    }
+    
+    /**
+     * 删除卷
+     * @param {number} volumeId 卷ID
+     * @returns {Promise<boolean>} 删除是否成功
+     */
+    static async DeleteVolume(volumeId) {
+        try {
+            const myModels = Models.GetPO();
+            const t = await myModels.BeginTrans();
+            
+            // 先将卷中的章节移出到书籍根级
+            await myModels.EbookIndex.update(
+                { VolumeId: null },
+                { 
+                    where: { VolumeId: volumeId },
+                    transaction: t
+                }
+            );
+            
+            // 删除卷
+            const result = await myModels.Volume.destroy({
+                where: { id: volumeId },
+                transaction: t
+            });
+            
+            await t.commit();
+            return result > 0;
+        } catch (err) {
+            console.error('删除卷失败:', err);
+            return false;
+        }
+    }
+    
+    /**
+     * 获取书籍的所有卷
+     * @param {number} bookId 书籍ID
+     * @returns {Promise<Volume[]>} 卷列表
+     */
+    static async GetVolumes(bookId) {
+        try {
+            const myModels = Models.GetPO();
+            const volumes = await myModels.Volume.findAll({
+                where: { BookId: bookId },
+                order: ['OrderNum']
+            });
+            
+            return volumes.map(v => new Volume(v.dataValues));
+        } catch (err) {
+            console.error('获取卷列表失败:', err);
+            return [];
+        }
+    }
+    
+    /**
+     * 将章节移动到指定卷中
+     * @param {number} volumeId 目标卷ID
+     * @param {number[]} chapterIds 章节ID列表
+     * @returns {Promise<boolean>} 操作是否成功
+     */
+    static async MoveChaptersToVolume(volumeId, chapterIds) {
+        try {
+            const myModels = Models.GetPO();
+            const result = await myModels.EbookIndex.update(
+                { VolumeId: volumeId },
+                { where: { id: chapterIds } }
+            );
+            
+            return result[0] > 0;
+        } catch (err) {
+            console.error('移动章节到卷失败:', err);
+            return false;
+        }
+    }
+    
+    /**
+     * 从卷中移除章节（移到书籍根级）
+     * @param {number[]} chapterIds 章节ID列表
+     * @returns {Promise<boolean>} 操作是否成功
+     */
+    static async RemoveChaptersFromVolume(chapterIds) {
+        try {
+            const myModels = Models.GetPO();
+            const result = await myModels.EbookIndex.update(
+                { VolumeId: null },
+                { where: { id: chapterIds } }
+            );
+            
+            return result[0] > 0;
+        } catch (err) {
+            console.error('从卷中移除章节失败:', err);
+            return false;
+        }
+    }
+    
+    /**
+     * 更新卷排序
+     * @param {Object[]} volumeOrders 卷排序信息
+     * @param {number} volumeOrders[].volumeId 卷ID
+     * @param {number} volumeOrders[].orderNum 新排序号
+     * @returns {Promise<boolean>} 操作是否成功
+     */
+    static async UpdateVolumeOrder(volumeOrders) {
+        try {
+            const myModels = Models.GetPO();
+            const t = await myModels.BeginTrans();
+            
+            await Promise.all(volumeOrders.map(async (item) => {
+                await myModels.Volume.update(
+                    { OrderNum: item.orderNum },
+                    { 
+                        where: { id: item.volumeId },
+                        transaction: t
+                    }
+                );
+            }));
+            
+            await t.commit();
+            return true;
+        } catch (err) {
+            console.error('更新卷排序失败:', err);
+            return false;
+        }
+    }
+    
+    /**
+     * 获取卷下的所有章节
+     * @param {number} volumeId 卷ID
+     * @returns {Promise<Chapter[]>} 章节列表
+     */
+    static async GetVolumeChapters(volumeId) {
+        try {
+            const myModels = Models.GetPO();
+            const chapters = await myModels.EbookIndex.findAll({
+                where: { VolumeId: volumeId },
+                order: ['OrderNum']
+            });
+            
+            return chapters.map(c => new Chapter(c.dataValues));
+        } catch (err) {
+            console.error('获取卷下章节失败:', err);
+            return [];
+        }
     }
 }
 module.exports = BookMaker;
