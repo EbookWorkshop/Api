@@ -1,6 +1,7 @@
 const DO = require("./index");
 const Models = require("./../Models");
 const Ebook = require("./../../../Entity/Ebook/Ebook");
+const Volume = require("./../../../Entity/Ebook/Volume");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
@@ -11,7 +12,6 @@ const { Run: Reviewer } = require("./../../Utils/ReviewString");
 
 
 class OTO_WebBook {
-
 
     /**
      * 取得网文列表
@@ -205,7 +205,7 @@ class OTO_WebBook {
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
                 [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
                 webBook.Index.push(tIdx);
-                
+
                 if (eI == null) continue; //没有对应的章节时跳过
                 for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
             }
@@ -318,8 +318,9 @@ class OTO_WebBook {
             webBook.Chapters.set(chapter.WebTitle, chapter);
         }
 
-        webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
 
+        webBook.Volumes = ebookObj.Volumes.concat();
+        webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
         await webBook.ReloadIndex();
         return webBook;
     }

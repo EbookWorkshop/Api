@@ -3,6 +3,7 @@ const path = require("path");
 const EventManager = require("../../EventManager");
 const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
+const Volume = require("./../../../Entity/Ebook/Volume");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/ReviewString");
 const { dataPath } = require("../../../config");
@@ -27,20 +28,6 @@ class DO {
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
-    
-        /**
-         * 加载所有卷
-         */
-        ebook.ReloadVolumes = async () => {
-            const myModels = new Models();
-            let volumes = await myModels.Volume.findAll({
-                where: { BookId: ebook.BookId }, 
-                order: ["OrderNum"]
-            });
-            for (let v of volumes) {
-                ebook.Volumes.push(new Volume({ ...v.dataValues }));
-            }
-        };
     
         /**
          * [LoadIndex]重新加载所有章节
@@ -170,13 +157,18 @@ class DO {
             }
         }
 
+        /**
+         * 加载所有卷
+         */
         ebook.ReloadVolumes = async () => {
             const myModels = new Models();
             let volumes = await myModels.Volume.findAll({
-                where: { BookId: ebook.BookId },
+                where: { BookId: ebook.BookId }, 
                 order: ["OrderNum"]
-            }); 
-            ebook.Volumes = volumes;
+            });
+            for (let v of volumes) {
+                ebook.Volumes.push(new Volume({ ...v.dataValues }));
+            }
         };
         await ebook.ReloadIndex();
         await ebook.ReloadVolumes();
