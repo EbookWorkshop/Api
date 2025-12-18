@@ -107,8 +107,16 @@ class BookMaker {
                 writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
             }
 
+            let curVolume = null;
             for (let i of ebook.showIndexId) {
                 let c = ebook.GetChapter(i);
+                if (curVolume != c.VolumeId) {//写入卷信息
+                    let v = ebook.Volumes.find(vv => vv.VolumeId === c.VolumeId);
+                    if (v) {
+                        curVolume = c.VolumeId;
+                        writeStream.write(`\n=== ${v.Title} ===\n\n${v.Introduction}\n\n\n\n`);
+                    }
+                }
                 if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
                 else if (c.Content) writeStream.write(`${c.Content}\n`);//不嵌入标题时同时正文无内容时不写入
             }
@@ -402,7 +410,7 @@ class BookMaker {
         });
         return rsl;
     }
-    
+
     /**
      * 更新书的热度
      * @param {*} bookId 
@@ -410,14 +418,14 @@ class BookMaker {
     static async Heat(bookId) {
         const myModels = Models.GetPO();
         const book = await myModels.Ebook.findByPk(bookId);
-        if(book){
+        if (book) {
             book.Hotness = (book.Hotness || 0) + 1; // 热度+1
             await book.save();
             return true;
         }
         return false;
     }
-    
+
     /**
      * 创建一个新卷
      * @param {number} bookId 书籍ID
@@ -429,13 +437,13 @@ class BookMaker {
         try {
             const myModels = Models.GetPO();
             const t = await myModels.BeginTrans();
-            
+
             // 获取当前书籍最大卷序号
             const maxOrderNum = await myModels.Volume.max('OrderNum', {
                 where: { BookId: bookId },
                 transaction: t
             });
-            
+
             // 创建新卷
             const volume = await myModels.Volume.create({
                 BookId: bookId,
@@ -443,7 +451,7 @@ class BookMaker {
                 Introduction: introduction,
                 OrderNum: (maxOrderNum || -1) + 1
             }, { transaction: t });
-            
+
             await t.commit();
             return new Volume(volume.dataValues);
         } catch (err) {
@@ -451,7 +459,7 @@ class BookMaker {
             throw err;
         }
     }
-    
+
     /**
      * 更新卷信息
      * @param {number} volumeId 卷ID
@@ -464,25 +472,25 @@ class BookMaker {
         try {
             const myModels = Models.GetPO();
             const updates = {};
-            
+
             if (title !== undefined) updates.Title = title;
             if (introduction !== undefined) updates.Introduction = introduction;
-            
+
             if (Object.keys(updates).length === 0) {
                 return true; // 没有需要更新的内容
             }
-            
+
             const result = await myModels.Volume.update(updates, {
                 where: { id: volumeId }
             });
-            
+
             return result[0] > 0;
         } catch (err) {
             console.error('更新卷失败:', err);
             return false;
         }
     }
-    
+
     /**
      * 删除卷
      * @param {number} volumeId 卷ID
@@ -492,22 +500,22 @@ class BookMaker {
         try {
             const myModels = Models.GetPO();
             const t = await myModels.BeginTrans();
-            
+
             // 先将卷中的章节移出到书籍根级
             await myModels.EbookIndex.update(
                 { VolumeId: null },
-                { 
+                {
                     where: { VolumeId: volumeId },
                     transaction: t
                 }
             );
-            
+
             // 删除卷
             const result = await myModels.Volume.destroy({
                 where: { id: volumeId },
                 transaction: t
             });
-            
+
             await t.commit();
             return result > 0;
         } catch (err) {
@@ -515,7 +523,7 @@ class BookMaker {
             return false;
         }
     }
-    
+
     /**
      * 获取书籍的所有卷
      * @param {number} bookId 书籍ID
@@ -528,14 +536,14 @@ class BookMaker {
                 where: { BookId: bookId },
                 order: ['OrderNum']
             });
-            
+
             return volumes.map(v => new Volume(v.dataValues));
         } catch (err) {
             console.error('获取卷列表失败:', err);
             return [];
         }
     }
-    
+
     /**
      * 将章节移动到指定卷中
      * @param {number} volumeId 目标卷ID
@@ -549,14 +557,14 @@ class BookMaker {
                 { VolumeId: volumeId },
                 { where: { id: chapterIds } }
             );
-            
+
             return result[0] > 0;
         } catch (err) {
             console.error('移动章节到卷失败:', err);
             return false;
         }
     }
-    
+
     /**
      * 从卷中移除章节（移到书籍根级）
      * @param {number[]} chapterIds 章节ID列表
@@ -569,14 +577,14 @@ class BookMaker {
                 { VolumeId: null },
                 { where: { id: chapterIds } }
             );
-            
+
             return result[0] > 0;
         } catch (err) {
             console.error('从卷中移除章节失败:', err);
             return false;
         }
     }
-    
+
     /**
      * 更新卷排序
      * @param {Object[]} volumeOrders 卷排序信息
@@ -588,17 +596,17 @@ class BookMaker {
         try {
             const myModels = Models.GetPO();
             const t = await myModels.BeginTrans();
-            
+
             await Promise.all(volumeOrders.map(async (item) => {
                 await myModels.Volume.update(
                     { OrderNum: item.orderNum },
-                    { 
+                    {
                         where: { id: item.volumeId },
                         transaction: t
                     }
                 );
             }));
-            
+
             await t.commit();
             return true;
         } catch (err) {
@@ -606,7 +614,7 @@ class BookMaker {
             return false;
         }
     }
-    
+
     /**
      * 获取卷下的所有章节
      * @param {number} volumeId 卷ID
@@ -619,7 +627,7 @@ class BookMaker {
                 where: { VolumeId: volumeId },
                 order: ['OrderNum']
             });
-            
+
             return chapters.map(c => new Chapter(c.dataValues));
         } catch (err) {
             console.error('获取卷下章节失败:', err);
