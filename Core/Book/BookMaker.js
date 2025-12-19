@@ -107,18 +107,22 @@ class BookMaker {
                 writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
             }
 
-            let curVolume = null;
+            let vM = new Map();
+            // 按卷分类章节
             for (let i of ebook.showIndexId) {
                 let c = ebook.GetChapter(i);
-                if (curVolume != c.VolumeId) {//写入卷信息
-                    let v = ebook.Volumes.find(vv => vv.VolumeId === c.VolumeId);
-                    if (v) {
-                        curVolume = c.VolumeId;
-                        writeStream.write(`\n=== ${v.Title} ===\n\n${v.Introduction}\n\n\n\n`);
-                    }
+                if (!vM.has(c.VolumeId)) {
+                    vM.set(c.VolumeId, new Array());
                 }
-                if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
-                else if (c.Content) writeStream.write(`${c.Content}\n`);//不嵌入标题时同时正文无内容时不写入
+                vM.get(c.VolumeId).push(c);
+            }
+            for (let e of ebook.Volumes) {
+                if (!vM.has(e.VolumeId)) continue;
+                writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
+                for (let c of vM.get(e.VolumeId)) {
+                    if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
+                    else if (c.Content) writeStream.write(`${c.Content}\n`);
+                }
             }
             writeStream.end();
         });
