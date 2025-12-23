@@ -119,7 +119,7 @@ module.exports = () => ({
         let bookid = param.bookId;
         let cIds = param.chapterIds;
 
-        await BookMaker.MakeTxtFile(bookid, cIds, param.embedTitle).then(async (rsl) => {
+        await BookMaker.MakeTxtFile(bookid, cIds, param.embedTitle, param.enableIndent).then(async (rsl) => {
             if (param.sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,

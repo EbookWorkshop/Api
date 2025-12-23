@@ -72,9 +72,10 @@ class BookMaker {
      * @param {number} bookId 书ID 
      * @param {Array<number>?} showChapters 需要包含的章节ID，不传则为全部
      * @param {boolean} embedTitle 是否嵌入标题 
+     * @param {boolean} enableIndent 是否启用段落缩进
      * @returns 
      */
-    static async MakeTxtFile(bookId, showChapters, embedTitle = true) {
+    static async MakeTxtFile(bookId, showChapters, embedTitle = true, enableIndent = false) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
@@ -116,12 +117,26 @@ class BookMaker {
                 }
                 vM.get(c.VolumeId).push(c);
             }
+            if (vM.has(null)) {
+                ebook.Volumes.push(new Volume({
+                    id: null,
+                    Title: "未分卷章节",
+                    Introduction: ""
+                }));
+            }
             for (let e of ebook.Volumes) {
                 if (!vM.has(e.VolumeId)) continue;
-                writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
+                if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
                 for (let c of vM.get(e.VolumeId)) {
-                    if (embedTitle) writeStream.write(`${c.Title}\n${c.Content}\n\n`);
-                    else if (c.Content) writeStream.write(`${c.Content}\n`);
+                    let content = c.Content;
+                    if (enableIndent) {
+                        let multiLine = content.split("\n");
+                        multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
+                        content = multiLine.join("\n");
+                    }
+                    if (embedTitle) writeStream.write(`${c.Title}\n${content}\n\n`);
+                    else if (content) writeStream.write(`${content}\n`);
+                    else writeStream.write(`--当前章节内容缺失--\n\n`);
                 }
             }
             writeStream.end();

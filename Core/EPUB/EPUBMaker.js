@@ -29,7 +29,7 @@ class EPUBMaker {
         let option = {
             title: ebook.BookName, // *必需，书籍标题。
             author: ebook.Author || "佚名", // *必需，作者名字。
-            appendChapterTitles: embedTitle,
+            appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
             lang: "zh",
             css: "",
             tocTitle: "目  录",//默认 Table Of Contents
@@ -75,21 +75,53 @@ class EPUBMaker {
                 data: "<p>" + ebook.Introduction.split("\n").join("</p>\n<p>") + "</p>",
                 // TODO: iPhone 图书应用直接不会显示
                 excludeFromToc: true,//不加入目录
-                beforeToc: true,//先于目录之前显示: 
+                beforeToc: true,//先于目录之前显示: --不起作用
             });
         }
 
+        let vM = new Map();
+        // 按卷分类章节
         for (let i of ebook.showIndexId) {
             let c = ebook.GetChapter(i);
-            let content = c.Content ?? "--当前章节内容缺失--";
-            let multiLine = content.split("\n");
-            if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
-            let p = multiLine.join("</p>\n<p>");
-            option.content.push({
-                title: c.Title,
-                data: `<p>${p}</p>`,
-            });
+            if (!vM.has(c.VolumeId)) {
+                vM.set(c.VolumeId, new Array());
+            }
+            vM.get(c.VolumeId).push(c);
         }
+        if (vM.has(null)) {
+            ebook.Volumes.push(new Volume({
+                id: null,
+                Title: "未分卷章节",
+                Introduction: ""
+            }));
+        }
+
+        for (let e of ebook.Volumes) {
+            if (!vM.has(e.VolumeId)) continue;
+            if (e.VolumeId) {
+                let data = `<p>${e.Introduction}</p>`;
+                if (!embedTitle) {
+                    data = `<h1 style="text-align: center;">${e.Title}</h1>\n${data}`;
+                }
+                option.content.push({
+                    title: e.Title,
+                    data: data,
+                });
+            }
+            for (let c of vM.get(e.VolumeId)) {
+                let p = c.Content;
+                if (enableIndent) {
+                    let multiLine = p.split("\n");
+                    multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
+                    p = multiLine.join("</p>\n<p>");
+                }
+                option.content.push({
+                    title: c.Title,
+                    data: `<p>${p}</p>`,
+                });
+            }
+        }
+
         if (enableIndent) option.css += `\np{ text-indent: 2em;} `;
 
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
