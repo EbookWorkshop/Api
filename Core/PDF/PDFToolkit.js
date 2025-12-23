@@ -78,39 +78,48 @@ async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
  * @param {*} setting 文件生成设置
  */
 async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
-    for (let cId of pdfBook.showIndexId.values()) {
-        let curContent = pdfBook.GetChapter(cId);
+    let { embedTitle = false, enableIndent = false } = setting;
 
-        if (curContent == null) throw ({ message: `找不到章节：ID${cId}。` });
-
-        let { embedTitle = false, enableIndent = false } = setting;
-
-        //加到大纲（pdf的目录）
-        pdfDoc.outline.addItem(curContent.Title);
-
-        //加入章节标题
-        if (embedTitle) {
-            pdfDoc.text(curContent.Title, { align: 'center' }).moveDown();
+    let vM = new Map();
+    // 按卷分类章节
+    for (let i of pdfBook.showIndexId) {
+        let c = pdfBook.GetChapter(i);
+        if (!vM.has(c.VolumeId)) {
+            vM.set(c.VolumeId, new Array());
         }
-
-        //如果当前章节没内容，则加入默认提示。
-        let txt = curContent.Content;
-        if (!txt) {
-            txt = `${curContent.Title}\n当前章节内容缺失。`;
-        } else if (enableIndent) {
-            //加入缩进
-            let indent = " ".repeat(pdfBook.indentSize || 4);
-            txt = txt.split("\n").map(line => {
-                const tempTest = line.trimStart();
-                if (tempTest.length > 0) {
-                    return indent + tempTest;
-                }
-                return line;
-            }).join("\n");
+        vM.get(c.VolumeId).push(c);
+    }
+    if (vM.has(null)) {
+        pdfBook.Volumes.push(new Volume({
+            id: null,
+            Title: "未分卷章节",
+            Introduction: ""
+        }));
+    }
+    for (let e of pdfBook.Volumes) {
+        if (!vM.has(e.VolumeId)) continue;
+        if (e.VolumeId) {
+            pdfDoc.outline.addItem(e.Title);
+            pdfDoc.text(e.Title, { align: 'center' }).moveDown();
+            pdfDoc.text(e.Introduction, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
         }
+        for (let c of vM.get(e.VolumeId)) {
+            pdfDoc.outline.addItem(c.Title);
+            let content = c.Content || `${c.Title}\n当前章节内容缺失。`;
 
-        //加入整段正文
-        pdfDoc.text(txt, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
+            if (enableIndent) { //加入缩进
+                let indent = " ".repeat(pdfBook.indentSize || 4);
+                content = content.split("\n").map(line => {
+                    const tempTest = line.trimStart();
+                    if (tempTest.length > 0) {
+                        return indent + tempTest;
+                    }
+                    return line;
+                }).join("\n");
+            }
+            if (embedTitle) pdfDoc.text(c.Title, { align: 'center' }).moveDown();
+            pdfDoc.text(content, pdfBook.paddingX, pdfBook.paddingY, { width: pdfBook.pageWidth }).addPage();
+        }
     }
 }
 
