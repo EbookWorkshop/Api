@@ -5,6 +5,7 @@ const fs = require("fs/promises");
 const sharp = require("sharp");     //提供图像格式转换
 const { dataPath } = require("../../config");
 const { version } = require("../../package.json");
+const Volume = require("../../Entity/Ebook/Volume");
 
 
 class EPUBMaker {
