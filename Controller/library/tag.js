@@ -27,7 +27,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "get /../ebooktag": async (ctx) => {
-        let bookId = ctx.query.bookid;
+        const bookId = ctx.query.bookid;
         if (bookId * 1 != bookId) {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
@@ -69,7 +69,7 @@ module.exports = () => ({
     "post ": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["tagText"]);
         if (!param) return;
-        let bookid = param.bookId;      //标记的书
+        const bookid = param.bookId;      //标记的书
         let tagText = param.tagText;    //标记文本
         tagText = tagText?.trim();
         if (tagText == "") { new ApiResponse(null, `标签文本不能为空`, 60000).toCTX(ctx); return; }
@@ -85,7 +85,7 @@ module.exports = () => ({
     /**
      * @swagger
      * /library/tag:
-     *   patch:
+     *   put:
      *     tags:
      *       - Library - Tag —— 图书馆管理
      *     summary: 修改某标签
@@ -112,7 +112,7 @@ module.exports = () => ({
      *       200:
      *         description: 请求成功
      */
-    "patch ": async (ctx) => {
+    "put ": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["tagId"]);
         if (!param) return;
 
@@ -148,7 +148,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete ": async (ctx) => {
-        let tagid = ctx.query.tagid * 1;
+        const tagid = ctx.query.tagid * 1;
         if (!tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.DeleteTag(tagid);
@@ -186,8 +186,8 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "delete /../tagonbook": async (ctx) => {
-        let bookid = ctx.query.bookid * 1;      //标记的书
-        let tagid = ctx.query.tagid * 1;      //需取消的标签Id
+        const bookid = ctx.query.bookid * 1;      //标记的书
+        const tagid = ctx.query.tagid * 1;      //需取消的标签Id
         if (!bookid || !tagid) { new ApiResponse(null, `参数错误`, 60000).toCTX(ctx); return; }
 
         let result = await DO.RemoveTagOnBook(bookid, tagid);

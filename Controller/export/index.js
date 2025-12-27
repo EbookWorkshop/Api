@@ -116,7 +116,7 @@ module.exports = () => ({
     "post /txt": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
 
-        let bookid = param.bookId;
+        const bookid = param.bookId;
         let cIds = param.chapterIds;
 
         await BookMaker.MakeTxtFile(bookid, cIds, param.embedTitle, param.enableIndent).then(async (rsl) => {

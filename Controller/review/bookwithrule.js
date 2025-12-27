@@ -69,7 +69,7 @@ module.exports = () => ({
     *         description: 参数错误，参数类型错误
     */
     "get /book": async (ctx) => {
-        let bookid = ctx.query.bookid;
+        const bookid = ctx.query.bookid;
         if (!bookid) {
             new ApiResponse(null, "缺少参数bookid", 60000).toCTX(ctx);
             return;

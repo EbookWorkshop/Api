@@ -26,7 +26,7 @@ module.exports = () => ({
      *         description: 请求成功
      */
     "get ": async (ctx) => {
-        let bookid = ctx.query.bookid * 1;//允许空
+        const bookid = ctx.query.bookid * 1;//允许空
 
         new ApiResponse(await DO.GetBookmark(bookid * 1)).toCTX(ctx);
     },
