@@ -6,8 +6,8 @@ const Rule = require("./../../Entity/WebBook/Rule");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
-const fs = require('fs').promises;
 const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
+const fs = require('fs').promises;
 
 
 module.exports = () => ({
