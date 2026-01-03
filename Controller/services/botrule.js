@@ -7,6 +7,7 @@ const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
 const fs = require('fs').promises;
+const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
 
 
 module.exports = () => ({
@@ -151,8 +152,8 @@ module.exports = () => ({
      *   get:
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
-     *     summary: 拿到已配置规则的站点列表
-     *     description: 拿到已配置规则的站点的列表
+     *     summary: 拿到已配置规则的站点的主机名
+     *     description: 拿到已配置规则的站点的的主机名
      *     consumes:
      *       - application/json
      *     responses:
@@ -162,14 +163,28 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "get /hostlist": async (ctx) => {
-        const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll();
-        let tempHost = new Set();
-        for (let r of rules) {
-            tempHost.add(r.Host)
-        }
-        new ApiResponse(Array.from(tempHost)).toCTX(ctx);
+        new ApiResponse(await ListRegisteredWebsitesHost()).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /services/botrule/registeredwebsites:    
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 列出所有已登记网站详细信息
+     *     description: 列出所有已登记网站详细信息
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /registeredwebsites": async (ctx) => {
+        new ApiResponse(await ListRegisteredWebsitesInfo()).toCTX(ctx);
+    },
+
     /**
      * @swagger
      * /services/botrule/vis:
@@ -321,5 +336,6 @@ module.exports = () => ({
         } catch (error) {
             new ApiResponse(null, "文件处理错误：" + error, 50000).toCTX(ctx);
         }
-    }
+    },
+
 });

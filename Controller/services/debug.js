@@ -84,41 +84,69 @@ module.exports = () => ({
 
         new ApiResponse(true).toCTX(ctx);
     },
-
     /**
      * @swagger
-     * /services/debug/test:
+     * /services/debug/checkSiteAccessibility:
      *   get:
      *     tags:
      *       - Services - 基础 —— 系统服务：调试
-     *     summary: 临时测试入口
-     *     description: 临时测试系统功能
+     *     summary: 检查站点是否可以访问
+     *     description: 检查站点是否可以访问
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
      *     consumes:
      *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
-     *       500:
-     *         description: 请求失败
+     *       600:
+     *         description: 参数错误，参数类型错误
      */
-    "get /test": async (ctx) => {
-        const EPUB = require("epub-gen");
-
-        const options = {
-            title: "示例书籍",
-            author: "作者名",
-            publisher: "出版社",
-            cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg",
-            content: [
-                { title: "第一章", data: "<div>这是第一章内容</div>" },
-                { title: "第二章", data: "<div>这是第二章内容</div>" }
-            ]
-        };
-        
-        new EPUB(options, "output.epub").promise.then(
-            () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
-            err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
-        );
-
+    "get /checkSiteAccessibility": async (ctx) => {
+        let host = ctx.query.host;
+        await isSiteAccessible(host).then((result) => {
+            new ApiResponse(result.result, result.error, 20000, result.status).toCTX(ctx);
+        });
     },
+    // /**
+    //  * @swagger
+    //  * /services/debug/epub:
+    //  *   get:
+    //  *     tags:
+    //  *       - Services - 基础 —— 系统服务：调试
+    //  *     summary: 临时测试入口
+    //  *     description: 临时测试系统功能
+    //  *     consumes:
+    //  *       - application/json
+    //  *     responses:
+    //  *       200:
+    //  *         description: 请求成功
+    //  *       500:
+    //  *         description: 请求失败
+    //  */
+    // "get /epub": async (ctx) => {
+    //     const EPUB = require("epub-gen");
+
+    //     const options = {
+    //         title: "示例书籍",
+    //         author: "作者名",
+    //         publisher: "出版社",
+    //         cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg",
+    //         content: [
+    //             { title: "第一章", data: "<div>这是第一章内容</div>" },
+    //             { title: "第二章", data: "<div>这是第二章内容</div>" }
+    //         ]
+    //     };
+        
+    //     new EPUB(options, "output.epub").promise.then(
+    //         () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
+    //         err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
+    //     );
+    // },
+
 });
