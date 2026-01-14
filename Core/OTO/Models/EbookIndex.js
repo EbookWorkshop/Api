@@ -24,6 +24,7 @@ module.exports = function (sqlConnect) {
             get() {
                 return this.getDataValue("Content")?.length > 0;
             }
-        }
+        },
+        BookId: { type: DataTypes.INTEGER, allowNull: false },
     });
 };

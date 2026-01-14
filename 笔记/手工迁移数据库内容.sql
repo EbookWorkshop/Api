@@ -1,9 +1,10 @@
 -- 测试做坏了的数据库结构，修复不了就迁移数据
 
 INSERT into  Ebooks select * from old.Ebooks;
+INSERT into  Volumes select * from old.Volumes;
 INSERT into  EbookChapters select * from old.EbookChapters;
 INSERT into  WebBooks select * from old.WebBooks;
-INSERT into  WebBookChapters(id,WebTitle,createdAt,updatedAt,IndexId) select id,WebTitle,createdAt,updatedAt,IndexId from old.WebBookChapters;
+INSERT into  WebBookChapters select * from old.WebBookChapters;
 INSERT into  WebBookIndexSourceURLs select * from old.WebBookIndexSourceURLs;
 INSERT into  PDFBooks select * from old.PDFBooks;
 INSERT into  SystemConfigs select * from old.SystemConfigs where [Group] != 'database_version';

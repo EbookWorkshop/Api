@@ -16,7 +16,7 @@ class ApiResponse {
         this.msg = msg || (code === 20000 ? "" : "API未知错误");
         this.code = code;
         this.data = data || null;
-        if (typeof (data) === "boolean") this.data = data;
+        if (typeof (data) === "boolean") this.data = data;//避免为false时会被null复写
     }
 
     /**
@@ -55,11 +55,13 @@ class ApiResponse {
 
     /**
      * 生成一个仅含‘成功’、‘失败’的返回结果
-     * @param {*} result 是否成功
+     * @param {Boolean} result 是否成功
      * @param {*} msg 相关信息
+     * @param {*} ctx 上下文对象
      * @returns 
      */
-    static GetResult(result, msg) {
+    static GetResult(result, msg, ctx) {
+        if (!result && ctx) msg = `操作失败！请求：${ctx.request.method.toUpperCase()} ${ctx.request.url}；错误信息：${msg || ""}`;
         return new ApiResponse(result, msg, result ? 20000 : 50000);
     }
 }

@@ -84,6 +84,74 @@ module.exports = () => ({
     /**
      * @swagger
      * /library/book:
+     *   post:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 添加一本书
+     *     description: 新书入库
+     *     parameters:
+     *     - name: book
+     *       in: body
+     *       required: true
+     *       description: 书配置
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /book": async (ctx) => {
+        let bookInfo = ctx.request.body;
+
+        let rsl = false;
+        if (bookInfo.type === "txt")
+            rsl = await BookMaker.AddATxtBook({
+                ...bookInfo,
+                chapters: bookInfo.chapterList
+            });
+
+        ApiResponse.GetResult(rsl).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 在原有书中批量追加章节
+     *     description: 在原有书中批量追加章节
+     *     parameters:
+     *     - name: book
+     *       in: body
+     *       required: true
+     *       description: 书配置
+     *       schema:
+     *         type: object
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "patch /book": async (ctx) => {
+        let bookInfo = ctx.request.body;
+
+        let rsl = false;
+        rsl = await BookMaker.BatchInsertChapters(bookInfo.bookId, bookInfo.volumeId, bookInfo.chapterList);
+        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false,`${rsl.name} § ${rsl.message}`,ctx).toCTX(ctx);
+        ApiResponse.GetResult(true).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /library/book:
      *   delete:
      *     tags:
      *       - Library —— 图书馆
@@ -214,43 +282,6 @@ module.exports = () => ({
         let bookInfo = await parseJsonFromBodyData(ctx, ["keyword"]);
 
         let rsl = await DO.Search(bookInfo.keyword, bookInfo.option);
-
-        ApiResponse.GetResult(rsl).toCTX(ctx);
-    },
-
-
-    /**
-     * @swagger
-     * /library/book:
-     *   post:
-     *     tags:
-     *       - Library —— 图书馆
-     *     summary: 添加一本书
-     *     description: 新书入库
-     *     parameters:
-     *     - name: book
-     *       in: body
-     *       required: true
-     *       description: 书配置
-     *       schema:
-     *         type: object
-     *     consumes:
-     *       - application/json
-     *     responses:
-     *       200:
-     *         description: 请求成功
-     *       600:
-     *         description: 参数错误，参数类型错误
-     */
-    "post /book": async (ctx) => {
-        let bookInfo = ctx.request.body;
-
-        let rsl = false;
-        if (bookInfo.type === "txt")
-            rsl = await BookMaker.AddATxtBook({
-                ...bookInfo,
-                chapters: bookInfo.chapterList
-            });
 
         ApiResponse.GetResult(rsl).toCTX(ctx);
     },

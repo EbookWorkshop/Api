@@ -16,6 +16,7 @@ module.exports = function (sqlConnect) {
         /**
          * 排序号
          */
-        OrderNum: { type: DataTypes.INTEGER, allowNull: false }
+        OrderNum: { type: DataTypes.INTEGER, allowNull: false },
+        BookId: { type: DataTypes.INTEGER, allowNull: false },
     });
 };

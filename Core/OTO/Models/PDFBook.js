@@ -7,5 +7,6 @@ module.exports = function (sqlConnect) {
         PaddingY: { type: DataTypes.INTEGER, allowNull: false },
         PageWidth: { type: DataTypes.INTEGER, allowNull: false },
         IsShowTitleOnChapter: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        BookId: { type: DataTypes.INTEGER, allowNull: false },
     });
 }

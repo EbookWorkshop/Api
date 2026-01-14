@@ -6,8 +6,9 @@ function isSiteAccessible(hostname) {
         hostname = hostname.replace(/https?:\/\//, ''); // 去掉http://或https://
         // 发送HTTPs请求
         https.get({ hostname, timeout: 5000 }, response => {
-            // 只要状态码在200-301之间，就视为成功
-            if (response.statusCode >= 200 && response.statusCode <= 302) {
+            // 只要状态码在200-500之间，就视为成功
+            // 4xx是用户端错误，但站点本身是可以访问的
+            if (response.statusCode >= 200 && response.statusCode < 500) {
                 resolve({
                     status: response.statusCode,
                     result: true
