@@ -6,26 +6,27 @@ const sharp = require("sharp");     //提供图像格式转换
 const { dataPath } = require("../../config");
 const { version } = require("../../package.json");
 const Volume = require("../../Entity/Ebook/Volume");
+const FindMyChapters = require("../Book/FindMyChapters");
 
 
 class EPUBMaker {
     /**
      * 生成EPUB文件
-     * @param {*} bookId 书籍ID
-     * @param {*} showChapters 要显示的章节ID数组，为空则显示全部
+     * 先判断volumes，不为空则按卷生成书；若空则按showChapters生成指定章节；若showChapters为空则按生成全书
+     * @param {number} bookId 书籍ID
+     * @param {Array<number>?} volumes 要显示的卷ID数组
+     * @param {Array<number>?} showChapters 要显示的章节ID数组
      * @param {*} setting 其它配置
      * @returns {Promise<{path:string}>} 生成的EPUB文件路径
      */
-    static async MakeEPUBFile(bookId, showChapters, setting) {
+    static async MakeEPUBFile(bookId, volumes, showChapters, setting) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
         let { fontFamily, embedTitle = true, enableIndent } = setting;
 
-        if (!showChapters || showChapters.length <= 0) {
-            showChapters = ebook.Index.map(item => item.IndexId);
-        }
-        await ebook.SetShowChapters(showChapters);
+        let chapters = FindMyChapters(ebook, volumes, showChapters);
+        await ebook.SetShowChapters(chapters);
 
         let option = {
             title: ebook.BookName, // *必需，书籍标题。
@@ -110,7 +111,7 @@ class EPUBMaker {
                 });
             }
             for (let c of vM.get(e.VolumeId)) {
-                let p = c.Content;
+                let p = c.Content || "-=章节内容缺失=-";
                 if (enableIndent) {
                     let multiLine = p.split("\n");
                     multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
@@ -136,7 +137,7 @@ class EPUBMaker {
                     }, err => reject(err)
                 )
                 .then(
-                    () => resolve({ path: output }),
+                    () => resolve({ path: output, chapterIds: chapters }),
                     err => reject(err)
                 );
         })

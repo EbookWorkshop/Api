@@ -13,6 +13,7 @@ const { CheckAndMakeDir } = require("../Server")
 const similarity = require('string-similarity'); // 新增相似度计算库
 const SystemConfigService = require("../services/SystemConfig");
 const Models = require("../OTO/Models");
+const FindMyChapters = require("./FindMyChapters");
 
 class BookMaker {
     /**
@@ -69,20 +70,20 @@ class BookMaker {
 
     /**
      * 生成一个Txt的文件
+     * 先判断volumes，不为空则按卷生成书；若空则按showChapters生成指定章节；若showChapters为空则按生成全书
      * @param {number} bookId 书ID 
-     * @param {Array<number>?} showChapters 需要包含的章节ID，不传则为全部
+     * @param {Array<number>?} volumes 需要包含的卷ID
+     * @param {Array<number>?} showChapters 需要包含的章节ID
      * @param {boolean} embedTitle 是否嵌入标题 
      * @param {boolean} enableIndent 是否启用段落缩进
      * @returns 
      */
-    static async MakeTxtFile(bookId, showChapters, embedTitle = true, enableIndent = false) {
+    static async MakeTxtFile(bookId, volumes, showChapters, embedTitle = true, enableIndent = false) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
-        if (!showChapters || showChapters.length <= 0) {
-            showChapters = ebook.Index.map(item => item.IndexId);
-        }
-        await ebook.SetShowChapters(showChapters);
+        const showIndexId = FindMyChapters(ebook, volumes, showChapters);
+        await ebook.SetShowChapters(showIndexId);
 
         await ebook.LoadIntroduction();
 
@@ -90,7 +91,8 @@ class BookMaker {
             const fileInfo = {
                 filename: ebook.BookName + ".txt",
                 path: path.join(dataPath, "Output", ebook.BookName + '.txt'),
-                chapterCount: ebook.showIndexId.length           //含有多少章
+                chapterCount: ebook.showIndexId.length,           //含有多少章
+                chapterIds: showIndexId
             };
 
             CheckAndMakeDir(fileInfo.path);
@@ -128,7 +130,7 @@ class BookMaker {
                 if (!vM.has(e.VolumeId)) continue;
                 if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
                 for (let c of vM.get(e.VolumeId)) {
-                    let content = c.Content;
+                    let content = c.Content || "-=章节内容缺失=-";
                     if (enableIndent) {
                         let multiLine = content.split("\n");
                         multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
@@ -285,7 +287,7 @@ class BookMaker {
      * @param {*} volumeId 插到指定卷中，-1为不设置卷
      * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
      */
-    static async BatchInsertChapters(bookId,volumeId, chapters) {
+    static async BatchInsertChapters(bookId, volumeId, chapters) {
         try {
             const myModels = Models.GetPO();
             const t = await myModels.BeginTrans();
@@ -301,7 +303,7 @@ class BookMaker {
             for (let cp of chapters) {
                 cp.OrderNum += maxOrderNum;
                 cp.BookId = bookId;
-                if(volumeId >= 0) cp.VolumeId = volumeId;
+                if (volumeId >= 0) cp.VolumeId = volumeId;
             }
 
             //插入章节
