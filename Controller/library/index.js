@@ -145,7 +145,7 @@ module.exports = () => ({
 
         let rsl = false;
         rsl = await BookMaker.BatchInsertChapters(bookInfo.bookId, bookInfo.volumeId, bookInfo.chapterList);
-        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false,`${rsl.name} § ${rsl.message}`,ctx).toCTX(ctx);
+        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false,`${rsl.name} § ${rsl.message}`).toCTX(ctx);
         ApiResponse.GetResult(true).toCTX(ctx);
     },
 

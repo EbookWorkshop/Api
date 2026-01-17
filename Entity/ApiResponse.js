@@ -46,9 +46,13 @@ class ApiResponse {
                 this.msg = `接口出现未正确响应的响应！一般这是API的响应不符合约束规范导致的。更多细节留意API后台输出。\nAPI：${ctx.request.url}`;
                 console.log(ctx);
             }
-
             ctx.status = 200;//前端需要全部返回200 才能正确显示提示信息
-            //所以实际的http状态码会*100放到返回结果的code中
+            //所以前端需要通过判断code来确定实际是否执行成功。
+        }
+
+        //请求出错时统一加上请求的API信息返回，用于快速定位出错API
+        if (this.code !== 20000) {
+            this.msg = `操作失败！请求：${ctx.request.method.toUpperCase()} ${ctx.request.url}；错误信息：${this.msg || ""}`;
         }
         ctx.body = this.getJSONString();
     }
@@ -57,11 +61,9 @@ class ApiResponse {
      * 生成一个仅含‘成功’、‘失败’的返回结果
      * @param {Boolean} result 是否成功
      * @param {*} msg 相关信息
-     * @param {*} ctx 上下文对象
      * @returns 
      */
-    static GetResult(result, msg, ctx) {
-        if (!result && ctx) msg = `操作失败！请求：${ctx.request.method.toUpperCase()} ${ctx.request.url}；错误信息：${msg || ""}`;
+    static GetResult(result, msg) {
         return new ApiResponse(result, msg, result ? 20000 : 50000);
     }
 }

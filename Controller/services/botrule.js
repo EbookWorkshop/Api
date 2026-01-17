@@ -332,10 +332,49 @@ module.exports = () => ({
 
             let result = await RuleManager.SaveRules(rules);
 
-            new ApiResponse(rules, "设置成功").toCTX(ctx);
+            new ApiResponse(result, "设置成功").toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, "文件处理错误：" + error, 50000).toCTX(ctx);
         }
     },
 
+    /**
+     * @swagger
+     * /services/botrule/changehostname:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 改变指定站点的host标识
+     *     description: 改变指定站点的host标识——用于迁移站点等
+     *     parameters:
+     *       - in: body
+     *         name: data
+     *         description: 站点host标识变更数据
+     *         schema:
+     *             type: object
+     *             required:
+     *               - host
+     *               - newHost
+     *             properties:
+     *               host:
+     *                 type: string
+     *                 description: 原站点的host标识
+     *               newHost:
+     *                 type: string
+     *                 description: 新的host标识
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /changehostname": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["oldHostname", "newHostname"]);
+        if (param == null) return;
+
+        let { data, message, success } = await RuleManager.ChangeHostname(param.oldHostname, param.newHostname);
+        new ApiResponse(data, message, success).toCTX(ctx);
+    },
 });
