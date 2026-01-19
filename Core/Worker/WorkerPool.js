@@ -28,6 +28,7 @@ class WorkerPoolTaskInfo extends AsyncResource {
             if (this.callback) await this.runInAsyncScope(this.callback, null, result, err);
         } catch (newerr) {
             em.emit("Debug.Log", `线程退出后执行回调出错：${newerr?.message || newerr}`, "WORKERPOOL", newerr);
+            throw newerr;
         } finally {
             this.emitDestroy();  // `TaskInfo`s are used only once.
         }
@@ -139,14 +140,14 @@ class WorkerPool extends EventEmitter {
      */
     AddNewWorker() {
         const worker = new Worker(path.resolve(__dirname, 'WorkerRunner.js'));
-        const handleError = (err) => {
+        const handleError = (err, result) => {
             const runTime = Date.now() - worker.StartTime;
             worker.StartTime = 0;
             worker.WaitingTime = Date.now();
 
             //若有回调的话，将错误发到回调上
             if (worker[kTaskCallback])
-                worker[kTaskCallback].Done(err, null);      //出错时的回调
+                worker[kTaskCallback].Done(err, result);      //出错时的回调
             else
                 this.emit('error', err);
 
@@ -176,14 +177,16 @@ class WorkerPool extends EventEmitter {
             });
         };
 
-        worker.on('message', (result) => {      //执行后主线程监听结果
+        worker.on('message', async (result) => {      //执行后主线程监听结果
             if (result.type === "error") return handleError(result.err);//线程捕获的错误
             const runTime = Date.now() - worker.StartTime;
             worker.StartTime = 0;
             worker.WaitingTime = Date.now();
-
-            let taskParam = worker[kTaskParam];
-            worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
+            try {
+                await worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
+            } catch (callbackError) {
+                return handleError(callbackError, result);//线程已执行成功，执行回调出错
+            }
             worker[kTaskCallback] = null;
             worker[kTaskParam] = null;
 

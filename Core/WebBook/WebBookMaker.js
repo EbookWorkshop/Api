@@ -69,9 +69,9 @@ class WebBookMaker {
             },
             taskType: "puppeteer",
             maxThreadNum: 10
-        }, async (result) => {
-            if (result == null) {
-                new EventManager().emit("WebBook.UpdateIndex.Error");
+        }, async (result, err) => {
+            if (result == null || err != null) {
+                new EventManager().emit("WebBook.UpdateIndex.Error", err, curUrl, result);
                 return;
             }
             //初始化书名

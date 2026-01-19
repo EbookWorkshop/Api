@@ -63,7 +63,12 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-        new ApiResponse(await DO.GetWebBookById(bookId * 1)).toCTX(ctx);
+        const bookInfo = await DO.GetWebBookById(bookId * 1);
+        if (bookInfo == null) {
+            new ApiResponse(null, "未找到此书", 50000).toCTX(ctx);
+            return;
+        }
+        new ApiResponse(bookInfo).toCTX(ctx);
     },
 
     /**

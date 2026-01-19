@@ -9,7 +9,7 @@ module.exports = () => ({
      * /services/debug/message:
      *   post:
      *     tags:
-     *       - Services - 基础 —— 系统服务：调试
+     *       - Services - 基础 —— 系统服务：🐞调试
      *     summary: 向前端广播消息-发送到消息盒子
      *     description: 用于调试前端的消息接收功能
      *     parameters:
@@ -55,7 +55,7 @@ module.exports = () => ({
      * /services/debug/socket:
      *   post:
      *     tags:
-     *       - Services - 基础 —— 系统服务：调试
+     *       - Services - 基础 —— 系统服务：🐞调试
      *     summary: 广播指定的socket消息
      *     description: 用于调试接收socket的模块的响应
      *     parameters:
@@ -89,7 +89,7 @@ module.exports = () => ({
     //  * /services/debug/epub:
     //  *   get:
     //  *     tags:
-    //  *       - Services - 基础 —— 系统服务：调试
+    //  *       - Services - 基础 —— 系统服务：🐞调试
     //  *     summary: 临时测试入口
     //  *     description: 临时测试系统功能
     //  *     consumes:
