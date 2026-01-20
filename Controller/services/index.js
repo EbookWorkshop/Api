@@ -86,7 +86,7 @@ module.exports = () => ({
      *       required: true
      *       description: 消息id
      *       schema:
-     *         type: string
+     *         type: number
      *     consumes:
      *       - application/json
      *     responses:
@@ -97,7 +97,7 @@ module.exports = () => ({
      */
     "get /message": (ctx) => {
         let MemoryCache = require("../../Core/MemoryCache").getInstance();
-        let msgid = ctx.query.msgid;
+        let msgid = ctx.query.msgid * 1;
         let msg = MemoryCache.get(msgid);
         if (msg) {
             new ApiResponse(msg).toCTX(ctx);

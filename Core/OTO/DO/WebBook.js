@@ -115,25 +115,32 @@ class OTO_WebBook {
         const myModels = new Models();
         bookName = bookName?.trim();
         if (!bookName) return;
-        let [book, created] = await myModels.WebBook.findOrCreate({
+        let book = await myModels.WebBook.findOne({
             where: { WebBookName: bookName }
         });
 
-        if (created || book.BookId == null) {//若创建WebBook出错没能创建EBook时，重试创建EBook
-            //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
+        let created = false;
+        if (book == null) {//没找到对应的WebBook，进行创建
             let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
+            const trans = await myModels.BeginTrans();
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },
-                defaults: { FontFamily: FontFamily }
+                defaults: { FontFamily: FontFamily },
+                transaction: trans
             });
 
             if (ecreated) {
-                book.update({ BookId: ebook.id }, { where: { WebBookName: bookName } });
+                book = await myModels.WebBook.create({
+                    WebBookName: bookName,
+                    BookId: ebook.id,
+                }, { transaction: trans });
+                trans.commit();
+                created = true;
             }
         }
 
         const webBook = await DO.ModelToWebBook(book);
-        webBook.isNewCreate = created;//是否是新创建的——临时的变量
+        webBook.isNewCreate = created;
         return webBook;
     }
 

@@ -84,7 +84,7 @@ class SocketIO {
       myIO.emit(`Message.Box.Send`, msg);
       MemoryCache.set(msg.id, {
         type: "ErrorMessage",
-        message: msg, err, data: result
+        message: msg, err, data: Object.fromEntries(result)
       });
     });
   }

@@ -7,6 +7,9 @@ const em = new EventManager();
 
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskParam = Symbol('kTaskParam');
+/**
+ * 线程空闲事件
+ */
 const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
 
 /**
@@ -187,6 +190,8 @@ class WorkerPool extends EventEmitter {
             } catch (callbackError) {
                 return handleError(callbackError, result);//线程已执行成功，执行回调出错
             }
+
+            const taskParam = worker[kTaskParam];
             worker[kTaskCallback] = null;
             worker[kTaskParam] = null;
 
