@@ -76,7 +76,7 @@ function loader(filename, fatherRouter, routes) {
             try {
                 return routes[key](ctx);
             } catch (err) {
-                ctx.body = new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000);
+                new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000).toCTX(ctx);
             }
         });
     })

@@ -2,7 +2,7 @@ const socketIO = require('socket.io');
 const EventManager = require("./EventManager");
 const WorkerPool = require("./Worker/WorkerPool");
 const Message = require("../Entity/Message.js");
-
+const MemoryCache = require("./MemoryCache.js").getInstance();
 
 let myIO = null;
 
@@ -78,10 +78,14 @@ class SocketIO {
 
     this.myEM.on("WebBook.UpdateIndex.Error", (err, url, result) => {
       const title = result === null ? "抓取目录线程执行失败" : "书目录更新回调执行失败";
-
-      myIO.emit(`Message.Box.Send`, new Message(`执行请求：${url}\n错误信息：${err.message || err}`, "notice", {
+      const msg = new Message(`执行请求：${url}\n错误信息：${err.message || err}`, "notice", {
         title: "书目录更新失败", subTitle: title
-      }));
+      });
+      myIO.emit(`Message.Box.Send`, msg);
+      MemoryCache.set(msg.id, {
+        type: "ErrorMessage",
+        message: msg, err, data: result
+      });
     });
   }
 
