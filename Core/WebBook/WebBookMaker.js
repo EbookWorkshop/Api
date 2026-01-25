@@ -100,7 +100,7 @@ class WebBookMaker {
                 let imgPath = cv.text;
                 if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
 
-                const coverImgPath = path.join("/library", this.myWebBook.BookName, "cover", path.basename(imgPath));//图片存储的相对位置
+                const coverImgPath = `/Cover/${this.myWebBook.BookName}_${path.basename(imgPath)}`;//图片存储的相对位置
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTaskAsync({

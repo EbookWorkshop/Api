@@ -25,6 +25,7 @@ class Message {
 
         /**
          * 消息头像图标
+         * {string | "index" | "error" | "info"} index为数字序号，缺省则显示一个显示器
          */
         this.avatar = avatar || "/logo.svg?msg_logo_mark=1";
 

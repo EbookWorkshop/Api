@@ -79,7 +79,7 @@ class SocketIO {
     this.myEM.on("WebBook.UpdateIndex.Error", (err, url, result) => {
       const title = result === null ? "抓取目录线程执行失败" : "书目录更新回调执行失败";
       const msg = new Message(`执行请求：${url}\n错误信息：${err.message || err}`, "notice", {
-        title: "书目录更新失败", subTitle: title
+        title: "书目录更新失败", subTitle: title, avatar: "error"
       });
       myIO.emit(`Message.Box.Send`, msg);
       MemoryCache.set(msg.id, {
