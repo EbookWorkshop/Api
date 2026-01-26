@@ -431,24 +431,40 @@ class BookMaker {
      */
     static async EditEBookInfo(id, metadata) {
         const myModels = Models.GetPO();
+        try {
 
-        if (metadata.Introduction) {
-            await this.EditEbookIntroduction(id, metadata.Introduction);
-            delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
+            if (metadata.Introduction) {
+                await this.EditEbookIntroduction(id, metadata.Introduction);
+                delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
+            }
+
+            if (metadata.converFile) {    //存储封面文件
+                const { AddFile, DeleteFile } = await import("../../Core/services/file.mjs");
+
+                // 先删除旧封面文件
+                const book = await myModels.Ebook.findByPk(id);
+                const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
+                    metadata.converFile.originalFilename :
+                    `${book.BookName}_${metadata.converFile.originalFilename}`;
+
+                //删除旧封面文件
+                if (book.CoverImg && await fs.promises.stat(path.join(dataPath, book.CoverImg)).catch(() => false)) {
+                    await DeleteFile(path.join(dataPath, book.CoverImg));
+                    console.log("已删除旧封面文件：" + path.join(dataPath, book.CoverImg));
+                }
+
+                const coverPath = `/Cover/${newCoverName}`;
+                await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+
+                delete metadata.converFile;
+                metadata.CoverImg = coverPath;
+            }
+
+            let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
+            return rsl;
+        } catch (err) {
+            throw err;
         }
-
-        if (metadata.converFile) {    //存储封面文件
-            const coverPath = `/Cover/${metadata.converFile.originalFilename}`;
-
-            const { AddFile } = await import("../../Core/services/file.mjs");
-            await AddFile(metadata.converFile, path.join(dataPath, coverPath));
-
-            delete metadata.converFile;
-            metadata.CoverImg = coverPath;
-        }
-
-        let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
-        return rsl;
     }
 
     /**

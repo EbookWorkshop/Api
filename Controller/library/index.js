@@ -145,7 +145,7 @@ module.exports = () => ({
 
         let rsl = false;
         rsl = await BookMaker.BatchInsertChapters(bookInfo.bookId, bookInfo.volumeId, bookInfo.chapterList);
-        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false,`${rsl.name} § ${rsl.message}`).toCTX(ctx);
+        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false, `${rsl.name} § ${rsl.message}`).toCTX(ctx);
         ApiResponse.GetResult(true).toCTX(ctx);
     },
 
@@ -252,9 +252,12 @@ module.exports = () => ({
         if (bookInfo.coverFile) { metadata.converFile = bookInfo.coverFile[0]; }
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
 
-        let rsl = BookMaker.EditEBookInfo(bookInfo.id, metadata);
-
-        ApiResponse.GetResult(rsl).toCTX(ctx);
+        try {
+            let rsl = await BookMaker.EditEBookInfo(bookInfo.id, metadata);
+            ApiResponse.GetResult(rsl).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse(err, "修改元数据出错：" + err.message, 50000).toCTX(ctx);
+        }
     },
 
     /**
