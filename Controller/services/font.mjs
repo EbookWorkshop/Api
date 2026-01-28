@@ -4,7 +4,7 @@
  */
 import path from "path";
 import ApiResponse from "../../Entity/ApiResponse.js"
-import { ListFile, AddFile, DeleteFile } from "../../Core/services/file.mjs";
+import { ListFile, AddFile, DeleteFile, RenameFile } from "../../Core/services/file.mjs";
 import config from "../../config.js";
 import { parseJsonFromBodyData } from "./../../Core/Server.js";
 import { GetDefaultFont, SetDefaultFont } from "./../../Core/services/font.js"
@@ -106,6 +106,51 @@ export default {
         })
 
     },
+
+    /**
+     * @swagger
+     * /services/font/rename:
+     *   post:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 重命名字体
+     *     description: 重命名字库里指定的字体文件
+     *     parameters:
+     *       - in: body
+     *         name: fontInfo
+     *         description: 字体重命名信息
+     *         schema:
+     *           type: object
+     *           required:
+     *             - fontFile
+     *             - newName
+     *           properties:
+     *             fontFile:
+     *               type: string
+     *               description: 原字体文件名
+     *             newName:
+     *               type: string
+     *               description: 新的字体文件名
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post rename": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["fontFile", "newName"]);
+        if (!param) return;
+        let { fontFile, newName } = param;
+        let filePath = fontPath;
+        if (!fontFile || !newName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
+        const extname = path.extname(fontFile);//含点
+        await RenameFile(path.join(filePath, fontFile), path.join(filePath, `${newName}${extname}`)).catch((err) => {
+            new ApiResponse("重命名失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
+        }).then((result) => {
+            new ApiResponse(result).toCTX(ctx);
+        });
+    },
+
 
     /**
      * @swagger

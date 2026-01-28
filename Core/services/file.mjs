@@ -110,3 +110,12 @@ export async function FindFile(path, fileName) {
 
     return null;
 }
+
+/** * 重命名指定的文件
+ * @param {*} oldPath 旧文件完整路径
+ * @param {*} newPath 新文件完整路径
+ * @returns {Promise}
+ */
+export async function RenameFile(oldPath, newPath) {
+    return fsPromises.rename(oldPath, newPath);
+}
