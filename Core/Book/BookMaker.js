@@ -521,7 +521,7 @@ class BookMaker {
                 BookId: bookId,
                 Title: title,
                 Introduction: introduction,
-                OrderNum: (maxOrderNum || -1) + 1
+                OrderNum: (maxOrderNum || 0) + 1
             }, { transaction: t });
 
             await t.commit();
