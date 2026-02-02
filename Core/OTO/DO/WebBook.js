@@ -121,7 +121,7 @@ class OTO_WebBook {
 
         let created = false;
         if (book == null) {//没找到对应的WebBook，进行创建
-            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
+            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
             const trans = await myModels.BeginTrans();
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },

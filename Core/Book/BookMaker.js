@@ -34,7 +34,7 @@ class BookMaker {
             CoverImg: conver,
         });
 
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
+        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
 
         for (let c of chapters) {
             ebook.Index.push(new Index({
@@ -64,7 +64,7 @@ class BookMaker {
             Author: author,
             CoverImg: conver || "#212f30",//灰色封面
         });
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
+        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
         return await Do2Po.EBookObjToModel(ebook);
     }
 

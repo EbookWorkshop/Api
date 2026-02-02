@@ -18,9 +18,9 @@ class SystemConfigGroup {
     }
 
     /**
-     * 默认字体
+     * 系统默认字体
      */
-    static get DEFAULT_FONT() {
+    static get SYSTEM_DEFAULT_FONT() {
         return 'system_default_font';
     }
 

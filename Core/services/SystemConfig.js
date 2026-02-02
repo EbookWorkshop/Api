@@ -20,7 +20,7 @@ class SystemConfigService {
             });
             return config ? config.Value : null;
         } catch (error) {
-            console.error("Error fetching config:", error);
+            console.error(`获取系统配置失败：\n功能分组：${Group}\n配置名：${Name}\n`, error);
             throw error;
         }
     }
@@ -55,7 +55,7 @@ class SystemConfigService {
 
             return config;
         } catch (error) {
-            console.error("Error setting config:", error);
+            console.error(`保存系统配置失败：\n功能分组：${Group}\n配置名：${Name}\n`, error);
             throw error;
         }
     }

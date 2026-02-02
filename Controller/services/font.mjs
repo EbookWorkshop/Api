@@ -7,7 +7,7 @@ import ApiResponse from "../../Entity/ApiResponse.js"
 import { ListFile, AddFile, DeleteFile, RenameFile } from "../../Core/services/file.mjs";
 import config from "../../config.js";
 import { parseJsonFromBodyData } from "./../../Core/Server.js";
-import { GetDefaultFont, SetDefaultFont } from "./../../Core/services/font.js"
+import { GetDefaultReadingFont, SetDefaultReadingFont, GetDefaultUIFont, SetDefaultUIFont } from "./../../Core/services/font.js"
 
 const { fontPath } = config;
 
@@ -154,12 +154,67 @@ export default {
 
     /**
      * @swagger
-     * /services/font/setDefault:
-     *   post:
+     * /services/font/reading:
+     *   put:
      *     tags:
      *       - Services - Font —— 系统服务：字体管理
-     *     summary: 设置默认字体
-     *     description: 设置默认字体，当需要使用字体但没提供时，按默认字体提供设置
+     *     summary: 设置默认阅读字体
+     *     description: 设置默认阅读字体，当需要使用字体但没提供时，按默认字体提供设置
+     *     parameters:
+     *       - in: body
+     *         name: fontName
+     *         description: 将要设置为默认的阅读字体
+     *         schema:
+     *           type: object
+     *           required:
+     *             - fontName
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "put /reading": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["fontName"]);
+        if (!param) return;
+
+        try {
+            let result = await SetDefaultReadingFont(param.fontName);
+            new ApiResponse(result).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /services/font/reading:
+     *   get:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 获取默认阅读字体
+     *     description: 获取当前设置的默认阅读字体
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /reading": async (ctx) => {
+        try {
+            let defFont = await GetDefaultReadingFont();
+            new ApiResponse(defFont).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("获取默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /services/font/UI:
+     *   put:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 设置默认UI字体
+     *     description: 设置默认UI字体，当需要使用字体但没提供时，按默认字体提供设置
      *     parameters:
      *       - in: body
      *         name: fontName
@@ -172,38 +227,38 @@ export default {
      *       200:
      *         description: 请求成功
      */
-    "post /setDefault": async (ctx) => {
+    "put /UI": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["fontName"]);
         if (!param) return;
 
         try {
-            let result = await SetDefaultFont(param.fontName);
+            let result = await SetDefaultUIFont(param.fontName);
             new ApiResponse(result).toCTX(ctx);
         } catch (err) {
-            new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
+            new ApiResponse("设置默认UI字体失败", err.message || err, 50000).toCTX(ctx);
         }
     },
 
     /**
      * @swagger
-     * /services/font/defaultFont:
+     * /services/font/UI:
      *   get:
      *     tags:
      *       - Services - Font —— 系统服务：字体管理
-     *     summary: 获取默认字体
-     *     description: 获取当前设置的默认字体
+     *     summary: 获取默认UI字体
+     *     description: 获取当前设置的默认UI字体
      *     responses:
      *       200:
      *         description: 请求成功
      *       500:
      *         description: 请求失败
      */
-    "get /defaultFont": async (ctx) => {
+    "get /UI": async (ctx) => {
         try {
-            let defFont = await GetDefaultFont();
+            let defFont = await GetDefaultUIFont();
             new ApiResponse(defFont).toCTX(ctx);
         } catch (err) {
-            new ApiResponse("获取默认字体失败", err.message || err, 50000).toCTX(ctx);
+            new ApiResponse("获取默认UI字体失败", err.message || err, 50000).toCTX(ctx);
         }
     },
 };

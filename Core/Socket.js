@@ -81,10 +81,12 @@ class SocketIO {
       const msg = new Message(`执行请求：${url}\n错误信息：${err.message || err}`, "notice", {
         title: "书目录更新失败", subTitle: title, avatar: "error"
       });
+      let showErr = err;
+      if (JSON.stringify(err) === "{}") showErr = { message: err.message, stack: err.stack };//数据库抛出的错误序列化后为空，所以要手动添加
       myIO.emit(`Message.Box.Send`, msg);
       MemoryCache.set(msg.id, {
         type: "ErrorMessage",
-        message: msg, err, data: Object.fromEntries(result)
+        message: msg, err: showErr, data: Object.fromEntries(result)
       });
     });
   }

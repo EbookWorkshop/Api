@@ -3,7 +3,7 @@ const DO = require("./../../Core/OTO/DO");
 const EventManager = require("./../EventManager");
 const path = require("path");
 const { dataPath } = require("../../config");
-const { GetDefaultFont } = require("./../services/font")
+const { GetDefaultReadingFont } = require("./../services/font")
 const WorkerPool = require("./../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
 const FindMyChapters = require("./../Book/FindMyChapters");
@@ -39,7 +39,7 @@ class PDFMaker {
             embedTitle,
             enableIndent,
             chapterCount: ebook.showIndexId.length,           //含有多少章
-            defaultFont: await GetDefaultFont(),
+            defaultFont: await GetDefaultReadingFont(),
             coverImageData,
             chapterIds: showIndexId,
         };

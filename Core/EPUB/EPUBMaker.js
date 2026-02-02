@@ -23,6 +23,7 @@ class EPUBMaker {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
+        if (!setting) setting = {};//邮件批量生成文件发送时，所有配置为空。
         let { fontFamily, embedTitle = true, enableIndent } = setting;
 
         let chapters = FindMyChapters(ebook, volumes, showChapters);
@@ -32,7 +33,7 @@ class EPUBMaker {
             title: ebook.BookName, // *必需，书籍标题。
             author: ebook.Author || "佚名", // *必需，作者名字。
             appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
-            lang: "zh",
+            lang: "zh-CN",
             css: "",
             tocTitle: "目  录",//默认 Table Of Contents
             publisher: `EBook Workshop v${version}`, // 可选
@@ -100,6 +101,7 @@ class EPUBMaker {
 
         for (let e of ebook.Volumes) {
             if (!vM.has(e.VolumeId)) continue;
+            //加入卷首页
             if (e.VolumeId) {
                 let data = `<p>${e.Introduction}</p>`;
                 if (!embedTitle) {
@@ -110,13 +112,12 @@ class EPUBMaker {
                     data: data,
                 });
             }
+            //整理章节内容并加入
             for (let c of vM.get(e.VolumeId)) {
                 let p = c.Content || "-=章节内容缺失=-";
-                if (enableIndent) {
-                    let multiLine = p.split("\n");
-                    multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
-                    p = multiLine.join("</p>\n<p>");
-                }
+                let multiLine = p.split("\n");
+                if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //配置了缩进时，去除行首空格的缩进
+                p = multiLine.join("</p>\n<p>");
                 option.content.push({
                     title: c.Title,
                     data: `<p>${p}</p>`,
@@ -124,7 +125,7 @@ class EPUBMaker {
             }
         }
 
-        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;
+        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
 
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
         return new Promise((resolve, reject) => {
