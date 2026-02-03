@@ -9,5 +9,6 @@ module.exports = function (sqlConnect) {
     return sqlConnect.define("WebBookChapter", {
         //网文章节标题-网文合并的唯一标识
         WebTitle: { type: DataTypes.STRING(50), allowNull: false },
+        IndexId: { type: DataTypes.INTEGER, allowNull: false },
     });
 }

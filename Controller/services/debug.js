@@ -9,7 +9,7 @@ module.exports = () => ({
      * /services/debug/message:
      *   post:
      *     tags:
-     *       - Services - 基础 —— 系统服务：调试
+     *       - Services - 基础 —— 系统服务：🐞调试
      *     summary: 向前端广播消息-发送到消息盒子
      *     description: 用于调试前端的消息接收功能
      *     parameters:
@@ -55,7 +55,7 @@ module.exports = () => ({
      * /services/debug/socket:
      *   post:
      *     tags:
-     *       - Services - 基础 —— 系统服务：调试
+     *       - Services - 基础 —— 系统服务：🐞调试
      *     summary: 广播指定的socket消息
      *     description: 用于调试接收socket的模块的响应
      *     parameters:
@@ -84,41 +84,40 @@ module.exports = () => ({
 
         new ApiResponse(true).toCTX(ctx);
     },
+    // /**
+    //  * @swagger
+    //  * /services/debug/epub:
+    //  *   get:
+    //  *     tags:
+    //  *       - Services - 基础 —— 系统服务：🐞调试
+    //  *     summary: 临时测试入口
+    //  *     description: 临时测试系统功能
+    //  *     consumes:
+    //  *       - application/json
+    //  *     responses:
+    //  *       200:
+    //  *         description: 请求成功
+    //  *       500:
+    //  *         description: 请求失败
+    //  */
+    // "get /epub": async (ctx) => {
+    //     const EPUB = require("epub-gen");
 
-    /**
-     * @swagger
-     * /services/debug/test:
-     *   get:
-     *     tags:
-     *       - Services - 基础 —— 系统服务：调试
-     *     summary: 临时测试入口
-     *     description: 临时测试系统功能
-     *     consumes:
-     *       - application/json
-     *     responses:
-     *       200:
-     *         description: 请求成功
-     *       500:
-     *         description: 请求失败
-     */
-    "get /test": async (ctx) => {
-        const EPUB = require("epub-gen");
-
-        const options = {
-            title: "示例书籍",
-            author: "作者名",
-            publisher: "出版社",
-            cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg",
-            content: [
-                { title: "第一章", data: "<div>这是第一章内容</div>" },
-                { title: "第二章", data: "<div>这是第二章内容</div>" }
-            ]
-        };
+    //     const options = {
+    //         title: "示例书籍",
+    //         author: "作者名",
+    //         publisher: "出版社",
+    //         cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg",
+    //         content: [
+    //             { title: "第一章", data: "<div>这是第一章内容</div>" },
+    //             { title: "第二章", data: "<div>这是第二章内容</div>" }
+    //         ]
+    //     };
         
-        new EPUB(options, "output.epub").promise.then(
-            () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
-            err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
-        );
+    //     new EPUB(options, "output.epub").promise.then(
+    //         () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
+    //         err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)
+    //     );
+    // },
 
-    },
 });

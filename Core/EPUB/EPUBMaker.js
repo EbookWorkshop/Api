@@ -5,32 +5,35 @@ const fs = require("fs/promises");
 const sharp = require("sharp");     //提供图像格式转换
 const { dataPath } = require("../../config");
 const { version } = require("../../package.json");
+const Volume = require("../../Entity/Ebook/Volume");
+const FindMyChapters = require("../Book/FindMyChapters");
 
 
 class EPUBMaker {
     /**
      * 生成EPUB文件
-     * @param {*} bookId 书籍ID
-     * @param {*} showChapters 要显示的章节ID数组，为空则显示全部
+     * 先判断volumes，不为空则按卷生成书；若空则按showChapters生成指定章节；若showChapters为空则按生成全书
+     * @param {number} bookId 书籍ID
+     * @param {Array<number>?} volumes 要显示的卷ID数组
+     * @param {Array<number>?} showChapters 要显示的章节ID数组
      * @param {*} setting 其它配置
      * @returns {Promise<{path:string}>} 生成的EPUB文件路径
      */
-    static async MakeEPUBFile(bookId, showChapters, setting) {
+    static async MakeEPUBFile(bookId, volumes, showChapters, setting) {
         let ebook = await Do2Po.GetEBookById(bookId);
         if (ebook == null) return null;
 
+        if (!setting) setting = {};//邮件批量生成文件发送时，所有配置为空。
         let { fontFamily, embedTitle = true, enableIndent } = setting;
 
-        if (!showChapters || showChapters.length <= 0) {
-            showChapters = ebook.Index.map(item => item.IndexId);
-        }
-        await ebook.SetShowChapters(showChapters);
+        let chapters = FindMyChapters(ebook, volumes, showChapters);
+        await ebook.SetShowChapters(chapters);
 
         let option = {
             title: ebook.BookName, // *必需，书籍标题。
             author: ebook.Author || "佚名", // *必需，作者名字。
-            appendChapterTitles: embedTitle,
-            lang: "zh",
+            appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
+            lang: "zh-CN",
             css: "",
             tocTitle: "目  录",//默认 Table Of Contents
             publisher: `EBook Workshop v${version}`, // 可选
@@ -75,22 +78,54 @@ class EPUBMaker {
                 data: "<p>" + ebook.Introduction.split("\n").join("</p>\n<p>") + "</p>",
                 // TODO: iPhone 图书应用直接不会显示
                 excludeFromToc: true,//不加入目录
-                beforeToc: true,//先于目录之前显示: 
+                beforeToc: true,//先于目录之前显示: --不起作用
             });
         }
 
+        let vM = new Map();
+        // 按卷分类章节
         for (let i of ebook.showIndexId) {
             let c = ebook.GetChapter(i);
-            let content = c.Content ?? "--当前章节内容缺失--";
-            let multiLine = content.split("\n");
-            if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
-            let p = multiLine.join("</p>\n<p>");
-            option.content.push({
-                title: c.Title,
-                data: `<p>${p}</p>`,
-            });
+            if (!vM.has(c.VolumeId)) {
+                vM.set(c.VolumeId, new Array());
+            }
+            vM.get(c.VolumeId).push(c);
         }
-        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;
+        if (vM.has(null)) {
+            ebook.Volumes.push(new Volume({
+                id: null,
+                Title: "未分卷章节",
+                Introduction: ""
+            }));
+        }
+
+        for (let e of ebook.Volumes) {
+            if (!vM.has(e.VolumeId)) continue;
+            //加入卷首页
+            if (e.VolumeId) {
+                let data = `<p>${e.Introduction}</p>`;
+                if (!embedTitle) {
+                    data = `<h1 style="text-align: center;">${e.Title}</h1>\n${data}`;
+                }
+                option.content.push({
+                    title: e.Title,
+                    data: data,
+                });
+            }
+            //整理章节内容并加入
+            for (let c of vM.get(e.VolumeId)) {
+                let p = c.Content || "-=章节内容缺失=-";
+                let multiLine = p.split("\n");
+                if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //配置了缩进时，去除行首空格的缩进
+                p = multiLine.join("</p>\n<p>");
+                option.content.push({
+                    title: c.Title,
+                    data: `<p>${p}</p>`,
+                });
+            }
+        }
+
+        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
 
         let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
         return new Promise((resolve, reject) => {
@@ -103,7 +138,7 @@ class EPUBMaker {
                     }, err => reject(err)
                 )
                 .then(
-                    () => resolve({ path: output }),
+                    () => resolve({ path: output, chapterIds: chapters }),
                     err => reject(err)
                 );
         })

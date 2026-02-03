@@ -2,7 +2,7 @@
  * 章节
  */
 class Chapter {
-    constructor({ Title, Content, IndexId, id, OrderNum }) {
+    constructor({ Title, Content, IndexId, id, OrderNum, VolumeId = null }) {
         this.Title = Title?.trim();
         /**
          * 当前章节文章内容
@@ -12,6 +12,11 @@ class Chapter {
         this.IndexId = IndexId || id;
 
         this.OrderNum = OrderNum
+        
+        /**
+         * 所属卷ID，为null表示直接属于书籍
+         */
+        this.VolumeId = VolumeId || null;
     }
 
     /**
@@ -21,7 +26,6 @@ class Chapter {
     static get IntroductionName() {
         return `Sys_Introduction_Chapter`;
     }
-
 }
 
 module.exports = Chapter;

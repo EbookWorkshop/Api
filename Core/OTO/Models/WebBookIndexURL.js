@@ -7,6 +7,7 @@ const { DataTypes } = require("sequelize");
  */
 module.exports = function (sqlConnect) {
     return sqlConnect.define("WebBookIndexURL", {   //每一章的地址
-        Path: { type: DataTypes.STRING(500), allowNull: false }
+        Path: { type: DataTypes.STRING(500), allowNull: false },
+        WebBookIndexId: { type: DataTypes.INTEGER, allowNull: false },
     });
 }

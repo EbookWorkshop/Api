@@ -1,4 +1,4 @@
-const Router = require('koa-router')
+const Router = require('@koa/router');
 // const { loadavg } = require('os');
 const path = require('path')
 const fs = require('fs');
@@ -56,12 +56,14 @@ async function load(dir, fatherRouter, cb_loader) {
  * @param {function|object} routes require之后的模块内容
  */
 function loader(filename, fatherRouter, routes) {
-    const prefix = path.posix.join('/', fatherRouter, filename);      //控制器文件名为一级路由
-
     if (typeof (routes) === "function") //模块文件导出为function形式的处理
         routes = routes();
 
+    const prefix = routes.prefix ? path.posix.join(routes.prefix, filename) : path.posix.join('/', fatherRouter, filename);      //控制器文件名为一级路由
+
     Object.keys(routes).forEach(key => {
+        if (key === "prefix") return; //跳过prefix字段
+
         const [method, rPath] = key.split(' ');
         // 注册路由
         let mType = `[${method.toUpperCase()}]`.padStart(10, " ");
@@ -74,7 +76,7 @@ function loader(filename, fatherRouter, routes) {
             try {
                 return routes[key](ctx);
             } catch (err) {
-                ctx.body = new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000);
+                new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000).toCTX(ctx);
             }
         });
     })

@@ -1,20 +1,21 @@
-
-
-
 /**
  * 电子书
  */
 class Ebook {
     constructor({ id, BookId, BookName, Author, FontFamily, FontSize, CoverImg, Introduction }) {
         /**
-         * 章节 Map<{string,string}>   
+         * @prop {Map<{string,string}>} 章节，标题-文章内容 对照表
          *  (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
          */
         this.Chapters = new Map();
         /**
-         * @prop {Array<number>} 目录
+         * @prop {Array<Index>} 目录 不含章节正文
          */
         this.Index = [];
+        /**
+         * @prop {Array<Volume>} 卷集合
+         */
+        this.Volumes = [];
         /**
          * 书Id
          */
@@ -47,6 +48,5 @@ class Ebook {
         this.showIndexId = new Set();
     }
 }
-
 
 module.exports = Ebook;

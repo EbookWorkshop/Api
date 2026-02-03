@@ -6,6 +6,7 @@ const Rule = require("./../../Entity/WebBook/Rule");
 const { parseJsonFromBodyData } = require("./../../Core/Server");
 const ApiResponse = require("./../../Entity/ApiResponse");
 const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
+const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
 const fs = require('fs').promises;
 
 
@@ -151,8 +152,8 @@ module.exports = () => ({
      *   get:
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
-     *     summary: 拿到已配置规则的站点列表
-     *     description: 拿到已配置规则的站点的列表
+     *     summary: 拿到已配置规则的站点的主机名
+     *     description: 拿到已配置规则的站点的的主机名
      *     consumes:
      *       - application/json
      *     responses:
@@ -162,14 +163,28 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "get /hostlist": async (ctx) => {
-        const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll();
-        let tempHost = new Set();
-        for (let r of rules) {
-            tempHost.add(r.Host)
-        }
-        new ApiResponse(Array.from(tempHost)).toCTX(ctx);
+        new ApiResponse(await ListRegisteredWebsitesHost()).toCTX(ctx);
     },
+    /**
+     * @swagger
+     * /services/botrule/registeredwebsites:    
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 列出所有已登记网站详细信息
+     *     description: 列出所有已登记网站详细信息
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /registeredwebsites": async (ctx) => {
+        new ApiResponse(await ListRegisteredWebsitesInfo()).toCTX(ctx);
+    },
+
     /**
      * @swagger
      * /services/botrule/vis:
@@ -317,9 +332,49 @@ module.exports = () => ({
 
             let result = await RuleManager.SaveRules(rules);
 
-            new ApiResponse(rules, "设置成功").toCTX(ctx);
+            new ApiResponse(result, "设置成功").toCTX(ctx);
         } catch (error) {
             new ApiResponse(null, "文件处理错误：" + error, 50000).toCTX(ctx);
         }
-    }
+    },
+
+    /**
+     * @swagger
+     * /services/botrule/changehostname:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 改变指定站点的host标识
+     *     description: 改变指定站点的host标识——用于迁移站点等
+     *     parameters:
+     *       - in: body
+     *         name: data
+     *         description: 站点host标识变更数据
+     *         schema:
+     *             type: object
+     *             required:
+     *               - host
+     *               - newHost
+     *             properties:
+     *               host:
+     *                 type: string
+     *                 description: 原站点的host标识
+     *               newHost:
+     *                 type: string
+     *                 description: 新的host标识
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /changehostname": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["oldHostname", "newHostname"]);
+        if (param == null) return;
+
+        let { data, message, success } = await RuleManager.ChangeHostname(param.oldHostname, param.newHostname);
+        new ApiResponse(data, message, success).toCTX(ctx);
+    },
 });

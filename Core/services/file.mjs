@@ -9,7 +9,7 @@ import { Stream } from "stream";
 /**
  * 列出指定路径下的文件
  * @param {string} sourcePath 需要列出文件的路径 
- * @param {string[] | null} filetype 过滤的文件规则类型:小写字母的后缀名数组
+ * @param {{ filetype: string[]|null; detail: boolean; }} [options={ filetype: null, detail: false }] filetype: 需要列出的文件后缀数组（不含点号），null表示列出所有文件；detail：是否返回详细信息（包含文件大小）
  */
 export async function ListFile(sourcePath, options = { filetype: null, detail: false }) {
     try {
@@ -21,7 +21,7 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
             if (!dirent.isFile()) continue;
             let item = {
                 file: dirent.name,
-                path: dirent.path,
+                path: dirent.parentPath,
             }
             if (!options?.filetype) {
                 result.push(item);
@@ -109,4 +109,13 @@ export async function FindFile(path, fileName) {
     }
 
     return null;
+}
+
+/** * 重命名指定的文件
+ * @param {*} oldPath 旧文件完整路径
+ * @param {*} newPath 新文件完整路径
+ * @returns {Promise}
+ */
+export async function RenameFile(oldPath, newPath) {
+    return fsPromises.rename(oldPath, newPath);
 }

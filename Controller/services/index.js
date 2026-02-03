@@ -71,4 +71,38 @@ module.exports = () => ({
             new ApiResponse(result.result, result.error, 20000, result.status).toCTX(ctx);
         });
     },
+
+    /**
+     * @swagger
+     * /services/message:
+     *   get:
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *     summary: 获取消息
+     *     description: 获取消息
+     *     parameters:
+     *     - name: msgid
+     *       in: query
+     *       required: true
+     *       description: 消息id
+     *       schema:
+     *         type: number
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /message": (ctx) => {
+        let MemoryCache = require("../../Core/MemoryCache").getInstance();
+        let msgid = ctx.query.msgid * 1;
+        let msg = MemoryCache.get(msgid);
+        if (msg) {
+            new ApiResponse(msg).toCTX(ctx);
+        } else {
+            new ApiResponse(null, "消息不存在或已过期", 60000).toCTX(ctx);
+        }
+    },
 });

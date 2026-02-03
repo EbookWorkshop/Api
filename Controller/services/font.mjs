@@ -4,10 +4,10 @@
  */
 import path from "path";
 import ApiResponse from "../../Entity/ApiResponse.js"
-import { ListFile, AddFile, DeleteFile } from "../../Core/services/file.mjs";
+import { ListFile, AddFile, DeleteFile, RenameFile } from "../../Core/services/file.mjs";
 import config from "../../config.js";
 import { parseJsonFromBodyData } from "./../../Core/Server.js";
-import { GetDefaultFont, SetDefaultFont } from "./../../Core/services/font.js"
+import { GetDefaultReadingFont, SetDefaultReadingFont, GetDefaultUIFont, SetDefaultUIFont } from "./../../Core/services/font.js"
 
 const { fontPath } = config;
 
@@ -109,12 +109,112 @@ export default {
 
     /**
      * @swagger
-     * /services/font/setDefault:
+     * /services/font/rename:
      *   post:
      *     tags:
      *       - Services - Font —— 系统服务：字体管理
-     *     summary: 设置默认字体
-     *     description: 设置默认字体，当需要使用字体但没提供时，按默认字体提供设置
+     *     summary: 重命名字体
+     *     description: 重命名字库里指定的字体文件
+     *     parameters:
+     *       - in: body
+     *         name: fontInfo
+     *         description: 字体重命名信息
+     *         schema:
+     *           type: object
+     *           required:
+     *             - fontFile
+     *             - newName
+     *           properties:
+     *             fontFile:
+     *               type: string
+     *               description: 原字体文件名
+     *             newName:
+     *               type: string
+     *               description: 新的字体文件名
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post rename": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["fontFile", "newName"]);
+        if (!param) return;
+        let { fontFile, newName } = param;
+        let filePath = fontPath;
+        if (!fontFile || !newName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
+        const extname = path.extname(fontFile);//含点
+        await RenameFile(path.join(filePath, fontFile), path.join(filePath, `${newName}${extname}`)).catch((err) => {
+            new ApiResponse("重命名失败", err.message, err.code === "ENOENT" ? 60000 : 50000).toCTX(ctx);
+        }).then((result) => {
+            new ApiResponse(result).toCTX(ctx);
+        });
+    },
+
+
+    /**
+     * @swagger
+     * /services/font/reading:
+     *   put:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 设置默认阅读字体
+     *     description: 设置默认阅读字体，当需要使用字体但没提供时，按默认字体提供设置
+     *     parameters:
+     *       - in: body
+     *         name: fontName
+     *         description: 将要设置为默认的阅读字体
+     *         schema:
+     *           type: object
+     *           required:
+     *             - fontName
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "put /reading": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["fontName"]);
+        if (!param) return;
+
+        try {
+            let result = await SetDefaultReadingFont(param.fontName);
+            new ApiResponse(result).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /services/font/reading:
+     *   get:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 获取默认阅读字体
+     *     description: 获取当前设置的默认阅读字体
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /reading": async (ctx) => {
+        try {
+            let defFont = await GetDefaultReadingFont();
+            new ApiResponse(defFont).toCTX(ctx);
+        } catch (err) {
+            new ApiResponse("获取默认字体失败", err.message || err, 50000).toCTX(ctx);
+        }
+    },
+
+    /**
+     * @swagger
+     * /services/font/UI:
+     *   put:
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *     summary: 设置默认UI字体
+     *     description: 设置默认UI字体，当需要使用字体但没提供时，按默认字体提供设置
      *     parameters:
      *       - in: body
      *         name: fontName
@@ -127,38 +227,38 @@ export default {
      *       200:
      *         description: 请求成功
      */
-    "post /setDefault": async (ctx) => {
+    "put /UI": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["fontName"]);
         if (!param) return;
 
         try {
-            let result = await SetDefaultFont(param.fontName);
+            let result = await SetDefaultUIFont(param.fontName);
             new ApiResponse(result).toCTX(ctx);
         } catch (err) {
-            new ApiResponse("设置默认字体失败", err.message || err, 50000).toCTX(ctx);
+            new ApiResponse("设置默认UI字体失败", err.message || err, 50000).toCTX(ctx);
         }
     },
 
     /**
      * @swagger
-     * /services/font/defaultFont:
+     * /services/font/UI:
      *   get:
      *     tags:
      *       - Services - Font —— 系统服务：字体管理
-     *     summary: 获取默认字体
-     *     description: 获取当前设置的默认字体
+     *     summary: 获取默认UI字体
+     *     description: 获取当前设置的默认UI字体
      *     responses:
      *       200:
      *         description: 请求成功
      *       500:
      *         description: 请求失败
      */
-    "get /defaultFont": async (ctx) => {
+    "get /UI": async (ctx) => {
         try {
-            let defFont = await GetDefaultFont();
+            let defFont = await GetDefaultUIFont();
             new ApiResponse(defFont).toCTX(ctx);
         } catch (err) {
-            new ApiResponse("获取默认字体失败", err.message || err, 50000).toCTX(ctx);
+            new ApiResponse("获取默认UI字体失败", err.message || err, 50000).toCTX(ctx);
         }
     },
 };

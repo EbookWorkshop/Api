@@ -3,6 +3,7 @@ const path = require("path");
 const EventManager = require("../../EventManager");
 const Models = require("../Models");
 const Index = require("./../../../Entity/Ebook/Index");
+const Volume = require("./../../../Entity/Ebook/Volume");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/ReviewString");
 const { dataPath } = require("../../../config");
@@ -23,23 +24,29 @@ class DO {
      * # Po to Do
      * @param {*} ebookModel PO
      * @param {Ebook|WebBook|PDFBook} BOOKTYPE 需要创建的类，如`Ebook`、`WebBook`、`PDFBook`
-     * @returns {BOOKTYPE} 
+     * @returns {BOOKTYPE}
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
-        // const myModels = new Models();
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
-
+    
         /**
          * [LoadIndex]重新加载所有章节
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({ where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } }, order: ["OrderNum"] });
+            let eIndexs = await myModels.EbookIndex.findAll({
+                where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } }, 
+                order: ["OrderNum"]
+            });
             for (let i of eIndexs) {
-                let index = new Index({ ...i.dataValues, HasContent: i.HasContent })
+                let index = new Index({ 
+                    ...i.dataValues, 
+                    HasContent: i.HasContent,
+                    VolumeId: i.VolumeId
+                });
                 ebook.Index.push(index);
             }
-        }
+        };
 
         /**
          * 从数据库加载指定章节到当前对象
@@ -133,7 +140,6 @@ class DO {
             let lastIndex = await myModels.EbookIndex.findOne({ where: { BookId: ebook.BookId }, order: [["OrderNum", "DESC"]] });
             return lastIndex?.OrderNum || 1;
         }
-        await ebook.ReloadIndex();
 
         /**
          * 加载书籍简介
@@ -151,6 +157,21 @@ class DO {
             }
         }
 
+        /**
+         * 加载所有卷
+         */
+        ebook.ReloadVolumes = async () => {
+            const myModels = new Models();
+            let volumes = await myModels.Volume.findAll({
+                where: { BookId: ebook.BookId }, 
+                order: ["OrderNum"]
+            });
+            for (let v of volumes) {
+                ebook.Volumes.push(new Volume({ ...v.dataValues }));
+            }
+        };
+        await ebook.ReloadIndex();
+        await ebook.ReloadVolumes();
         return ebook;
     }
 

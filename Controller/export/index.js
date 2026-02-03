@@ -44,6 +44,11 @@ module.exports = () => ({
      *               items:
      *                 type: integer
      *                 format: int32
+     *             volumeIds:
+     *               type: array
+     *               items:
+     *                 type: integer
+     *                 format: int32
      *     consumes:
      *       - application/json
      *     responses:
@@ -54,10 +59,9 @@ module.exports = () => ({
      */
     "post /pdf": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
-        if (!param) return;
-
-        const { sendByEmail, ...setting } = param;
-        await PDFMaker.MakePdfFile(param.bookId, param.chapterIds, setting).then(async (rsl) => {
+        if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
+        const { sendByEmail, bookId, volumeIds, chapterIds, ...setting } = param;
+        await PDFMaker.MakePdfFile(bookId, volumeIds, chapterIds, setting).then(async (rsl) => {
             if (sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
@@ -66,9 +70,9 @@ module.exports = () => ({
                 });
             }
             const relativePath = path.relative(dataPath, rsl.path);
-            new ApiResponse({ book: rsl, chapterIds: param.chapterIds, download: relativePath }).toCTX(ctx);
+            new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(err, `生成PDF${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+            new ApiResponse(err, `生成PDF${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
     },
 
@@ -105,6 +109,11 @@ module.exports = () => ({
      *               items:
      *                 type: integer
      *                 format: int32
+     *             volumeIds:
+     *               type: array
+     *               items:
+     *                 type: integer
+     *                 format: int32
      *     consumes:
      *       - application/json
      *     responses:
@@ -115,12 +124,11 @@ module.exports = () => ({
      */
     "post /txt": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
+        const { sendByEmail, bookId, volumeIds, chapterIds, embedTitle, enableIndent } = param;
+        if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
 
-        let bookid = param.bookId;
-        let cIds = param.chapterIds;
-
-        await BookMaker.MakeTxtFile(bookid, cIds, param.embedTitle).then(async (rsl) => {
-            if (param.sendByEmail) {
+        await BookMaker.MakeTxtFile(bookId, volumeIds, chapterIds, embedTitle, enableIndent).then(async (rsl) => {
+            if (sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
                     content: rsl.filename,
@@ -128,9 +136,9 @@ module.exports = () => ({
                 });
             }
             const relativePath = path.relative(dataPath, rsl.path);
-            new ApiResponse({ book: rsl, chapterIds: cIds, download: relativePath }).toCTX(ctx);
+            new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(err, `生成Txt${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+            new ApiResponse(err, `生成Txt${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
 
     },
@@ -168,6 +176,11 @@ module.exports = () => ({
      *               items:
      *                 type: integer
      *                 format: int32
+     *             volumeIds:
+     *               type: array
+     *               items:
+     *                 type: integer
+     *                 format: int32
      *     consumes:
      *       - application/json
      *     responses:
@@ -178,10 +191,10 @@ module.exports = () => ({
      */
     "post /epub": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
-        if (!param) return;
-        const { sendByEmail, ...setting } = param;
-
-        await EPUBMaker.MakeEPUBFile(param.bookId, param.chapterIds, setting).then(async (rsl) => {
+        if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
+        
+        const { sendByEmail, bookId, volumeIds, chapterIds, ...setting } = param;
+        await EPUBMaker.MakeEPUBFile(bookId, volumeIds, chapterIds, setting).then(async (rsl) => {
             if (sendByEmail) {
                 await SendAMail({
                     title: rsl.filename,
@@ -190,9 +203,9 @@ module.exports = () => ({
                 });
             }
             const relativePath = path.relative(dataPath, rsl.path);
-            new ApiResponse({ book: rsl, chapterIds: param.chapterIds, download: relativePath }).toCTX(ctx);
+            new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(err, `生成EPUB${param.sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+            new ApiResponse(err, `生成EPUB${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
     },
 });

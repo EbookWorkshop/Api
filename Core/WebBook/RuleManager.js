@@ -186,6 +186,66 @@ class RuleManager {
         }
     }
 
+
+    static async ChangeHostname(oldHost, newHost) {
+        const myModels = Models.GetPO();
+        const trans = await myModels.BeginTrans();
+        let ret = {
+            success: false,
+            message: "操作失败",
+            data: null,
+        }
+        try {
+            //找到关联的书籍目录
+            let webBookInfo = await myModels.WebBookIndexSourceURL.findAll({
+                where: { Path: { [Models.Op.like]: `%${oldHost}%` } },
+                include: [{
+                    model: myModels.WebBook,
+                    attributes: ['id', 'BookId'],
+                    include: [{ model: myModels.Ebook, attributes: ['id', 'BookName'] }]
+                }],
+                attributes: ["id", "Path"],
+                raw: true       //自动将嵌套的关联字段用点号连接起来，形成完整的字段路径
+                //即返回的Ebook表id字段自动变成列‘WebBook.Ebook.id’
+            });
+            for (let w of webBookInfo) {
+                let { id, Path } = w;
+                let newPath = Path.replace(oldHost, newHost);
+                await myModels.WebBookIndexSourceURL.update({ Path: newPath }, {
+                    where: { id },
+                    transaction: trans
+                });
+            }
+
+            //更新每章的网站路径
+            let webBookChapter = await myModels.WebBookIndexURL.findAll({
+                where: { Path: { [Models.Op.like]: `%${oldHost}%` } },
+                attributes: ["id", "Path"],
+                raw: true
+            });
+            for (let w of webBookChapter) {
+                let { id, Path } = w;
+                let newPath = Path.replace(oldHost, newHost);
+                await myModels.WebBookIndexURL.update({ Path: newPath }, {
+                    where: { id },
+                    transaction: trans
+                });
+            }
+
+            trans.commit();
+            ret.data = webBookInfo.map(w => ({
+                BookId: w['WebBook.Ebook.id'],
+                BookName: w['WebBook.Ebook.BookName'],
+            }));
+            ret.success = true;
+            ret.message = "操作成功";
+        } catch (e) {
+            await trans.rollback();
+            ret.message = "操作失败，" + e.message;
+        } finally {
+            return ret;
+        }
+    }
 }
 
 

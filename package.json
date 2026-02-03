@@ -1,6 +1,6 @@
 {
   "name": "ebookworkshop",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "电子书工具",
   "main": "app.js",
   "scripts": {
@@ -16,11 +16,11 @@
   "author": "c0618c",
   "license": "MIT",
   "dependencies": {
+    "@koa/router": "^15.3.0",
     "async_hooks": "^1.0.0",
     "epub-gen": "^0.1.0",
     "koa": "^3.0.0",
     "koa-body": "^6.0.1",
-    "koa-router": "^13.0.0",
     "koa-send": "^5.0.1",
     "koa-static": "^5.0.0",
     "koa2-swagger-ui": "^5.11.0",

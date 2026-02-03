@@ -29,7 +29,7 @@ class OTO_Ebook {
         if (nottag?.length > 0) {
             param.include = null;
 
-            let bookid = await myModels.EbookTag.findAll({
+            const bookid = await myModels.EbookTag.findAll({
                 where: { TagId: { [Models.Op.in]: nottag } },
                 attributes: ["BookId"]
             });

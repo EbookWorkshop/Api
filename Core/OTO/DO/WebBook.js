@@ -1,6 +1,7 @@
 const DO = require("./index");
 const Models = require("./../Models");
 const Ebook = require("./../../../Entity/Ebook/Ebook");
+const Volume = require("./../../../Entity/Ebook/Volume");
 const WebBook = require("./../../../Entity/WebBook/WebBook");
 const WebIndex = require("./../../../Entity/WebBook/WebIndex");
 const WebChapter = require("./../../../Entity/WebBook/WebChapter");
@@ -11,7 +12,6 @@ const { Run: Reviewer } = require("./../../Utils/ReviewString");
 
 
 class OTO_WebBook {
-
 
     /**
      * 取得网文列表
@@ -115,25 +115,32 @@ class OTO_WebBook {
         const myModels = new Models();
         bookName = bookName?.trim();
         if (!bookName) return;
-        let [book, created] = await myModels.WebBook.findOrCreate({
+        let book = await myModels.WebBook.findOne({
             where: { WebBookName: bookName }
         });
 
-        if (created || book.BookId == null) {//若创建WebBook出错没能创建EBook时，重试创建EBook
-            //新创建的话也创建EBook档案，并用EBook 的ID更新WebBook
-            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.DEFAULT_FONT, "defaultfont") || "未设置默认字体";
+        let created = false;
+        if (book == null) {//没找到对应的WebBook，进行创建
+            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
+            const trans = await myModels.BeginTrans();
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },
-                defaults: { FontFamily: FontFamily }
+                defaults: { FontFamily: FontFamily },
+                transaction: trans
             });
 
             if (ecreated) {
-                book.update({ BookId: ebook.id }, { where: { WebBookName: bookName } });
+                book = await myModels.WebBook.create({
+                    WebBookName: bookName,
+                    BookId: ebook.id,
+                }, { transaction: trans });
+                trans.commit();
+                created = true;
             }
         }
 
         const webBook = await DO.ModelToWebBook(book);
-        webBook.isNewCreate = created;//是否是新创建的——临时的变量
+        webBook.isNewCreate = created;
         return webBook;
     }
 
@@ -205,7 +212,7 @@ class OTO_WebBook {
                 let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
                 [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
                 webBook.Index.push(tIdx);
-                
+
                 if (eI == null) continue; //没有对应的章节时跳过
                 for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
             }
@@ -318,8 +325,9 @@ class OTO_WebBook {
             webBook.Chapters.set(chapter.WebTitle, chapter);
         }
 
-        webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
 
+        webBook.Volumes = ebookObj.Volumes.concat();
+        webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
         await webBook.ReloadIndex();
         return webBook;
     }

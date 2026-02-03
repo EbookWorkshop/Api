@@ -1,5 +1,6 @@
 /**
  * 系统配置分组
+ * 注意：有逻辑关联的配置项应归类到同一个分组中，然后再用具体配置名称区分。
  */
 class SystemConfigGroup {
     /**
@@ -17,9 +18,9 @@ class SystemConfigGroup {
     }
 
     /**
-     * 默认字体
+     * 系统默认字体
      */
-    static get DEFAULT_FONT() {
+    static get SYSTEM_DEFAULT_FONT() {
         return 'system_default_font';
     }
 
@@ -35,6 +36,13 @@ class SystemConfigGroup {
      */
     static get WEBSITE_TIMEOUT() {
         return 'website_timeout';
+    }
+
+    /**
+     * 阅读习惯
+     */
+    static get READING_HABIT() {
+        return 'reading_habit';
     }
 }
 
