@@ -438,26 +438,24 @@ class BookMaker {
                 delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
             }
 
-            if (metadata.converFile) {    //存储封面文件
+            if (metadata.converFile || metadata.CoverImg) {    //更新了封面——图片格式或‘线装本’配色格式
                 const { AddFile, DeleteFile } = await import("../../Core/services/file.mjs");
-
-                // 先删除旧封面文件
-                const book = await myModels.Ebook.findByPk(id);
-                const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
-                    metadata.converFile.originalFilename :
-                    `${book.BookName}_${metadata.converFile.originalFilename}`;
-
                 //删除旧封面文件
+                const book = await myModels.Ebook.findByPk(id);
                 if (book.CoverImg && await fs.promises.stat(path.join(dataPath, book.CoverImg)).catch(() => false)) {
                     await DeleteFile(path.join(dataPath, book.CoverImg));
                     console.log("已删除旧封面文件：" + path.join(dataPath, book.CoverImg));
                 }
 
-                const coverPath = `/Cover/${newCoverName}`;
-                await AddFile(metadata.converFile, path.join(dataPath, coverPath));
-
-                delete metadata.converFile;
-                metadata.CoverImg = coverPath;
+                if (metadata.converFile) {//图片格式封面
+                    const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
+                        metadata.converFile.originalFilename :
+                        `${book.BookName}_${metadata.converFile.originalFilename}`;
+                    const coverPath = `/Cover/${newCoverName}`;
+                    await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+                    delete metadata.converFile;
+                    metadata.CoverImg = coverPath;
+                }
             }
 
             let rsl = await myModels.Ebook.update(metadata, { where: { id: id } });
