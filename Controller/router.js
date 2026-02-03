@@ -1,4 +1,4 @@
-const Router = require('koa-router')
+const Router = require('@koa/router');
 // const { loadavg } = require('os');
 const path = require('path')
 const fs = require('fs');
