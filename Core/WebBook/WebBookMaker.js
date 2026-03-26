@@ -77,8 +77,13 @@ class WebBookMaker {
             //初始化书名
             if (result.has("BookName") && !this.myWebBook.WebBookName) {
                 let bn = result.get("BookName")[0];
-                this.myWebBook.WebBookName = bn.text;
-                if (!this.myWebBook.BookName) this.myWebBook.BookName = bn.text;
+                //去掉书名中的注释部分
+                let tempName = bn.text;
+                if(/[（\(【]/.test(tempName)){
+                    tempName = tempName.split(/[（\(【]/)[0];
+                }
+                this.myWebBook.WebBookName = tempName;
+                if (!this.myWebBook.BookName) this.myWebBook.BookName = tempName;
             }
 
             //根据书名从现有内容取得图书设置
