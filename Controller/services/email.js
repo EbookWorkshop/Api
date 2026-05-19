@@ -7,7 +7,7 @@ const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
 const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email");
 const path = require("path");
-const { dataPath } = require("./../../config");
+const { config: { dataPath } } = require("./../../Core/services/config");
 
 
 

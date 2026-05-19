@@ -5,7 +5,7 @@ const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
 const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 const { SendAMail } = require("../../Core/services/email");
-const { dataPath } = require("../../config");
+const { config: { dataPath } }  = require("../../Core/services/config");
 const path = require("path");
 
 module.exports = () => ({
@@ -192,7 +192,7 @@ module.exports = () => ({
     "post /epub": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
-        
+
         const { sendByEmail, bookId, volumeIds, chapterIds, ...setting } = param;
         await EPUBMaker.MakeEPUBFile(bookId, volumeIds, chapterIds, setting).then(async (rsl) => {
             if (sendByEmail) {

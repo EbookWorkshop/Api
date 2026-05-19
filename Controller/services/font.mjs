@@ -5,7 +5,7 @@
 import path from "path";
 import ApiResponse from "../../Entity/ApiResponse.js"
 import { ListFile, AddFile, DeleteFile, RenameFile } from "../../Core/services/file.mjs";
-import config from "../../config.js";
+import { config } from "../../Core/services/config.js";
 import { parseJsonFromBodyData } from "./../../Core/Server.js";
 import { GetDefaultReadingFont, SetDefaultReadingFont, GetDefaultUIFont, SetDefaultUIFont } from "./../../Core/services/font.js"
 

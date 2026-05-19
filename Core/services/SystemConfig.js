@@ -1,7 +1,9 @@
 const SYSTEM_CONFIG = require("../../Entity/SystemConfigGroup");
-const Models = require("../../Core/OTO/Models");
+const Models = require("../OTO/Models");
 
-
+/**
+ * 从数据库读写配置
+ */
 class SystemConfigService {
     /**
      * 获取系统配置

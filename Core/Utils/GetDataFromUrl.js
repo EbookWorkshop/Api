@@ -1,5 +1,5 @@
 const Rule = require("../../Entity/WebBook/Rule");
-const { dataPath, debugSwitcher } = require("../../config");
+const { config: { dataPath, debugSwitcher } } = require("../services/config");
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
 const EventManager = require("../EventManager");

@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
-const { databasePath } = require("./../../config");
+const { config: { databasePath } } = require("./../services/config");
 // const EventManager = require("./../EventManager");
 // const em = new EventManager();
 

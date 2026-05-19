@@ -1,5 +1,5 @@
 const send = require('koa-send');//下载文件
-const { dataPath } = require("./../config");
+const { config: { dataPath } } = require("./../Core/services/config");
 const path = require("path");
 
 //获取静态资源文件

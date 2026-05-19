@@ -6,7 +6,7 @@ const Index = require("./../../../Entity/Ebook/Index");
 const Volume = require("./../../../Entity/Ebook/Volume");
 const Chapter = require("./../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("./../../Utils/ReviewString");
-const { dataPath } = require("../../../config");
+const { config: { dataPath } } = require("./../../services/config");
 
 /**
  * # 初始化

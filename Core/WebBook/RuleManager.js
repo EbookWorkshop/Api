@@ -1,5 +1,5 @@
 //管理站点与爬站规则之间的关系
-const Models = require("./../../Core/OTO/Models");
+const Models = require("./../OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");

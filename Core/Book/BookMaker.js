@@ -7,7 +7,7 @@ const Chapter = require("../../Entity/Ebook/Chapter");
 const Volume = require("../../Entity/Ebook/Volume");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
-const { dataPath } = require("../../config");
+const { config: { dataPath } } = require("../services/config");
 const fs = require('fs');
 const { CheckAndMakeDir } = require("../Server")
 const similarity = require('string-similarity'); // 新增相似度计算库
@@ -439,7 +439,7 @@ class BookMaker {
             }
 
             if (metadata.converFile || metadata.CoverImg) {    //更新了封面——图片格式或‘线装本’配色格式
-                const { AddFile, DeleteFile } = await import("../../Core/services/file.mjs");
+                const { AddFile, DeleteFile } = await import("../services/file.mjs");
                 //删除旧封面文件
                 const book = await myModels.Ebook.findByPk(id);
                 if (book.CoverImg && await fs.promises.stat(path.join(dataPath, book.CoverImg)).catch(() => false)) {

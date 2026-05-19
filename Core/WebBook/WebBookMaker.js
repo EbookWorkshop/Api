@@ -1,6 +1,6 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 const path = require("path");
-const config = require("../../config");
+const { config } = require("../services/config");
 const WebBook = require("../../Entity/WebBook/WebBook");
 // const WebIndex = require("../../Entity/WebBook/WebIndex");
 const WebChapter = require("../../Entity/WebBook/WebChapter");
@@ -79,7 +79,7 @@ class WebBookMaker {
                 let bn = result.get("BookName")[0];
                 //去掉书名中的注释部分
                 let tempName = bn.text;
-                if(/[（\(【]/.test(tempName)){
+                if (/[（\(【]/.test(tempName)) {
                     tempName = tempName.split(/[（\(【]/)[0];
                 }
                 this.myWebBook.WebBookName = tempName;

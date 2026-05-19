@@ -3,7 +3,7 @@ const path = require("path")
 const myPackage = require("./../../package.json");
 const ApiResponse = require("../../Entity/ApiResponse");
 const { isSiteAccessible } = require("./../../Core/Utils/IsSiteAccesssible");
-const { dataPath, databasePath } = require("../../config");
+const { config: { dataPath, databasePath } } = require("../../Core/services/config");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -105,4 +105,5 @@ module.exports = () => ({
             new ApiResponse(null, "消息不存在或已过期", 60000).toCTX(ctx);
         }
     },
+
 });
