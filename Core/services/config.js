@@ -16,7 +16,6 @@ function loadUserConfig() {
     }
 
     try {
-        console.log("读入用户配置文件")
         return JSON.parse(fs.readFileSync(UserConfigFile, "utf-8") || "{}");
     } catch (error) {
         em.emit("Debug.Log", "加载用户配置失败:", error.message)

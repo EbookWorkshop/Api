@@ -106,4 +106,25 @@ module.exports = () => ({
         }
     },
 
+    /**
+     * @swagger
+     * /services/compress_db:
+     *   post:
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *     summary: 压缩数据库
+     *     description: 压缩数据库
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "post /compress_db": async (ctx) => {
+        const DB = require("../../Core/OTO/DatabaseHelper");
+        let result = await DB.Compress();
+        new ApiResponse(result).toCTX(ctx);
+    }
 });
