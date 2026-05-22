@@ -63,9 +63,24 @@ class SocketIO {
       });
     });
 
-    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
-      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err } });
-      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务线程
+    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId, errObj) => {
+      let msgId = -1;
+      if (errObj) {
+        const msg = new Message(err?.name || err, "message", {
+          title: "更新章节失败"
+        });
+
+        let { message, stack, name, ...errRest } = errObj
+        MemoryCache.set(msg.id, {
+          type: "ErrorMessage",
+          message: msg, err: { name, message, stack, ...errRest }, data: null
+        });
+        msgId = msg.id;
+      }
+
+      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err }, msgId });
+      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err, msgId);//分发给当前任务线程
+
     })
 
     this.myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {

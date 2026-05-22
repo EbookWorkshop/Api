@@ -32,10 +32,10 @@ module.exports = (() => {
     }
 
     if (debugSwitcher.bookChapter) {
-        em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err) => {
+        em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err, jobId, errObj) => {
             console.log(`更新章节失败：${bookid}-${cId}:`);
             console.error(err);
-        })
+        });
 
         em.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
             console.log(`正在更新中[${bookid}-${chapterId}]，当前进度${(rate * 100).toFixed(2)}%\n\t\t完成：${ok}\t失败：${fail}\t总数：${all}`);

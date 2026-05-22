@@ -83,7 +83,7 @@ async function ExecRule(page, rule, isVis = false) {
         return rsl;
     } catch (err) {
         //没抓到数据
-        return [null];
+        return [err.message, err];
     }
 }
 

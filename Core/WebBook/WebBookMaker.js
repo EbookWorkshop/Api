@@ -201,7 +201,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (err) {
-                new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId);
+                new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId, err);
                 return;
             }
 
@@ -212,11 +212,13 @@ class WebBookMaker {
             }
 
             if (result.has("Content")) {
-                let cContentResult = result.get("Content")[0];
+                const contResult = result.get("Content");
+                let [cContentResult, errObj] = contResult;
                 if (!cContentResult.text) {
                     let errAdd = "";
-                    if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取内容规则尚未配置";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节内容失败" + errAdd, jobId);
+                    if (errObj?.message) errAdd = "，" + contResult[1].message;
+                    else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, errObj);
                     return;
                 }
                 chap.Content = cContentResult.text;

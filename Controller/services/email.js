@@ -137,6 +137,10 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
+        if(param.password == ""){
+            new ApiResponse(null, "发件邮箱授权密码不能为空", 60000).toCTX(ctx);
+            return;
+        }
 
         const myModels = new Models();
         await myModels.SystemConfig.destroy({

@@ -57,7 +57,17 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
             }
             
             if (sender === "" || mailto === "" || pass === "") {
-                reject("默认邮箱配置不完整，不能发送邮件，请先在系统设置收/发件信息；或直接指定收/发件信息。");
+                let showMsg = "";
+                if (sender === "") {
+                    showMsg += "发件邮箱；";
+                }
+                if (mailto === "") {
+                    showMsg += "收件邮箱；";
+                }
+                if (pass === "") {
+                    showMsg += "发件邮箱授权密码；";
+                }
+                reject(`【邮箱配置不完整，请先设置：${showMsg} 】`);
                 return;
             }
 
