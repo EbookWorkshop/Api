@@ -1,6 +1,7 @@
 const send = require('koa-send');//下载文件
 const { config: { dataPath } } = require("./../Core/services/config");
 const path = require("path");
+const ApiResponse = require("./../Entity/ApiResponse");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -33,5 +34,27 @@ module.exports = () => ({
         console.debug("获取文件：", resPath);
         ctx.attachment(resPath);
         await send(ctx, ctx.params.path, { root: dataPath });
+    },
+
+    /**
+     * @swagger
+     * /assets/archive/book:
+     *   get:
+     *     tags:
+     *       - Assets —— 资源管理
+     *     summary: 获取库存图书列表
+     *     description: 获取已库存图书列表
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /archive/book": async (ctx) => {
+        const { ListFile } = require("./../Core/services/file.mjs");
+        const bookDir = path.join(dataPath, "Books");
+        const bookFiles = await ListFile(bookDir, { detail: true });
+
+        new ApiResponse(bookFiles).toCTX(ctx);
     },
 });

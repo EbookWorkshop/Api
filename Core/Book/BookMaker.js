@@ -7,7 +7,7 @@ const Chapter = require("../../Entity/Ebook/Chapter");
 const Volume = require("../../Entity/Ebook/Volume");
 const Do2Po = require("../OTO/DO");
 const path = require("path");
-const { config: { dataPath } } = require("../services/config");
+const { config: { dataPath, FOLDER } } = require("../services/config");
 const fs = require('fs');
 const { CheckAndMakeDir } = require("../Server")
 const similarity = require('string-similarity'); // 新增相似度计算库
@@ -90,7 +90,7 @@ class BookMaker {
         return new Promise((resolve, reject) => {
             const fileInfo = {
                 filename: ebook.BookName + ".txt",
-                path: path.join(dataPath, "Output", ebook.BookName + '.txt'),
+                path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.txt'),
                 chapterCount: ebook.showIndexId.length,           //含有多少章
                 chapterIds: showIndexId
             };
@@ -451,7 +451,7 @@ class BookMaker {
                     const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
                         metadata.converFile.originalFilename :
                         `${book.BookName}_${metadata.converFile.originalFilename}`;
-                    const coverPath = `/Cover/${newCoverName}`;
+                    const coverPath = path.join(FOLDER.BookCover, newCoverName);
                     await AddFile(metadata.converFile, path.join(dataPath, coverPath));
                     delete metadata.converFile;
                     metadata.CoverImg = coverPath;

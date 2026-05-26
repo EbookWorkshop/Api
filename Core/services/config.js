@@ -48,7 +48,14 @@ function saveUserConfig(config) {
  * @returns 
  */
 function latestConfig() {
-    return Object.assign({}, defaultConfig, loadUserConfig());
+    return Object.assign({
+        "FOLDER": {
+            "BookStorage": "Books",
+            "BookCover": "Cover",
+            "font": "font",
+            "TempBookOutput": "Output",
+        },
+    }, defaultConfig, loadUserConfig());
 }
 
 

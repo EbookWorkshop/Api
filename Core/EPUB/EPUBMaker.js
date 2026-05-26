@@ -3,7 +3,7 @@ const Do2Po = require("../OTO/DO");
 const path = require("path");
 const fs = require("fs/promises");
 const sharp = require("sharp");     //提供图像格式转换
-const { config: { dataPath } } =  require("../services/config");
+const { config: { dataPath } } = require("../services/config");
 const { version } = require("../../package.json");
 const Volume = require("../../Entity/Ebook/Volume");
 const FindMyChapters = require("../Book/FindMyChapters");
@@ -127,7 +127,8 @@ class EPUBMaker {
 
         if (enableIndent) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
 
-        let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
+        const filename = ebook.BookName + ".epub";
+        const output = path.join(dataPath, FOLDER.TempBookOutput, filename);
         return new Promise((resolve, reject) => {
             new EPUB(option, output).promise
                 .then(
@@ -138,7 +139,7 @@ class EPUBMaker {
                     }, err => reject(err)
                 )
                 .then(
-                    () => resolve({ path: output, chapterIds: chapters }),
+                    () => resolve({ path: output, chapterIds: chapters, filename }),
                     err => reject(err)
                 );
         })

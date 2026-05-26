@@ -39,7 +39,7 @@ async function load(dir, fatherRouter, cb_loader) {
                 cb_loader(curfilename, fatherRouter, routes);
             }
         } catch (err) {
-            console.warn(`加载路由失败：${routerPath}\n${err.message}`);//有可能是目录情况但当前目录没有index.js
+            console.warn(`加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
             // return;
         }
 

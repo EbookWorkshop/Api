@@ -34,7 +34,7 @@ class PDFMaker {
             }, {});
         const fileInfo = {
             filename: ebook.BookName + ".pdf",
-            path: path.join(dataPath, "Output", ebook.BookName + '.pdf'),
+            path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.pdf'),
             pdf,
             embedTitle,
             enableIndent,

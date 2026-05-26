@@ -19,16 +19,17 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         const dir = await fsPromises.opendir(sourcePath);
         for await (const dirent of dir) {
             if (!dirent.isFile()) continue;
+            let { ext, name } = path.parse(dirent.name);
+            ext = ext.replace(/^\./, "").toLowerCase();
             let item = {
                 file: dirent.name,
                 path: dirent.parentPath,
+                name: name,
+                ext: ext,
             }
             if (!options?.filetype) {
                 result.push(item);
             } else {
-                let { ext, name } = path.parse(dirent.name);
-                item.name = name;
-                ext = ext.replace(/^\./, "").toLowerCase();
                 if (options?.filetype.includes(ext)) result.push(item);
             }
         }
@@ -36,7 +37,9 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         if (!options?.detail) return result.map(item => item.name);
 
         for (let item of result) {
-            item.size = (await fsPromises.stat(path.join(item.path, item.file))).size;
+            const fileStat = await fsPromises.stat(path.join(item.path, item.file));
+            item.size = fileStat.size;
+            item.createTime = fileStat.birthtime.toLocaleString();
             delete item.path;
         }
 

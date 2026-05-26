@@ -9,7 +9,7 @@ import { config } from "../../Core/services/config.js";
 import { parseJsonFromBodyData } from "./../../Core/Server.js";
 import { GetDefaultReadingFont, SetDefaultReadingFont, GetDefaultUIFont, SetDefaultUIFont } from "./../../Core/services/font.js"
 
-const { fontPath } = config;
+const { dataPath, FOLDER } = config;
 
 //获取静态资源文件
 export default {
@@ -32,7 +32,7 @@ export default {
      */
     "get ": async (ctx) => {
         //传入的相对路径
-        let resPath = fontPath;
+        let resPath = path.join(dataPath, FOLDER.font);
         let data = await ListFile(resPath, { filetype: ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"], detail: true });
         new ApiResponse(data.map(d => {
             d.url = "/font/" + d.file;//根目录就已开启了静态文件
@@ -69,7 +69,7 @@ export default {
         }
 
         // 指定保存文件的路径
-        let filePath = path.join(fontPath, file.originalFilename);
+        let filePath = path.join(dataPath, FOLDER.font, file.originalFilename);
 
         let rsl = await AddFile(file, filePath);
         new ApiResponse(rsl).toCTX(ctx);
@@ -96,7 +96,7 @@ export default {
      */
     "delete ": async (ctx) => {
         let fontName = ctx.query.fontName;
-        let filePath = fontPath;
+        let filePath = path.join(dataPath, FOLDER.font);
         if (!fontName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
 
         await DeleteFile(path.join(filePath, fontName)).catch((err) => {
@@ -141,7 +141,7 @@ export default {
         let param = await parseJsonFromBodyData(ctx, ["fontFile", "newName"]);
         if (!param) return;
         let { fontFile, newName } = param;
-        let filePath = fontPath;
+        let filePath = path.join(dataPath, FOLDER.font);
         if (!fontFile || !newName) return new ApiResponse(false, "请求参数错误", 60000).toCTX(ctx);
         const extname = path.extname(fontFile);//含点
         await RenameFile(path.join(filePath, fontFile), path.join(filePath, `${newName}${extname}`)).catch((err) => {

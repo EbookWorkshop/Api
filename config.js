@@ -12,11 +12,6 @@ module.exports = {
     databasePath: "./../MyLibrary/Data/latest.sqlite",
 
     /**
-     * 字体存放路径
-     */
-    fontPath: "./../MyLibrary/font",
-
-    /**
      * 输出调试信息，监听debug消息
      */
     debug: false,
