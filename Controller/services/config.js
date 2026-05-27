@@ -37,6 +37,85 @@ module.exports = () => ({
 
     /**
      * @swagger
+     * /services/config/inventory:
+     *   get:
+     *     tags:
+     *       - Services - 配置 —— 系统服务：配置
+     *     summary: 获取库存配置
+     *     description: 获取库存配置
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /inventory": async (ctx) => {
+        const { config: myConfig } = require("../../Core/services/config");
+        const { dataPath, FOLDER } = myConfig;
+        new ApiResponse({
+            path: path.join(dataPath, FOLDER.BookStorage),
+            pathAbsolute: path.resolve(path.join(dataPath, FOLDER.BookStorage)),
+        }).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/config/cover:
+     *   get:
+     *     tags:
+     *       - Services - 配置 —— 系统服务：配置
+     *     summary: 获取封面配置
+     *     description: 获取封面配置
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /cover": async (ctx) => {
+        const { config: myConfig } = require("../../Core/services/config");
+        const { dataPath, FOLDER } = myConfig;
+        new ApiResponse({
+            path: path.join(dataPath, FOLDER.BookCover),
+            pathAbsolute: path.resolve(path.join(dataPath, FOLDER.BookCover)),
+        }).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/config/temp:
+     *   get:
+     *     tags:
+     *       - Services - 配置 —— 系统服务：配置
+     *     summary: 获取临时文件配置
+     *     description: 获取临时文件配置
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /temp": async (ctx) => {
+        const { config: myConfig } = require("../../Core/services/config");
+        const { dataPath, FOLDER } = myConfig;
+        new ApiResponse({
+            tempPath: path.join(dataPath, FOLDER.TempFile),
+            tempPathAbsolute: path.resolve(path.join(dataPath, FOLDER.TempFile)),
+
+            outputPath: path.join(dataPath, FOLDER.TempBookOutput),
+            outputPathAbsolute: path.resolve(path.join(dataPath, FOLDER.TempBookOutput)),
+
+        }).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
      * /services/config/debug:
      *   get:
      *     tags:

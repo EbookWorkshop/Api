@@ -7,7 +7,7 @@ const ApiResponse = require("./../../Entity/ApiResponse");
 const Models = require("./../../Core/OTO/Models");
 const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email");
 const path = require("path");
-const { config: { dataPath } } = require("./../../Core/services/config");
+const { config: { dataPath, FOLDER } } = require("./../../Core/services/config");
 
 
 
@@ -59,7 +59,7 @@ module.exports = () => ({
             if (bookFiles) {
                 const { AddFile } = await import("./../../Core/services/file.mjs");
                 await Promise.all(bookFiles.map(file => {
-                    let filePath = path.join(dataPath, "temp", "email", file.originalFilename);
+                    let filePath = path.join(dataPath, FOLDER.TempFile, "email", file.originalFilename);
                     AddFile(file, filePath);
                     email.files.push(filePath)
                 }));
@@ -137,7 +137,7 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-        if(param.password == ""){
+        if (param.password == "") {
             new ApiResponse(null, "发件邮箱授权密码不能为空", 60000).toCTX(ctx);
             return;
         }

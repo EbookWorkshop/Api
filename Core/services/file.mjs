@@ -5,6 +5,7 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import path from "path";
 import { Stream } from "stream";
+import { config} from "./config.js";
 
 /**
  * 列出指定路径下的文件
@@ -40,7 +41,8 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
             const fileStat = await fsPromises.stat(path.join(item.path, item.file));
             item.size = fileStat.size;
             item.createTime = fileStat.birthtime.toLocaleString();
-            delete item.path;
+            item.path = path.relative(config.dataPath, item.path);
+            item.filePath = path.join(item.path, item.file);
         }
 
         return result;

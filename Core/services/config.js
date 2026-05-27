@@ -1,6 +1,7 @@
 const defaultConfig = require('./../../config');
 const EventManager = require("./../EventManager");
 const fs = require("fs");
+const path = require("path");
 
 const UserConfigFilePath = "./UserConfig.json";
 const em = new EventManager();
@@ -54,6 +55,7 @@ function latestConfig() {
             "BookCover": "Cover",
             "font": "font",
             "TempBookOutput": "Output",
+            "TempFile": "temp",
         },
     }, defaultConfig, loadUserConfig());
 }

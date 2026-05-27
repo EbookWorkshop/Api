@@ -3,7 +3,7 @@ const Do2Po = require("../OTO/DO");
 const path = require("path");
 const fs = require("fs/promises");
 const sharp = require("sharp");     //提供图像格式转换
-const { config: { dataPath } } = require("../services/config");
+const { config: { dataPath, FOLDER } } = require("../services/config");
 const { version } = require("../../package.json");
 const Volume = require("../../Entity/Ebook/Volume");
 const FindMyChapters = require("../Book/FindMyChapters");
@@ -39,7 +39,7 @@ class EPUBMaker {
             publisher: `EBook Workshop v${version}`, // 可选
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
             content: [],
-            tempDir: path.join(dataPath, "temp/EPUB"),//非标配置，指定打包EPUB文件用的临时目录
+            tempDir: path.join(dataPath, FOLDER.TempFile, "EPUB"),//指定打包EPUB文件用的临时目录
         }
         //临时目录不存在则创建
         try {
