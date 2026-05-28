@@ -49,7 +49,7 @@ function saveUserConfig(config) {
  * @returns 
  */
 function latestConfig() {
-    return Object.assign({
+    const cf = Object.assign({
         "FOLDER": {
             "BookStorage": "Books",
             "BookCover": "Cover",
@@ -58,6 +58,22 @@ function latestConfig() {
             "TempFile": "temp",
         },
     }, defaultConfig, loadUserConfig());
+
+    //检查用户资料库的必须目录并创建缺失部分
+    let checkPath = cf.dataPath;
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});//linux  下回调函数是必须的
+    checkPath = path.join(cf.dataPath,cf.FOLDER.BookCover);
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath ,{ recursive: true },()=>{});
+    checkPath = path.join(cf.dataPath,cf.FOLDER.BookStorage);
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
+    checkPath = path.join(cf.dataPath,cf.FOLDER.font);
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
+    checkPath = path.join(cf.dataPath,cf.FOLDER.TempBookOutput);
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
+    checkPath = path.join(cf.dataPath,cf.FOLDER.TempFile);
+    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
+
+    return cf;
 }
 
 

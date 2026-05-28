@@ -45,7 +45,7 @@ class EPUBMaker {
         try {
             await fs.access(option.tempDir);
         } catch {
-            await fs.mkdir(option.tempDir, { recursive: true });
+            await fs.mkdir(option.tempDir, { recursive: true },()=>{});
         }
 
         let useTempCover = false;
