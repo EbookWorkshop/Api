@@ -48,6 +48,7 @@ class EPUBMaker {
             await fs.mkdir(option.tempDir, { recursive: true },()=>{});
         }
 
+        //处理封面
         let useTempCover = false;
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
@@ -116,16 +117,21 @@ class EPUBMaker {
             for (let c of vM.get(e.VolumeId)) {
                 let p = c.Content || "-=章节内容缺失=-";
                 let multiLine = p.split("\n");
-                if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //配置了缩进时，去除行首空格的缩进
-                p = multiLine.join("</p>\n<p>");
+                if (setting.isCompact) {//紧凑模式，段落之间与平常换行间距一致
+                    if (enableIndent) multiLine = multiLine.map(t => '　　' + t.trimStart());    //缩进的处置
+                    p = multiLine.join("<br/>\n");
+                } else {//普通段落模式，段落之间间距更大
+                    if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //缩进的处置
+                    p = `<p>${multiLine.join("</p>\n<p>")}</p>`;
+                }
                 option.content.push({
                     title: c.Title,
-                    data: `<p>${p}</p>`,
+                    data: p,
                 });
             }
         }
 
-        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
+        if (enableIndent && !setting.isCompact) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
 
         const filename = ebook.BookName + ".epub";
         const output = path.join(dataPath, FOLDER.TempBookOutput, filename);
