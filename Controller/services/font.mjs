@@ -34,7 +34,7 @@ export default {
         //传入的相对路径
         let resPath = path.join(dataPath, FOLDER.font);
         let data = await ListFile(resPath, { filetype: ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"], detail: true });
-        new ApiResponse(data.map(d => {
+        new ApiResponse(data?.map(d => {
             d.url = "/font/" + d.file;//根目录就已开启了静态文件
             return d;
         })).toCTX(ctx);
