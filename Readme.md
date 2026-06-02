@@ -177,6 +177,29 @@ SET PUPPETEER_SKIP_DOWNLOAD=true
 * 确保chrome.exe在正确路径：`C:\Users\当前用户登陆名\.cache\puppeteer\chrome\win64-XXX.XXX.XXX.XXX\chrome-win64\chrome.exe`
 * 到目录`./node_modules/puppeteer`中执行`node install.mjs`若不再出现其它版本报错，则完成了设置。（如果在之前设置环境变量的同一个对话框，还得先将变量设置回来`SET PUPPETEER_SKIP_DOWNLOAD=false`）不然会跳过下载。
 
-运行项目，使用爬书相关的功能。无报错即可。
+### 报错关键字 Failed to launch the browser process: Code: null
+错误信息类似：
+```txt
+Failed to launch the browser process: Code: null
+...
+No usable sandbox! If you are running on Ubuntu 23.10+ or another Linux distro that has disabled unprivileged user namespaces with AppArmor
+...
+SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
+...
+```
+
+出现上述原因是因为 puppeteer 启动浏览器时，默认启用了沙箱模式，但在某些环境中（如某些 Linux 发行版或特定的安全设置）可能会导致启动失败。解决方法是禁用沙箱模式。
+#### 执行下列命令即可：
+```bash
+# 创建 sysctl 配置文件
+echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee -a /etc/sysctl.d/99-puppeteer.conf
+echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/99-puppeteer.conf
+
+# 立即从所有配置文件重新加载
+sudo sysctl --system
+```
+
+
+### 运行项目，使用爬书相关的功能。无报错即可。
 
 > 注：部分内容通过AI生成。
