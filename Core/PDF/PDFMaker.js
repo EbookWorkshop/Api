@@ -2,7 +2,7 @@ const DO = require("../OTO/DO");
 
 const EventManager = require("./../EventManager");
 const path = require("path");
-const { config: { dataPath } } =  require("./../services/config");
+const { config: { dataPath,FOLDER } } =  require("./../services/config");
 const { GetDefaultReadingFont } = require("./../services/font")
 const WorkerPool = require("./../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();

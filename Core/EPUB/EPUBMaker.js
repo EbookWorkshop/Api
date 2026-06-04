@@ -118,6 +118,7 @@ class EPUBMaker {
                 let p = c.Content || "-=章节内容缺失=-";
                 let multiLine = p.split("\n");
                 if (setting.isCompact) {//紧凑模式，段落之间与平常换行间距一致
+                    multiLine = multiLine.map(t => t.trim()).filter(t => t.length > 0);//去除空行
                     if (enableIndent) multiLine = multiLine.map(t => '　　' + t.trimStart());    //缩进的处置
                     p = multiLine.join("<br/>\n");
                 } else {//普通段落模式，段落之间间距更大
