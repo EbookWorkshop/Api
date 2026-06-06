@@ -4,7 +4,7 @@ Data/*
 Debug/*
 
 
-Entity/outdated.json
+Entity/version.json
 package-lock.json
 .vscode/settings.json
 UserConfig.json
