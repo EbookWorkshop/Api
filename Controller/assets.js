@@ -2,6 +2,7 @@ const send = require('koa-send');//下载文件
 const { config } = require("./../Core/services/config");
 const path = require("path");
 const ApiResponse = require("./../Entity/ApiResponse");
+const fs = require("fs");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -31,9 +32,40 @@ module.exports = () => ({
     "get /download/:path": async (ctx) => {
         //传入的相对路径
         let resPath = path.join(config.dataPath, ctx.params.path);
-        console.debug("获取文件：", resPath);
+        // console.debug("获取文件：", resPath);
         ctx.attachment(resPath);
         await send(ctx, ctx.params.path, { root: config.dataPath });
+    },
+
+
+    /**
+     * @swagger
+     * /assets/view/{path}:
+     *   get:
+     *     tags:
+     *       - Assets —— 资源管理
+     *     summary: 查看文件
+     *     description: 查看静态资源
+     *     parameters:
+     *     - name: path
+     *       in: path
+     *       required: true
+     *       description: 资源路径
+     *       schema:
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /view/:path": async (ctx) => {
+        //传入的相对路径
+        let resPath = path.join(config.dataPath, ctx.params.path);
+        // console.debug("查看文件：", resPath);
+        const type = path.extname(resPath).toLowerCase();
+        ctx.type = type;//可以直接设置文件类型，并自动推测mimetype。或者直接设置mimetype
+        ctx.body = fs.createReadStream(resPath);
     },
 
     /**

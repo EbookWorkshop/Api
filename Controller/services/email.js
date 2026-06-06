@@ -41,6 +41,10 @@ module.exports = () => ({
      *         name: bookList
      *         type: string
      *         description: 书籍列表，JSON字符串格式
+     *       - in: formData
+     *         name: filePath
+     *         type: string
+     *         description: 本地文件列表，字符数组格式
      *     responses:
      *       200:
      *         description: 请求成功
@@ -53,7 +57,7 @@ module.exports = () => ({
 
         try {
             // let email = { ...param };
-            let { mailto, sender, bookFiles, bookList } = param;
+            let { mailto, sender, bookFiles, bookList, filePath } = param;
             let email = { mailto, sender, files: [] };
 
             if (bookFiles) {
@@ -84,6 +88,9 @@ module.exports = () => ({
 
                 email.files.push(...rsl.map(t => t.path));
             }
+
+            //发送已存在的文件
+            if(filePath) email.files.push(...JSON.parse(filePath).map(f=>path.join(dataPath, f)));
 
             if (email.files.length == 0) {
                 new ApiResponse(null, "发送邮件取消：没有可用于发送的书籍/附件，取消发邮件。", 50000).toCTX(ctx);
