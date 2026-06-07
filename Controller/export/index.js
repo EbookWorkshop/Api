@@ -36,6 +36,8 @@ module.exports = () => ({
      *               type: boolean
      *             embedTitle:
      *               type: boolean
+     *             embedBookName:
+     *               type: boolean
      *             enableIndent:
      *               type: boolean
      *             fontFamily:
@@ -181,6 +183,8 @@ module.exports = () => ({
      *             isExportToInventory:
      *               type: boolean
      *             embedTitle:
+     *               type: boolean
+     *             embedBookName:
      *               type: boolean
      *             fontFamily:
      *               type: string

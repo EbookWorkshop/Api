@@ -2,7 +2,7 @@ const DO = require("../OTO/DO");
 
 const EventManager = require("./../EventManager");
 const path = require("path");
-const { config: { dataPath,FOLDER } } =  require("./../services/config");
+const { config: { dataPath, FOLDER } } = require("./../services/config");
 const { GetDefaultReadingFont } = require("./../services/font")
 const WorkerPool = require("./../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
@@ -18,10 +18,10 @@ class PDFMaker {
      * @param {*} setting 其他设置
      */
     static async MakePdfFile(bookId, volumes, showChapters, setting) {
-        let { fontFamily, embedTitle = true, enableIndent, coverImageData } = setting;
+        let { fontFamily, embedTitle = true, enableIndent, coverImageData, embedBookName } = setting;
         let ebook = await DO.GetPDFById(bookId);
         if (fontFamily) ebook.FontFamily = fontFamily;
-        
+
         const showIndexId = FindMyChapters(ebook, volumes, showChapters);
         await ebook.SetShowChapters(showIndexId);
         await ebook.LoadIntroduction();
@@ -37,6 +37,7 @@ class PDFMaker {
             path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.pdf'),
             pdf,
             embedTitle,
+            embedBookName,
             enableIndent,
             chapterCount: ebook.showIndexId.length,           //含有多少章
             defaultFont: await GetDefaultReadingFont(),

@@ -24,7 +24,7 @@ class EPUBMaker {
         if (ebook == null) return null;
 
         if (!setting) setting = {};//邮件批量生成文件发送时，所有配置为空。
-        let { fontFamily, embedTitle = true, enableIndent } = setting;
+        let { fontFamily, embedTitle = true, enableIndent, embedBookName } = setting;
 
         let chapters = FindMyChapters(ebook, volumes, showChapters);
         await ebook.SetShowChapters(chapters);
@@ -45,12 +45,12 @@ class EPUBMaker {
         try {
             await fs.access(option.tempDir);
         } catch {
-            await fs.mkdir(option.tempDir, { recursive: true },()=>{});
+            await fs.mkdir(option.tempDir, { recursive: true }, () => { });
         }
 
         //处理封面
         let useTempCover = false;
-        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
+        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#") && embedBookName == false) {//读系统的图片作封面(系统封面没嵌入书名)
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
 

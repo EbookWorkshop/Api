@@ -132,14 +132,14 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
 async function AddBookCoverToPdf(pdfBook, pdfDoc) {
     let imgFile = null;
     let realDir = null;
-    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#")) {     //#开头的为线装本封面底色
+    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#") && !pdfBook.embedBookName) {//读取本地配置的图片为封面
         realDir = path.join(config.dataPath, pdfBook.CoverImg);
         imgFile = realDir;
         if (realDir.endsWith(".webp")) {
             imgFile = realDir.replace(/webp$/, "png");
             await sharp(realDir).png().toFile(imgFile);
         }
-    } else if (pdfBook.coverImageData) {        //做一个线装本封面
+    } else if (pdfBook.coverImageData) {        //前端截图传入的Base64数据为封面
         imgFile = Buffer.from(pdfBook.coverImageData, 'base64');
     }
 
