@@ -15,6 +15,8 @@ const SystemConfigService = require("../services/SystemConfig");
 const Models = require("../OTO/Models");
 const FindMyChapters = require("./FindMyChapters");
 
+const SHOW_BOOKNAME = "#showname";
+
 class BookMaker {
     /**
      * 添加一本`TXT`书
@@ -440,12 +442,8 @@ class BookMaker {
 
             if (metadata.converFile || metadata.CoverImg) {    //更新了封面——图片格式或‘线装本’配色格式
                 const { AddFile, DeleteFile } = await import("../services/file.mjs");
-                //删除旧封面文件
                 const book = await myModels.Ebook.findByPk(id);
-                if (book.CoverImg && await fs.promises.stat(path.join(dataPath, book.CoverImg)).catch(() => false)) {
-                    await DeleteFile(path.join(dataPath, book.CoverImg));
-                    console.log("已删除旧封面文件：" + path.join(dataPath, book.CoverImg));
-                }
+                const oldCoverImg = book.CoverImg.replace(SHOW_BOOKNAME, "");
 
                 if (metadata.converFile) {//图片格式封面
                     const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
@@ -453,8 +451,17 @@ class BookMaker {
                         `${book.BookName}_${metadata.converFile.originalFilename}`;
                     const coverPath = path.join(FOLDER.BookCover, newCoverName);
                     await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+                    let isEmbelName = metadata.CoverImg === SHOW_BOOKNAME;          //如果是新上传的文件，需要在CoverImg字段记录嵌入标记
                     delete metadata.converFile;
-                    metadata.CoverImg = coverPath;
+                    metadata.CoverImg = coverPath + SHOW_BOOKNAME;
+                    if (!metadata.CoverImg.startsWith("/")) metadata.CoverImg = "/" + metadata.CoverImg;//确保以/做地址开头
+                }
+
+                //删除旧封面文件
+                const newCoverImg = metadata.CoverImg.replace(SHOW_BOOKNAME, "");
+                if (newCoverImg != oldCoverImg && await fs.promises.stat(path.join(dataPath, oldCoverImg)).catch(() => false)) {
+                    await DeleteFile(path.join(dataPath, oldCoverImg));
+                    console.log("已删除旧封面文件：" + path.join(dataPath, oldCoverImg));
                 }
             }
 
