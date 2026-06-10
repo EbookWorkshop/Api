@@ -35,9 +35,19 @@ async function GetDataFromUrl(url, setting) {
 
     try {
         let page = await browser.newPage();
+
+        if (setting.userAgent) await page.setUserAgent(setting.userAgent);//设置用户代理
+
         // 配置需要访问网址
         await page.goto(url, { timeout: setting.timeout });
         //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
+        if (url != page.url()) {
+            result.set("URL", {
+                expect: url,
+                actual: page.url(),
+                message: "请求地址与实际地址不一致，发生过重定向。",
+            })
+        }
 
         //接管console 网站在浏览器上发的空调信息转发到服务器控台
         if (isDEBUG) {

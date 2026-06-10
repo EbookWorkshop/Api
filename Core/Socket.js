@@ -34,6 +34,7 @@ class SocketIO {
     });
 
     this.initEM_WebBook();
+    this.initMessageBox();
 
     this.myEM.emit("Debug.Model.Init.Finish", "SocketIO");
     return myIO;
@@ -44,6 +45,22 @@ class SocketIO {
     return myIO;
   }
 
+  static SendMessage(message, data, error) {
+    GetIO().emit(`Message.Box.Send`, message);
+    MemoryCache.set(message.id, {
+      type: error ? "ErrorMessage" : "",   //
+      message: message, err: error, data: data
+    });
+  }
+
+  static SendError(message, data, error) {
+    GetIO().emit(`Message.Box.Send`, message);
+    MemoryCache.set(message.id, {
+      type: "ErrorMessage",
+      message: message, err: error, data: data
+    });
+  }
+
   /**
    * 初始化爬书相关的消息转发
    * @returns 
@@ -52,6 +69,14 @@ class SocketIO {
     if (this.myEM == null) return;
     this.myEM.on("WebBook.Create.Finish", (bookid, bookName) => {
       myIO.emit(`WebBook.Create.Finish`, { bookid, bookName });
+    });
+
+    this.myEM.on("WebBook.UpdateIndex.Finish", (bookid, bookName, data) => {
+      myIO.emit(`Message.Box.Send`, new Message(`更新《${bookName}》目录完成，共新增${data.addChapterNum}章。`, "message", {
+        id: -1 * Math.floor(Math.random() * 1000000),
+        title: "更新目录完成",
+        subTitle: `共新增${data.addChapterNum}章`,
+      }));
     });
 
     this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
@@ -98,11 +123,8 @@ class SocketIO {
       });
       let showErr = err;
       if (JSON.stringify(err) === "{}") showErr = { message: err.message, stack: err.stack };//数据库抛出的错误序列化后为空，所以要手动添加
-      myIO.emit(`Message.Box.Send`, msg);
-      MemoryCache.set(msg.id, {
-        type: "ErrorMessage",
-        message: msg, err: showErr, data: Object.fromEntries(result)
-      });
+
+      SocketIO.SendMessage(msg, Object.fromEntries(result), showErr);
     });
   }
 
@@ -157,6 +179,16 @@ class SocketIO {
     //监听线程池关闭
     socket.on("WorkerPool.Status.Off", (socket) => {
       disConnect();
+    });
+  }
+
+  /**
+   * 初始化消息
+   */
+  initMessageBox() {
+    this.myEM.on("MessageToUI", (message, data, error, isError) => {
+      if (isError) SocketIO.SendError(message, data, error);
+      else SocketIO.SendMessage(message, data, error);
     });
   }
 }

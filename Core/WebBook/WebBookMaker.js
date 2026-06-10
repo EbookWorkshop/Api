@@ -1,6 +1,7 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
 const path = require("path");
 const { config } = require("../services/config");
+const Message = require("../../Entity/Message");
 const WebBook = require("../../Entity/WebBook/WebBook");
 // const WebIndex = require("../../Entity/WebBook/WebIndex");
 const WebChapter = require("../../Entity/WebBook/WebChapter");
@@ -59,7 +60,7 @@ class WebBookMaker {
     async UpdateIndex(url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = await RuleManager.GetRuleByURL(curUrl);
-        const option = { RuleList: webRule.index.GetRuleList(), timeout: webRule.timeout };
+        const option = { RuleList: webRule.index.GetRuleList(), timeout: webRule.timeout, userAgent: webRule.userAgent };
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -74,6 +75,7 @@ class WebBookMaker {
                 new EventManager().emit("WebBook.UpdateIndex.Error", err, curUrl, result);
                 return;
             }
+            let addChapterNum = 0;
             //初始化书名
             if (result.has("BookName") && !this.myWebBook.WebBookName) {
                 let bn = result.get("BookName")[0];
@@ -95,9 +97,19 @@ class WebBookMaker {
 
             if (result.has("ChapterList")) {    //爬到的每一章内容
                 let cl = result.get("ChapterList");
+                if (cl.length == 0) {       //没抓到章节数据
+                    new EventManager().SendErrorToUI(new Message(`《${this.myWebBook.BookName}》返回章节列表为空。`, "notice", {
+                        title: "更新目录失败，返回章节为空",
+                        subTitle: "请检查抓取规则是否正确。",
+                        //avatar:this.myWebBook.CoverImg
+                    }), Object.fromEntries(result));
+                    return;
+                }
                 if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
-                for (let i of cl)
-                    await this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);       //这里加上 await 可以让存到目录表的数据按顺序
+                for (let i of cl) {
+                    let hasAdd = await this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);
+                    if (hasAdd) addChapterNum++;
+                }
             }
 
             if (result.has("BookCover")) {  //保存封面
@@ -105,7 +117,7 @@ class WebBookMaker {
                 let imgPath = cv.text;
                 if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
 
-                const coverImgPath = path.join(FOLDER.BookCover, `${this.myWebBook.BookName}_${path.basename(imgPath)}`);//图片存储的相对位置
+                const coverImgPath = path.join(config.FOLDER.BookCover, `${this.myWebBook.BookName}_${path.basename(imgPath)}`);//图片存储的相对位置
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTaskAsync({
@@ -140,6 +152,7 @@ class WebBookMaker {
                 if (desc?.text) BookMaker.EditEbookIntroduction(this.myWebBook.BookId, desc.text);
             }
 
+            let data = { addChapterNum };
             let finishMsg = "WebBook.UpdateIndex.Finish";
             if (this.isCreateBook) finishMsg = "WebBook.Create.Finish";
             //翻页——继续爬 CheckSetting
@@ -150,14 +163,13 @@ class WebBookMaker {
                 let npData = npDataList[0];
                 let nextPage = npData.url;
                 if (nextPage == "" || nextPage == url) {
-                    new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
+                    new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName, data);
                     return;
                 }
 
-                // console.log(`开始爬下一页：${nextPage}`);
                 return this.UpdateIndex(nextPage, orderNum);
             } else {
-                new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName);
+                new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName, data);
             }
         });
     }
@@ -320,7 +332,6 @@ class WebBookMaker {
 
     }
 
-
     /**
      * 从目录页初始化一本空书
      * @param {string} indexUrl 
@@ -334,7 +345,8 @@ class WebBookMaker {
     }
 
     /**
-     * 删除指定书的ID
+     * 删除指定ID的书
+     * # 删除 WebBook 及对应的 EBook 资料
      * @param {*} bookId 书ID
      */
     static async DeleteOneBook(bookId) {

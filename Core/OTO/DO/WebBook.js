@@ -265,9 +265,11 @@ class OTO_WebBook {
          * 拿到章节名，查找是否已经添加，是则跳过，否则插入一个新记录
          * @param {*} param0 
          * @param {*} orderNum 
+         * @returns 是否添加了新章节
          */
         webBook.MergeIndex = async ({ title, url }, orderNum) => {
             const myModels = new Models();
+            let hasAddChapter = false;
 
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
                 // console.log("存在重复章节：", title, orderNum, webBook.Index);
@@ -289,6 +291,7 @@ class OTO_WebBook {
             if (wbIndex == null) {  //目录不存在章节时，添加新章节
                 let ret = await myModels.EbookIndex.create({ Title: title, BookId: webBook.BookId, OrderNum: orderNum });
                 wbIndex = await myModels.WebBookIndex.create({ WebTitle: title, IndexId: ret.id });
+                hasAddChapter = true;
             }
 
             let urls = await wbIndex.getWebBookIndexURLs();
@@ -307,6 +310,7 @@ class OTO_WebBook {
             tIdx.URL.push(...cUrl);
 
             webBook.Index.push(tIdx);
+            return hasAddChapter;
         }
 
 

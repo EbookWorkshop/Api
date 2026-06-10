@@ -3,7 +3,7 @@ const Models = require("./../OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
-const { WEBSITE_TIMEOUT } = require("../../Entity/SystemConfigGroup");
+const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
 
 /**
@@ -20,6 +20,7 @@ class RuleManager {
             index: new IndexOptions(),
             chapter: new ChapterOptions(),
             timeout: undefined,
+            userAgent: undefined,
         };
 
         let myModels = new Models();
@@ -57,9 +58,10 @@ class RuleManager {
 
         //超时设置
         let timeout = await SystemConfigService.getConfig(WEBSITE_TIMEOUT, host);
-        if (timeout) {
-            result.timeout = timeout * 1;
-        }
+        if (timeout) result.timeout = timeout * 1;
+        //用户代理设置
+        let userAgent = await SystemConfigService.getConfig(WEBSITE_USERAGENT, host);
+        if (userAgent) result.userAgent = userAgent;
 
         return result;
     }
@@ -134,6 +136,13 @@ class RuleManager {
                 selector: timeout * 1,
             })
         }
+        let userAgent = await SystemConfigService.getConfig(WEBSITE_USERAGENT, host);
+        if (userAgent) {
+            rsl.push({
+                ruleName: "UserAgent",
+                selector: userAgent,
+            })
+        }
         return rsl;
     }
 
@@ -143,25 +152,30 @@ class RuleManager {
      * @returns 
      */
     static async SaveRules(rules) {
-        //全套规则删除并更新
         const myModels = Models.GetPO();
         const trans = await myModels.BeginTrans();
-
+        
         try {
+            //全套规则删除并更新
+            const oneHost = rules[0].host;
+            await SystemConfigService.delConfig(WEBSITE_TIMEOUT, oneHost, trans);
+            await SystemConfigService.delConfig(WEBSITE_USERAGENT, oneHost, trans);
+            await myModels.RuleForWeb.destroy({
+                where: { Host: oneHost, },
+                transaction: trans
+            });
+
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule) {
                 await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector);
                 rules = rules.filter(r => r.ruleName != "Timeout");
             }
+            const userAgentRule = rules.find(r => r.ruleName == "UserAgent");
+            if (userAgentRule) {
+                await SystemConfigService.setConfig(WEBSITE_USERAGENT, userAgentRule.host, userAgentRule.selector);
+                rules = rules.filter(r => r.ruleName != "UserAgent");
+            }
             for (let p of rules) {
-                await myModels.RuleForWeb.destroy({
-                    where: {
-                        Host: p.host,
-                        RuleName: p.ruleName
-                    },
-                    transaction: trans
-                });
-
                 let rule = {
                     Host: p.host,
                     RuleName: p.ruleName,

@@ -25,11 +25,11 @@ module.exports = (() => {
         })
     }
 
-    if (debugSwitcher.bookIndex) {
-        em.on("WebBook.UpdateIndex.Finish", (bookid) => {
-            console.log("目录更新完毕！！");
-        })
-    }
+    // if (debugSwitcher.bookIndex) {
+    //     em.on("WebBook.UpdateIndex.Finish", (bookid) => {
+    //         console.log("目录更新完毕！！");
+    //     })
+    // }
 
     if (debugSwitcher.bookChapter) {
         em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err, jobId, errObj) => {
@@ -96,7 +96,7 @@ module.exports = (() => {
     em.on("Debug.Log", (message, funName, ..._) => {
         switch (funName) {
             case "ROUTER": if (!debugSwitcher.router) return; break;
-            case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
+            // case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
             case "BOOKCHAPTER": if (!debugSwitcher.bookChapter) return; break;
             case "WEBBOOKCOVER": if (!debugSwitcher.saveBookCover) return; break;
             case "WORKERPOOL": if (!debugSwitcher.workerPool) return; break;

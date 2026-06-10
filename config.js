@@ -45,10 +45,10 @@ module.exports = {
          * 是否开启PDF制作调试
          */
         pdf: false,
-        /**
-         * 是否开启书籍目录更新调试
-         */
-        bookIndex: false,
+        // /**
+        //  * 是否开启书籍目录更新调试
+        //  */
+        // bookIndex: false,
         /**
          * 是否开启书籍章节更新调试
          */

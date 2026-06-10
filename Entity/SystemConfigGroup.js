@@ -39,6 +39,13 @@ class SystemConfigGroup {
     }
 
     /**
+     * 获取网站的用户代理设置
+     */
+    static get WEBSITE_USERAGENT() {
+        return 'website_useragent';
+    }
+
+    /**
      * 阅读习惯
      */
     static get READING_HABIT() {

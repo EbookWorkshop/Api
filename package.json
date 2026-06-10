@@ -1,14 +1,15 @@
 {
   "name": "ebookworkshop",
-  "version": "3.12.0-α",
+  "version": "3.12.0",
   "description": "电子书工具",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node --inspect app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "ebook",
+    "epub",
     "pdf",
     "txt",
     "kindle"

@@ -62,6 +62,31 @@ class SystemConfigService {
         }
     }
 
+    /**
+     * 删除系统配置
+     * @param {SYSTEM_CONFIG} Group 功能分组
+     * @param {string} Name 配置名
+     * @param {Transaction?} trans 事务
+     * @returns 
+     */
+    static async delConfig(Group, Name, trans) {
+        try {
+            let myModel = Models.GetPO();
+            const value = await myModels.SystemConfig.destroy({
+                where: {
+                    Group,
+                    Name
+                },
+                transaction: trans
+            });
+
+            return value;
+        } catch (error) {
+            console.error(`清除系统配置失败：\n功能分组：${Group}\n配置名：${Name}\n`, error);
+            throw error;
+        }
+    }
+
     static Group = SYSTEM_CONFIG;
 }
 
