@@ -11,14 +11,15 @@ class SystemConfigService {
      * @param {string} Name 配置名
      * @returns
      */
-    static async getConfig(Group, Name) {
+    static async getConfig(Group, Name, trans) {
         try {
             let myModel = Models.GetPO();
             const config = await myModel.SystemConfig.findOne({
                 where: {
                     Group,
                     Name
-                }
+                },
+                transaction: trans
             });
             return config ? config.Value : null;
         } catch (error) {
@@ -34,24 +35,27 @@ class SystemConfigService {
      * @param {string} Value 值
      * @returns 
      */
-    static async setConfig(Group, Name, Value) {
+    static async setConfig(Group, Name, Value, trans) {
         try {
             let myModel = Models.GetPO();
             let config = await myModel.SystemConfig.findOne({
                 where: {
                     Group,
                     Name
-                }
+                },
+                transaction: trans
             });
 
             if (config) {
                 config.Value = Value;
-                await config.save();
+                await config.save({ transaction: trans });
             } else {
                 config = await myModel.SystemConfig.create({
                     Group,
                     Name,
                     Value
+                }, {
+                    transaction: trans
                 });
             }
 
@@ -71,7 +75,7 @@ class SystemConfigService {
      */
     static async delConfig(Group, Name, trans) {
         try {
-            let myModel = Models.GetPO();
+            let myModels = Models.GetPO();
             const value = await myModels.SystemConfig.destroy({
                 where: {
                     Group,

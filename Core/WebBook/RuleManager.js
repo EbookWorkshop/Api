@@ -44,7 +44,9 @@ class RuleManager {
                 case "CapterTitle": curRule = result.chapter.CapterTitleRule; break;
                 case "Content": curRule = result.chapter.ContentRule; break;
                 case "ContentNextPage": curRule = result.chapter.NextPageRule; break;
-
+                default:
+                    console.warn(`未配置规则：${r.RuleName}`);
+                    break;
             }
 
             curRule.RuleName = r.RuleName;
@@ -154,7 +156,7 @@ class RuleManager {
     static async SaveRules(rules) {
         const myModels = Models.GetPO();
         const trans = await myModels.BeginTrans();
-        
+
         try {
             //全套规则删除并更新
             const oneHost = rules[0].host;
@@ -167,12 +169,12 @@ class RuleManager {
 
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule) {
-                await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector);
+                await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector, trans);
                 rules = rules.filter(r => r.ruleName != "Timeout");
             }
             const userAgentRule = rules.find(r => r.ruleName == "UserAgent");
             if (userAgentRule) {
-                await SystemConfigService.setConfig(WEBSITE_USERAGENT, userAgentRule.host, userAgentRule.selector);
+                await SystemConfigService.setConfig(WEBSITE_USERAGENT, userAgentRule.host, userAgentRule.selector, trans);
                 rules = rules.filter(r => r.ruleName != "UserAgent");
             }
             for (let p of rules) {
