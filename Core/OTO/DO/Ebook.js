@@ -74,7 +74,6 @@ class OTO_Ebook {
             await t.commit();
             return true;
         } catch (e) {
-            // console.log("存储书失败：", book, e);
             await t.rollback();
             return false;
         }

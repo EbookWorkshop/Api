@@ -461,7 +461,7 @@ class BookMaker {
                 const newCoverImg = metadata.CoverImg.replace(SHOW_BOOKNAME, "");
                 if (newCoverImg != oldCoverImg && await fs.promises.stat(path.join(dataPath, oldCoverImg)).catch(() => false)) {
                     await DeleteFile(path.join(dataPath, oldCoverImg));
-                    console.log("已删除旧封面文件：" + path.join(dataPath, oldCoverImg));
+                    console.log(`[${new Date().toLocaleString()}]\t已删除旧封面文件：${path.join(dataPath, oldCoverImg)}`);
                 }
             }
 

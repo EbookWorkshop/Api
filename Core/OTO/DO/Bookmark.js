@@ -29,7 +29,7 @@ class OTO_BOOKMARK {
         return bookmark.map(b => {
             return {
                 id: b.id,
-                createdAt: b.createdAt,
+                createdAt: b.createdAt.toLocaleString(),
                 BookName: b.EbookChapter?.Ebook?.BookName,
                 Title: b.EbookChapter?.Title,
                 ChapterId: b.IndexId

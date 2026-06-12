@@ -272,7 +272,6 @@ class OTO_WebBook {
             let hasAddChapter = false;
 
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
-                // console.log("存在重复章节：", title, orderNum, webBook.Index);
                 webBook.tempMergeIndex.get(title).urls.push(url);//没啥用，没存入数据库的
                 await myModels.EbookIndex.update({ OrderNum: orderNum }, { where: { BookId: webBook.BookId, Title: title } });//如果相同的章节重复出现，按最新的排序更新
                 return;

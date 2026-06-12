@@ -78,7 +78,6 @@ class Models {
 function AutoInit(sqlConnect) {
     const em = new EventManager();
     readdir(__dirname).then(fileList => {
-        // console.log(result);
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
             const MODEL_NAME = file.replace(".js", "");
@@ -91,7 +90,7 @@ function AutoInit(sqlConnect) {
         Relational(PO_MODELS);
 
         //同步所有模型
-        console.log("正在初始化数据库......")
+        console.log(`[${new Date().toLocaleString()}]\t正在初始化数据库......`);
         sqlConnect.queryInterface.sequelize.query("PRAGMA foreign_keys = ON");
         sqlConnect.sync(/*{ alter: true }*/).then(result => {
             em.emit("DB.Models.Init", sqlConnect.options.storage, result);

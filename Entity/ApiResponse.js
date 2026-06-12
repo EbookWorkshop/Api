@@ -44,7 +44,7 @@ class ApiResponse {
 
             if (this.msg === "") {
                 this.msg = `接口出现未正确响应的响应！一般这是API的响应不符合约束规范导致的。更多细节留意API后台输出。\nAPI：${ctx.request.url}`;
-                console.log(ctx);
+                console.log(`[${new Date().toLocaleString()}]\t${ctx}`);
             }
             ctx.status = 200;//前端需要全部返回200 才能正确显示提示信息
             //所以前端需要通过判断code来确定实际是否执行成功。

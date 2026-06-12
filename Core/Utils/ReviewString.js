@@ -8,7 +8,6 @@
  */
 function Run(rules, sourceText) {
     let result = Array.from(sourceText);
-    // console.log(result);
     for (let r of rules) {
         let tempArray = [];
         let rTarget = r.Replace;

@@ -18,8 +18,9 @@ class WebBook extends Ebook {
         this.defaultIndex = defaultIndex || 0;
 
         /**
-         * 网站上的书名，可能会有奇怪的不方便删除的字符
-         * 优化整理后显示的书名使用 BookName
+         * 网站上的书名，可能会有奇怪的不方便删除的字符，
+         * 用于对照书本身份的名字，抓取记录后不应修改。
+         * 如需修改、优化或整理，显示的书名使用 BookName
          */
         this.WebBookName = WebBookName;
 

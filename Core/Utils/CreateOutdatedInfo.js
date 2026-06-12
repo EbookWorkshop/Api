@@ -26,7 +26,7 @@ function CreateOutdatedInfo() {
         await fsp.writeFile("./Entity/version.json", JSON.stringify(versionInfo, null, 2));
         return true;
     }).catch((err) => {
-        console.log(err);
+        console.log(`[${new Date().toLocaleString()}]\tCreateOutdatedInfo\n${err}`);
         throw err;
     });
 }

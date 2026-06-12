@@ -29,7 +29,7 @@ class SocketIO {
     myIO.on("connection", (socket) => {
       this.initWorkerPool(socket);//设置监听消息
       socket.on("message", (msg) => {
-        console.log("收到消息：", msg);
+        console.log(`[${new Date().toLocaleString()}]\t收到消息：${msg}`);
       })
     });
 
@@ -46,7 +46,7 @@ class SocketIO {
   }
 
   static SendMessage(message, data, error) {
-    GetIO().emit(`Message.Box.Send`, message);
+    SocketIO.GetIO().emit(`Message.Box.Send`, message);
     MemoryCache.set(message.id, {
       type: error ? "ErrorMessage" : "",   //
       message: message, err: error, data: data
@@ -54,7 +54,7 @@ class SocketIO {
   }
 
   static SendError(message, data, error) {
-    GetIO().emit(`Message.Box.Send`, message);
+    SocketIO.GetIO().emit(`Message.Box.Send`, message);
     MemoryCache.set(message.id, {
       type: "ErrorMessage",
       message: message, err: error, data: data

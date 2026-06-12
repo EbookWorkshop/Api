@@ -25,12 +25,6 @@ module.exports = (() => {
         })
     }
 
-    // if (debugSwitcher.bookIndex) {
-    //     em.on("WebBook.UpdateIndex.Finish", (bookid) => {
-    //         console.log("目录更新完毕！！");
-    //     })
-    // }
-
     if (debugSwitcher.bookChapter) {
         em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err, jobId, errObj) => {
             console.log(`更新章节失败：${bookid}-${cId}:`);

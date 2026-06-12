@@ -223,7 +223,6 @@ function AutoInit() {
     if (DO.HAS_INIT) return;
     const em = new EventManager();
     readdir(__dirname).then(fileList => {
-        // console.log(result);
 
         const notIncludeMethod = Object.getOwnPropertyNames(MethodNotInclude);
 
