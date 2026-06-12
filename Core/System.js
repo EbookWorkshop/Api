@@ -29,7 +29,7 @@ module.exports = new Promise((resolve, reject) => {
             resolve({
                 wp, db, em, io,
                 next: () => {
-                    wp.RunTask({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
+                    wp.RunTaskAsync({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
                 }
             });
 

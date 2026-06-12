@@ -263,7 +263,8 @@ class WebBookMaker {
                             setting: option
                         },
                         taskType: "puppeteer",
-                        maxThreadNum: 10
+                        maxThreadNum: 10,
+                        highPriority: true,
                     });
 
                     chap.Content += tempResult.get("Content")[0].text;
@@ -271,7 +272,10 @@ class WebBookMaker {
                 }
             }
 
-            //cs.set(curCp.WebTitle, chap);
+            const thisCP = this.myWebBook.Index.find(item => item.IndexId == cId) || {};
+            if (thisCP.WebTitle && thisCP.WebTitle != chap.WebTitle) {
+                console.warn(`《${this.myWebBook.BookName}》章节：${thisCP.WebTitle} 与抓取章节： ${chap.WebTitle} 标题不一致，请确认。`);
+            }
             this.myWebBook.AddChapter(chap, isUpdate);
 
             const em = new EventManager();

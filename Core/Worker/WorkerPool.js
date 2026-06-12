@@ -186,11 +186,16 @@ class WorkerPool extends EventEmitter {
             worker.StartTime = 0;
             worker.WaitingTime = Date.now();
             try {
-                await worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
+                /*
+                    # 注意：这里不等待回调执行完成，因为回调中可能会有异步操作，导致线程池阻塞
+                    # 如果线程以类似递归形式调用时，当线程队列超过最大线程数时，新增线程在排队，原线程又不能释放并向后调度。
+                */
+                /* await */ worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
             } catch (callbackError) {
                 return handleError(callbackError, result);//线程已执行成功，执行回调出错
             }
 
+            //释放线程，将worker回收
             const taskParam = worker[kTaskParam];
             worker[kTaskCallback] = null;
             worker[kTaskParam] = null;
@@ -319,7 +324,7 @@ class WorkerPool extends EventEmitter {
         }
 
         if (taskParam.highPriority)
-            taskList.unshift({ taskParam, callback });
+            taskList.unshift({ taskParam, callback });      //插队，排到队列头
         else
             taskList.push({ taskParam, callback });
     }
