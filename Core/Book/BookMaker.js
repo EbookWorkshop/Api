@@ -440,10 +440,10 @@ class BookMaker {
                 delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
             }
 
-            if (metadata.converFile || metadata.CoverImg) {    //更新了封面——图片格式或‘线装本’配色格式
+            if (metadata.converFile || typeof (metadata.CoverImg) !== "undefined") {    //更新了封面——图片格式或‘线装本’配色格式
                 const { AddFile, DeleteFile } = await import("../services/file.mjs");
                 const book = await myModels.Ebook.findByPk(id);
-                const oldCoverImg = book.CoverImg.replace(SHOW_BOOKNAME, "");
+                const oldCoverImg = book.CoverImg?.replace(SHOW_BOOKNAME, "");
 
                 if (metadata.converFile) {//图片格式封面
                     const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
@@ -457,9 +457,14 @@ class BookMaker {
                     if (!metadata.CoverImg.startsWith("/")) metadata.CoverImg = "/" + metadata.CoverImg;//确保以/做地址开头
                 }
 
+                if (metadata.CoverImg === null) {
+                    const webBook = await myModels.WebBook.findOne({ where: { BookId: id } });
+                    if (!webBook) metadata.CoverImg = "#f2e3a4";
+                }
+
                 //删除旧封面文件
-                const newCoverImg = metadata.CoverImg.replace(SHOW_BOOKNAME, "");
-                if (newCoverImg != oldCoverImg && await fs.promises.stat(path.join(dataPath, oldCoverImg)).catch(() => false)) {
+                const newCoverImg = metadata.CoverImg?.replace(SHOW_BOOKNAME, "");
+                if (newCoverImg != oldCoverImg && oldCoverImg && await fs.promises.stat(path.join(dataPath, oldCoverImg)).catch(() => false)) {
                     await DeleteFile(path.join(dataPath, oldCoverImg));
                     console.log(`[${new Date().toLocaleString()}]\t已删除旧封面文件：${path.join(dataPath, oldCoverImg)}`);
                 }

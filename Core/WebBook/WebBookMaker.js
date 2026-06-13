@@ -168,10 +168,11 @@ class WebBookMaker {
             if (result.has("IndexNextPage")) {
                 let npDataList = result.get("IndexNextPage");
                 npDataList = npDataList.filter(item => !item.Rule.CheckSetting || item.Rule.CheckSetting == item.text);
-                if (npDataList.length == 0) return;
+                let isFinish = false;
+                if (npDataList.length == 0) isFinish = true;
                 let npData = npDataList[0];
-                let nextPage = npData.url;
-                if (nextPage == "" || nextPage == url) {
+                let nextPage = npData?.url;
+                if (isFinish || nextPage == "" || nextPage == url) {
                     new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName, data);
                     return;
                 }
