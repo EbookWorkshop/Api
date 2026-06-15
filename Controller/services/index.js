@@ -30,16 +30,23 @@ module.exports = () => ({
             if (fs.existsSync(fPath)) {
                 version = JSON.parse(fs.readFileSync(fPath, "utf8"));
             }
+            const os = require('node:os');
+
+            let result = {
+                version: myPackage.version,
+                packageVersion: version,
+                dataPath: path.resolve(dataPath),
+                databaseSize: fs.statSync(databasePath).size,
+                nodeVersion: process.version, // 添加这一行来获取Node.js版本
+                osType: os.type(),
+                osRelease: os.release(),
+                cpu: os.cpus(),
+                memFree: (os.freemem() / 1024 / 1024 / 1024).toFixed(2),
+                memTotal: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2),
+            }
+            new ApiResponse(result).toCTX(ctx);
         } catch (_) { }
 
-        let result = {
-            version: myPackage.version,
-            packageVersion: version,
-            nodeVersion: process.version, // 添加这一行来获取Node.js版本
-            dataPath: path.resolve(dataPath),
-            databaseSize: fs.statSync(databasePath).size,
-        }
-        new ApiResponse(result).toCTX(ctx);
     },
     /**
      * @swagger

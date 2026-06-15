@@ -56,6 +56,9 @@ system.then((service) => {
     let server = app.listen(8777);
     new service.io(server);
     service.next();
+}).catch((error) => {
+    console.warn(`[${new Date().toLocaleString()}]\t系统启动失败:`);
+    console.error(error);
 });
 
 

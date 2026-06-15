@@ -16,23 +16,29 @@ EbookWorkshop-API 是一个功能强大的电子书处理工具，提供 Web API
 - **运行环境**: Node.js
 - **Web 框架**: Koa.js
 - **数据库**: SQLite + Sequelize
+- **内容抓取**: Puppeteer
 - **API 文档**: Swagger
 - **实时通信**: Socket.IO
 - **图片处理**: Sharp
 - **邮件服务**: Nodemailer
 - **多线程**: Node.js Worker Threads
+- **图书制作**: pdfkit、epub-gen
 
 ## 系统架构
 
 ```mermaid
 graph TD
-    A[客户端] --> B[Web API 层]
-    B --> C[控制器层]
-    C --> D[核心服务层]
-    D --> E[数据库]
-    D --> F[文件系统]
-    G[WebSocket] --> A
-    H[Worker Pool] --> D
+   A[客户端] --> B[Web API （Koa / app.js / Core/Server.js）]
+   B --> C[控制器层 （Controller/router.js）]
+   C --> D[核心服务层 （Core/System.js 等）]
+   D --> E[数据库 （SQLite + Sequelize）]
+   D --> F[文件系统 （dataPath, fontPath）]
+   A <--> G[WebSocket （Core/Socket.js）]
+   G <--> C
+   G <--> D
+   D <--> J[EventManager （Core/EventManager.js）]
+   H[Worker Pool （Core/Worker/WorkerPool.js）] <--> D
+   I(Worker Runner - Core/Worker/WorkerRunner.js) --> H
 ```
 
 ## 目录结构
