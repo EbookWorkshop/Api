@@ -317,6 +317,11 @@ class OTO_Ebook {
                 model: myModels.Ebook,
                 as: "Ebook",
                 attributes: ["BookName"]
+            }, {
+                model: myModels.Volume,
+                required: false, //left join
+                as: "Volume",
+                attributes: ["Title"]
             }],
             where: where,
             attributes: ["id", "Title", "BookId", "Content"],
@@ -329,11 +334,12 @@ class OTO_Ebook {
             const matchesTitle = item.Title?.match(regex);
             const matchesContent = item.Content?.match(regex);
 
-            const { Ebook, ...rest } = item.dataValues;
+            const { Ebook, Volume, ...rest } = item.dataValues;
             return {
                 ...rest,
                 HitCount: (matchesTitle?.length ?? 0) + (matchesContent?.length ?? 0),
-                BookName: Ebook.BookName
+                BookName: Ebook.BookName,
+                VolumeTitle: Volume?.Title,
             };
         });
 

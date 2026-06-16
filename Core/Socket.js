@@ -124,7 +124,7 @@ class SocketIO {
       let showErr = err;
       if (JSON.stringify(err) === "{}") showErr = { message: err.message, stack: err.stack };//数据库抛出的错误序列化后为空，所以要手动添加
 
-      SocketIO.SendMessage(msg, Object.fromEntries(result), showErr);
+      SocketIO.SendMessage(msg, result ? Object.fromEntries(result) : result, showErr);
     });
   }
 
