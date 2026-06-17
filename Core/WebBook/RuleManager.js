@@ -5,6 +5,8 @@ const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
 let { URL } = require("url");
 const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
+const DEFAULT_TIME_OUT = 40_000;
+
 
 /**
  * 规则管理器 
@@ -61,6 +63,7 @@ class RuleManager {
         //超时设置
         let timeout = await SystemConfigService.getConfig(WEBSITE_TIMEOUT, host);
         if (timeout) result.timeout = timeout * 1;
+        else result.timeout = DEFAULT_TIME_OUT;
         //用户代理设置
         let userAgent = await SystemConfigService.getConfig(WEBSITE_USERAGENT, host);
         if (userAgent) result.userAgent = userAgent;
@@ -168,7 +171,7 @@ class RuleManager {
             });
 
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
-            if (timeoutRule) {
+            if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
                 await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector, trans);
                 rules = rules.filter(r => r.ruleName != "Timeout");
             }
