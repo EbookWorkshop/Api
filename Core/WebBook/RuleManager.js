@@ -2,11 +2,11 @@
 const Models = require("./../OTO/Models");
 const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
-let { URL } = require("url");
-const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT } = require("../../Entity/SystemConfigGroup");
+const { URL } = require("url");
+const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
 const DEFAULT_TIME_OUT = 40_000;
-
+const DEFAULT_SCRAPING = "puppeteer";
 
 /**
  * 规则管理器 
@@ -67,7 +67,9 @@ class RuleManager {
         //用户代理设置
         let userAgent = await SystemConfigService.getConfig(WEBSITE_USERAGENT, host);
         if (userAgent) result.userAgent = userAgent;
-
+        //爬取方式
+        let scraping = await SystemConfigService.getConfig(WEBSITE_SCRAPING, host) || DEFAULT_SCRAPING;
+        result.scraping = scraping;
         return result;
     }
 
@@ -148,6 +150,11 @@ class RuleManager {
                 selector: userAgent,
             })
         }
+        let scraping = await SystemConfigService.getConfig(WEBSITE_SCRAPING, host) || DEFAULT_SCRAPING;
+        rsl.push({
+            ruleName: "Scraping",
+            selector: scraping,
+        })
         return rsl;
     }
 
@@ -165,6 +172,7 @@ class RuleManager {
             const oneHost = rules[0].host;
             await SystemConfigService.delConfig(WEBSITE_TIMEOUT, oneHost, trans);
             await SystemConfigService.delConfig(WEBSITE_USERAGENT, oneHost, trans);
+            await SystemConfigService.delConfig(WEBSITE_SCRAPING, oneHost, trans);
             await myModels.RuleForWeb.destroy({
                 where: { Host: oneHost, },
                 transaction: trans
@@ -173,13 +181,18 @@ class RuleManager {
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
                 await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector, trans);
-                rules = rules.filter(r => r.ruleName != "Timeout");
             }
+            rules = rules.filter(r => r.ruleName != "Timeout");
             const userAgentRule = rules.find(r => r.ruleName == "UserAgent");
             if (userAgentRule) {
                 await SystemConfigService.setConfig(WEBSITE_USERAGENT, userAgentRule.host, userAgentRule.selector, trans);
                 rules = rules.filter(r => r.ruleName != "UserAgent");
             }
+            const scraping = rules.find(r => r.ruleName == "Scraping");
+            if (scraping && scraping.selector != DEFAULT_SCRAPING) {
+                await SystemConfigService.setConfig(WEBSITE_SCRAPING, scraping.host, scraping.selector, trans);
+            }
+            rules = rules.filter(r => r.ruleName != "Scraping");
             for (let p of rules) {
                 let rule = {
                     Host: p.host,
@@ -205,7 +218,12 @@ class RuleManager {
         }
     }
 
-
+    /**
+     * 将书库里所有符合网址的地址站点变更为新站点
+     * @param {*} oldHost 
+     * @param {*} newHost 
+     * @returns 
+     */
     static async ChangeHostname(oldHost, newHost) {
         const myModels = Models.GetPO();
         const trans = await myModels.BeginTrans();
@@ -264,6 +282,21 @@ class RuleManager {
         } finally {
             return ret;
         }
+    }
+
+    /**
+     * 删除网站对应的配置
+     * @param {string} host 
+     */
+    static async DeleteRule(host) {
+        const myModels = new Models();
+        await myModels.RuleForWeb.destroy({
+            where: {
+                Host: host
+            }
+        });
+
+        await SystemConfigService.delConfig(null, host);
     }
 }
 

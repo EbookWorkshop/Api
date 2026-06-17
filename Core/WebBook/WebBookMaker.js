@@ -60,7 +60,8 @@ class WebBookMaker {
     async UpdateIndex(url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = await RuleManager.GetRuleByURL(curUrl);
-        const option = { RuleList: webRule.index.GetRuleList(), timeout: webRule.timeout, userAgent: webRule.userAgent };
+        let { index, chapter, ...option } = { ...webRule };
+        option.RuleList = index.GetRuleList();
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -211,7 +212,8 @@ class WebBookMaker {
         if (!url) return false;
 
         const webRule = await RuleManager.GetRuleByURL(url);
-        const option = { RuleList: webRule.chapter.GetRuleList(), timeout: webRule.timeout };
+        const { index, chapter, ...option } = { ...webRule };
+        option.RuleList = chapter.GetRuleList();
 
         wPool.RunTask({
             taskfile: "@/Core/Utils/GetDataFromUrl",
@@ -254,8 +256,6 @@ class WebBookMaker {
                     if (nextPageUrl == nextPageResult?.url) break;        //防止死循环
                     nextPageUrl = nextPageResult.url;
                     if (!nextPageUrl) break;
-
-                    // let tempResult = await GetDataFromUrl(npUrl, option);
 
                     let tempResult = await wPool.RunTaskAsync({
                         taskfile: "@/Core/Utils/GetDataFromUrl",

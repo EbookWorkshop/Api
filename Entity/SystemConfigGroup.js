@@ -45,6 +45,10 @@ class SystemConfigGroup {
         return 'website_useragent';
     }
 
+    static get WEBSITE_SCRAPING(){
+        return "website_scraping";
+    }
+
     /**
      * 阅读习惯
      */

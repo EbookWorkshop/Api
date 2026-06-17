@@ -44,6 +44,8 @@ module.exports = () => ({
      *                   - CapterTitle
      *                   - Content
      *                   - Timeout
+     *                   - UserAgent
+     *                   - Scraping
      *                   - Introduction
      *                   - IndexNextPage
      *                   - ContentNextPage
@@ -136,12 +138,7 @@ module.exports = () => ({
     "delete ": async (ctx) => {
         let host = ctx.query.host;
 
-        const myModels = new Models();
-        await myModels.RuleForWeb.destroy({
-            where: {
-                Host: host
-            }
-        });
+        await RuleManager.DeleteRule(host);
 
         new ApiResponse().toCTX(ctx);
     },

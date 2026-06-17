@@ -78,7 +78,7 @@ class SystemConfigService {
             let myModels = Models.GetPO();
             const value = await myModels.SystemConfig.destroy({
                 where: {
-                    Group,
+                    ...(Group ? { Group } : {}),
                     Name
                 },
                 transaction: trans
