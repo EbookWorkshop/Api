@@ -12,6 +12,9 @@ const kTaskParam = Symbol('kTaskParam');
  */
 const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
 
+const MAX_THREAD_NUM = 10;
+
+
 /**
  * 执行回调函数用
  */
@@ -52,8 +55,9 @@ class WorkerPool extends EventEmitter {
         super();
 
         if (numThreads == 0) {
-            const os = require('os');
-            numThreads = Math.max(os.cpus().length - 2, 2);
+            const os = require('node:os');
+            const cpuNum = os.cpus().length;
+            numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
 
         /**
