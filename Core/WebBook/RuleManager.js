@@ -14,7 +14,7 @@ const DEFAULT_SCRAPING = "puppeteer";
 class RuleManager {
     /**
      * 通过地址获得对应的规则配置
-     * @param {*} url 
+     * @param {string} url 
      */
     static async GetRuleByURL(url) {
         const host = RuleManager.GetHost(url);
@@ -80,20 +80,13 @@ class RuleManager {
      * @returns 返回纯粹的域名如 www.abc.com
      */
     static GetHost(url) {
-        // url = url.replace(/https?:\/\//, "");
-        // return url.indexOf("/") == -1 ? url : url.substr(0, url.indexOf("/"));
-
-        let urlObj = new URL(url);
-
-        let host = urlObj.host;
-
-        //去掉二级域名——已经可以方便复制配置，不需要
-        // let ha = host.split(".");
-        // if (ha.length >= 3) {
-        //     ha.shift();
-        //     host = ha.join(".");
-        // }
-        return host;
+        try {
+            let urlObj = new URL(url);
+            let host = urlObj.host;
+            return host;
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     /**

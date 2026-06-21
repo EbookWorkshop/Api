@@ -29,6 +29,10 @@ module.exports = function (sqlConnect) {
         Hotness: {
             type: DataTypes.INTEGER,
             defaultValue: 0
-        }
+        },
+        TotalWord: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0
+        },
     });
 }

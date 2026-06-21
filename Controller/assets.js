@@ -1,8 +1,9 @@
 const send = require('koa-send');//下载文件
 const { config } = require("./../Core/services/config");
-const path = require("path");
+const path = require("node:path");
+const fs = require("node:fs");
 const ApiResponse = require("./../Entity/ApiResponse");
-const fs = require("fs");
+const { parseJsonFromBodyData } = require("./../Core/Server");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -88,6 +89,45 @@ module.exports = () => ({
         const bookFiles = await ListFile(bookDir, { detail: true });
 
         new ApiResponse(bookFiles).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /assets/archive/book:
+     *   post:
+     *     tags:
+     *       - Assets —— 资源管理
+     *     summary: 修改库存图书信息
+     *     description: 修改库存图书信息，修改文件名
+     *     parameters:
+     *       - in: body
+     *         name: fileinfo
+     *         description: 文件信息
+     *         schema:
+     *             type: object
+     *             required:
+     *               - file
+     *               - name
+     *             properties:
+     *               file:
+     *                 type: string
+     *               name:
+     *                 type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     */
+    "post /archive/book": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["file", "name"]);
+        if (param == null) return;
+        const { RenameFile } = require("./../Core/services/file.mjs");
+        const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
+        const oldFile = path.join(bookDir, param.file);
+        const ext = path.extname(param.file);
+        const newName = path.join(bookDir, `${param.name}${ext}`);
+        new ApiResponse(await RenameFile(oldFile, newName)).toCTX(ctx);
     },
 
     /**

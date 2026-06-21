@@ -1,7 +1,7 @@
-const { AsyncResource } = require('async_hooks');
 const { EventEmitter } = require('events');
-const path = require('path');
+const path = require('node:path');
 const { Worker } = require('worker_threads');
+const CallbackRunner = require("./CallbackRunner");
 const EventManager = require("./../EventManager");
 const em = new EventManager();
 
@@ -14,32 +14,6 @@ const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
 
 const MAX_THREAD_NUM = 10;
 
-
-/**
- * 执行回调函数用
- */
-class WorkerPoolTaskInfo extends AsyncResource {
-    constructor(callback) {
-        super('WorkerPoolTaskInfo');
-        this.callback = callback;
-    }
-
-    /**
-     * 回调处理-执行回调
-     * @param {*} err 错误信息
-     * @param {*} result 回调的结果
-     */
-    async Done(err, result) {
-        try {
-            if (this.callback) await this.runInAsyncScope(this.callback, null, result, err);
-        } catch (newerr) {
-            em.emit("Debug.Log", `线程退出后执行回调出错：${newerr?.message || newerr}`, "WORKERPOOL", newerr);
-            throw newerr;
-        } finally {
-            this.emitDestroy();  // `TaskInfo`s are used only once.
-        }
-    }
-}
 
 /**
  * 线程池
@@ -194,7 +168,7 @@ class WorkerPool extends EventEmitter {
                     # 注意：这里不等待回调执行完成，因为回调中可能会有异步操作，导致线程池阻塞
                     # 如果线程以类似递归形式调用时，当线程队列超过最大线程数时，新增线程在排队，原线程又不能释放并向后调度。
                 */
-                /* await */ worker[kTaskCallback].Done(null, result);       //WorkerPoolTaskInfo.Done 执行回调
+                /* await */ worker[kTaskCallback].Done(null, result);       //CallbackRunner.Done 执行回调
             } catch (callbackError) {
                 return handleError(callbackError, result);//线程已执行成功，执行回调出错
             }
@@ -279,7 +253,7 @@ class WorkerPool extends EventEmitter {
         });
 
         worker[kTaskParam] = taskParam;
-        worker[kTaskCallback] = new WorkerPoolTaskInfo(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.
+        worker[kTaskCallback] = new CallbackRunner(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.
 
         worker.postMessage(taskParam);      //发到线程上运行
     }

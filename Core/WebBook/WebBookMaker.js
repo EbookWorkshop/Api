@@ -85,6 +85,13 @@ class WebBookMaker {
                 if (/[（\(【]/.test(tempName)) {
                     tempName = tempName.split(/[（\(【]/)[0];
                 }
+                if (!tempName) {
+                    new EventManager().SendErrorToUI(new Message(`请验证抓取规则、检查网站的可访问性。`, "notice", {
+                        title: "获取书名失败",
+                        subTitle: "可能抓取规则出错",
+                    }), Object.fromEntries(result));
+                    return;
+                }
 
                 if (!this.myWebBook.WebBookName) {  //初始化空书的情况
                     this.myWebBook.WebBookName = tempName;
@@ -371,18 +378,18 @@ class WebBookMaker {
     /**
      * 取得章节来源网址
      * ——多来源时选取合适的地址
-     * @param {int} urls 当前章节的所有可用网址
+     * @param {{id:number,Path:string}} urls 当前章节的所有可用网址
+     * @returns {string} 返回地址
      */
     GetDefaultUrl(urls) {
         let indexUrl = this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         let hostName = RuleManager.GetHost(indexUrl);
 
-        //TODO:
         for (let u of urls) {
             if (u.Path.includes(hostName)) return u.Path;
         }
 
-        return urls[0];
+        return urls[0]?.Path;
     }
 
 }

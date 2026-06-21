@@ -74,7 +74,7 @@ module.exports = () => ({
     "get /checkSiteAccessibility": async (ctx) => {
         let host = ctx.query.host;
         await isSiteAccessible(host).then((result) => {
-            new ApiResponse(result.result, result.error, 20000, result.status).toCTX(ctx);
+            new ApiResponse(result, "", 20000, result.status).toCTX(ctx);
         });
     },
 
