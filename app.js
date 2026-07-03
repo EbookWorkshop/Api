@@ -1,9 +1,10 @@
+ShowLogo();
 const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
+const path = require("node:path");
 const { config: myConfig } = require("./Core/services/config");
-const path = require("path");
 const system = require("./Core/System");
 const router = require('./Controller/router');
 const EventManager = require("./Core/EventManager");
@@ -74,4 +75,13 @@ function CtxSetAllowHead(ctx) {
     if (ctx.request.method === 'OPTIONS') { // 直接响应数据 应对axios的跨域探测
         ctx.status = 200;
     }
+}
+
+function ShowLogo() {
+    console.log(`
+██████ ██████  █████  █████ █   █         █    █  █████ ██████ █   █   █████ █    █  █████ ██████
+█      █    █ █    █ █    █ █  █          █    █ █    █ █    █ █  █   █      █    █ █    █ █    █
+█████  ██████ █    █ █    █ ███           █ ██ █ █    █ ██████ ███     █████ ██████ █    █ ██████
+█      █    █ █    █ █    █ █  █          ██  ██ █    █ █   █  █  █        █ █    █ █    █ █     
+██████ ██████  █████  █████ █   █         █    █  █████ █    █ █   █  █████  █    █  █████ █     `)
 }

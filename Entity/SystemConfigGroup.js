@@ -55,6 +55,13 @@ class SystemConfigGroup {
     static get READING_HABIT() {
         return 'reading_habit';
     }
+
+    /**
+     * 系统-自动任务
+     */
+    static get SYSTEM_AUTO_WORKER(){
+        return 'system_auto_worker';
+    }
 }
 
 module.exports = SystemConfigGroup;

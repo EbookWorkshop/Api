@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path")
 const ApiResponse = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
-const { saveUserConfig } = require("./../../Core/services/config");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const { saveUserConfig } = require("../../Core/services/config");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -164,6 +164,60 @@ module.exports = () => ({
         }
 
         new ApiResponse(saveUserConfig(setting)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/config/autoworker:
+     *   get:
+     *     tags:
+     *       - Services - 配置 —— 系统服务：配置
+     *     summary: 自动任务的相关配置
+     *     description: 自动任务的相关配置
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /autoworker": async (ctx) => {
+        const SystemConfigService = require("../../Core/services/SystemConfig");
+        const { GetNextWorkInfo } = require("../../Core/Worker/AutoWork/GetWebBook");
+        new ApiResponse({
+            runInterval: await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval") * 1 || 0,
+            nextWork: await GetNextWorkInfo(),
+        }).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/config/autoworker:
+     *   patch:
+     *     tags:
+     *       - Services - 配置 —— 系统服务：配置
+     *     summary: 自动任务的相关配置
+     *     description: 自动任务的相关配置
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "patch /autoworker": async (ctx) => {
+        let setting = await parseJsonFromBodyData(ctx);
+        if (!setting) return;
+        const SystemConfigService = require("../../Core/services/SystemConfig")
+
+        if (typeof setting.runInterval !== "undefined") {
+            let { runInterval } = setting;
+            SystemConfigService.setConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval", runInterval)
+        }
+
+        new ApiResponse().toCTX(ctx);
     },
 
 });

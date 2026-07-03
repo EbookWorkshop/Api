@@ -3,8 +3,8 @@ const Router = require('@koa/router');
 const path = require('path')
 const fs = require('fs');
 
-const EventManager = require("./../Core/EventManager");
-const ApiResponse = require("./../Entity/ApiResponse");
+const EventManager = require("../Core/EventManager");
+const ApiResponse = require("../Entity/ApiResponse");
 const em = new EventManager();
 const router = new Router();
 
@@ -28,10 +28,10 @@ async function load(dir, fatherRouter, cb_loader) {
 
         let isESM = filename.endsWith("mjs");
         let curfilename = filename.replace('.js', '');
-        let routerPath = `${url}/${curfilename}`;
+        const routerPath = path.join(url, curfilename);
         try {
             if (isESM) {
-                import(`${dir}/${curfilename}`).then(routes => {//ESM模块只能用相对路径加载
+                import(routerPath).then(routes => {//ESM模块只能用相对路径加载
                     cb_loader(curfilename.replace(".mjs", ""), fatherRouter, routes.default);
                 })
             } else {    //isCJS

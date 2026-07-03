@@ -43,27 +43,28 @@ class Models {
     }
 
     /**
-     * Sequelize的操作符
-     * Op.and：逻辑 AND 操作符，用于组合多个条件，所有条件必须同时满足。    
-     * Op.or：逻辑 OR 操作符，用于组合多个条件，至少有一个条件满足即可。     
-     * Op.gt：`>`大于（Greater Than）操作符，用于数值比较。     
-     * Op.gte：`>=`大于等于（Greater Than or Equal）操作符。     
-     * Op.lt：`<`小于（Less Than）操作符。     
-     * Op.lte：`<=`小于等于（Less Than or Equal）操作符。      
-     * Op.ne：`!=`不等于（Not Equal）操作符。      
-     * Op.eq：`=`等于（Equal）操作符。      
-     * Op.not：`!`逻辑 NOT 操作符，用于否定某个条件。      
-     * Op.between：介于两个值之间（Between）操作符。      
-     * Op.notBetween：不介于两个值之间操作符。      
-     * Op.in：在给定数组中的值（In）操作符。      
-     * Op.notIn：不在给定数组中的值（Not In）操作符。      
-     * Op.like：模糊匹配（Like）操作符，用于字符串匹配。      
-     * Op.notLike：不模糊匹配（Not Like）操作符。      
-     * Op.iLike：不区分大小写的模糊匹配（ILike）操作符，仅限 PostgreSQL。      
-     * Op.regexp：正则表达式匹配（Regexp）操作符，仅限 MySQL/PostgreSQL。      
-     * Op.notRegexp：不匹配正则表达式（Not Regexp）操作符。      
-     * Op.iRegexp：不区分大小写的正则表达式匹配（IRegexp）操作符，仅限 PostgreSQL。      
-     * Op.notIRegexp：不区分大小写的不匹配正则表达式（Not IRegexp）操作符。      
+     * # Sequelize的操作符（仅保留SQLite能用部分）
+     * + Op.all：用于 ALL 子查询，表示所有值都满足条件。
+     * + Op.and：逻辑与，多个条件同时成立；SQL 生成 AND。
+     * + Op.between：范围查询，语法 [a, b]；SQL 生成 BETWEEN a AND b。
+     * + Op.endsWith：字符串结尾匹配；SQL 生成 LIKE '%x'。
+     * + Op.eq：等于；SQL 生成 =。
+     * + Op.gt：大于；SQL 生成 >。
+     * + Op.gte：大于等于；SQL 生成 >=。
+     * + Op.in：集合包含；SQL 生成 IN (...)。
+     * + Op.is：精确判断 NULL/TRUE/FALSE 等；SQL 生成 IS NULL/IS TRUE。
+     * + Op.like：模糊匹配；SQL 生成 LIKE。
+     * + Op.lt：小于；SQL 生成 <。
+     * + Op.lte：小于等于；SQL 生成 <=。
+     * + Op.ne：不等于；SQL 生成 <> 或 !=。
+     * + Op.not：逻辑非；SQL 生成 NOT (...)。
+     * + Op.notBetween：不在范围内；SQL 生成 NOT BETWEEN。
+     * + Op.notIn：不在集合中；SQL 生成 NOT IN (...)。
+     * + Op.notLike：非模糊匹配；SQL 生成 NOT LIKE。
+     * + Op.or：逻辑或；SQL 生成 OR。
+     * + Op.startsWith：字符串前缀匹配；SQL 生成 LIKE 'x%'.
+     * + Op.substring：子串匹配；SQL 生成 LIKE '%x%'.
+     * + Op.values：用于多值比较；SQL 生成如 VALUES (4), (5), (6)。
      */
     static get Op() {
         return Sequelize.Op;

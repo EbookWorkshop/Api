@@ -2,11 +2,13 @@ const { EventEmitter } = require('events');
 const path = require('node:path');
 const { Worker } = require('worker_threads');
 const CallbackRunner = require("./CallbackRunner");
-const EventManager = require("./../EventManager");
+const EventManager = require("../EventManager");
+const SystemConfigService = require("../services/SystemConfig");
 const em = new EventManager();
 
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskParam = Symbol('kTaskParam');
+const AutoWorkIntervalUnread = Symbol('AutoWorkIntervalUnread');
 /**
  * 线程空闲事件
  */
@@ -14,6 +16,7 @@ const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
 
 const MAX_THREAD_NUM = 10;
 
+let isAWRunning = false;        //正在运行自动作业
 
 /**
  * 线程池
@@ -35,6 +38,12 @@ class WorkerPool extends EventEmitter {
         }
 
         /**
+         * 自动作业配置
+         */
+        this.autoWorkInterval = AutoWorkIntervalUnread;
+        this.isRunAutoWorker = false;// this.autoWorkInterval > 0;
+
+        /**
          * 最大线程总数
          */
         this.maxThreadsNum = numThreads;
@@ -52,20 +61,21 @@ class WorkerPool extends EventEmitter {
         this.waitingTask = new Map();
 
         /**
-         * 线程监控
+         * 线程自动释放关闭
          */
-        this.workerWatcher = setInterval(() => {
-            if (this.freeWorkers.length == 0) return;
-            if (this.workers.length <= 1) return;
-            let feeTime = 0;
-            let lazyWorker = null;
-            for (let i = 0; i < this.freeWorkers.length; i++) {
-                if (Date.now() - this.freeWorkers[i].WaitingTime > feeTime) {
-                    lazyWorker = this.freeWorkers[i];
-                    feeTime = Date.now() - lazyWorker.WaitingTime;
-                }
+        this.workerWatcher = setInterval(async () => {
+            if (this.autoWorkInterval === AutoWorkIntervalUnread) {
+                this.autoWorkInterval = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval") * 1;
+                this.isRunAutoWorker = this.autoWorkInterval > 0;
             }
+            if (this.freeWorkers.length == 0) return;
+            let lazyWorker = this.freeWorkers.reduce((prev, current) => { return prev.WaitingTime > current.WaitingTime ? prev : current; });
             if (!lazyWorker) return;
+            
+            let feeTime = Date.now() - lazyWorker.WaitingTime;
+            if (feeTime >= this.autoWorkInterval) this.AutoWorkWatcher();//当有线程闲置超过x小时（360_0000ms）后，才执行自动进程
+
+            if (this.workers.length <= 1) return;       //至少保留一个线程
             let workerId = this.workers.indexOf(lazyWorker);
             this.workers.splice(workerId, 1);
             let freeWorkersId = this.freeWorkers.indexOf(lazyWorker);
@@ -308,6 +318,36 @@ class WorkerPool extends EventEmitter {
     }
 
     /**
+     * 自动作业
+     */
+    async AutoWorkWatcher() {
+        if (!this.isRunAutoWorker) return;
+        if (isAWRunning) return;
+        isAWRunning = true;
+        try {
+            const fsPromises = require("node:fs/promises");
+            const awPath = path.join(__dirname, "AutoWork");
+            const startTime = new Date();
+            console.log(`[${startTime.toLocaleString()}]\t自动作业已启动。`);
+
+            const files = await fsPromises.readdir(awPath);
+            for (const filename of files) {
+                if (!filename.endsWith(".js")) continue;
+                let file = path.join(awPath, filename);
+                const aw = require(file);
+                await aw.Run();
+            }
+            const timeNow = new Date();
+            console.log(`[${timeNow.toLocaleString()}]\t自动作业已完成，耗时：${(timeNow - startTime) / 1000}s。`)
+        } catch (err) {
+            console.error(`[${startTime.toLocaleString()}]\t自动作业运行失败：`, err)
+        }
+        finally {
+            isAWRunning = false;
+        }
+    }
+
+    /**
      * 关闭线程池，结束所有线程
      */
     Close() {
@@ -322,7 +362,6 @@ class WorkerPool extends EventEmitter {
      */
     static GetWorkerPool() {
         if (_Singleton_WorkerPool === null) _Singleton_WorkerPool = new WorkerPool();
-
         return _Singleton_WorkerPool;
     }
 

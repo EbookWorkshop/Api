@@ -197,8 +197,10 @@ class WebBookMaker {
      * 更新指定章节-更新正文
      * @param {int} cId 章节Id
      * @param {boolean} isUpdate 是否覆盖更新-默认否
+     * @param {string} [jobId=""] 任务ID，批量抓章节时，为同一批任务定义一个任务ID
+     * @param {undefined} [defaultContent=undefined] （任务失败时）设置默认的章节正文
      */
-    async UpdateOneChapter(cId, isUpdate = false, jobId = "") {
+    async UpdateOneChapter(cId, isUpdate = false, jobId = "", defaultContent = undefined) {
         let curIndex = this.myWebBook?.GetIndex(cId);
 
         if (!curIndex) {
@@ -240,6 +242,10 @@ class WebBookMaker {
             if (result.has("CapterTitle")) {
                 let cTitleResult = result.get("CapterTitle")[0];
                 if (cTitleResult?.text) chap.Title = cTitleResult.text;
+            }
+
+            if (defaultContent !== undefined) {
+                chap.Content = defaultContent;
             }
 
             if (result.has("Content")) {
