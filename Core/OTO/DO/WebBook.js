@@ -1,14 +1,14 @@
 const DO = require("./index");
-const Models = require("./../Models");
-const Ebook = require("./../../../Entity/Ebook/Ebook");
-const Volume = require("./../../../Entity/Ebook/Volume");
-const WebBook = require("./../../../Entity/WebBook/WebBook");
-const WebIndex = require("./../../../Entity/WebBook/WebIndex");
-const WebChapter = require("./../../../Entity/WebBook/WebChapter");
+const Models = require("../Models");
+const Ebook = require("../../../Entity/Ebook/Ebook");
+const Volume = require("../../../Entity/Ebook/Volume");
+const WebBook = require("../../../Entity/WebBook/WebBook");
+const WebIndex = require("../../../Entity/WebBook/WebIndex");
+const WebChapter = require("../../../Entity/WebBook/WebChapter");
 const SystemConfigService = require("../../services/SystemConfig");
-const { Run: Reviewer } = require("./../../Utils/ReviewString");
-// const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
-// const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
+const { Run: Reviewer } = require("../../Utils/ReviewString");
+// const ChapterOptions = require("../../../Entity/WebBook/ChapterOptions");
+// const IndexOptions = require("../../../Entity/WebBook/IndexOptions");
 
 
 class OTO_WebBook {

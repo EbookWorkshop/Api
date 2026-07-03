@@ -1,13 +1,13 @@
 //发邮件 邮箱管理
-const BookMaker = require("./../../Core/Book/BookMaker");
-const PDFMaker = require("./../../Core/PDF/PDFMaker.js");
-const EPUBMaker = require("./../../Core/EPUB/EPUBMaker.js");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
-const ApiResponse = require("./../../Entity/ApiResponse");
-const Models = require("./../../Core/OTO/Models");
-const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("./../../Core/services/email");
-const path = require("path");
-const { config: { dataPath, FOLDER } } = require("./../../Core/services/config");
+const BookMaker = require("../../Core/Book/BookMaker");
+const PDFMaker = require("../../Core/PDF/PDFMaker.js");
+const EPUBMaker = require("../../Core/EPUB/EPUBMaker.js");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const Models = require("../../Core/OTO/Models");
+const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("../../Core/services/email");
+const path = require("node:path");
+const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
 
 
 

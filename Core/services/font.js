@@ -1,8 +1,8 @@
 const { SYSTEM_DEFAULT_FONT } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("./SystemConfig");
-const { config: { dataPath, FOLDER } } = require("./../services/config");
-const fs = require('fs');
-const path = require('path');
+const { config: { dataPath, FOLDER } } = require("../services/config");
+const fs = require('node:fs');
+const path = require('node:path');
 const FONT_PATH = path.join(dataPath, FOLDER.font);
 
 /**

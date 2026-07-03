@@ -1,8 +1,8 @@
 //缓存、下载文件到服务器指定地址
 const https = require("https");
-let { URL } = require("url");
+let { URL } = require("node:url");
 console.info("----------  下列警告忽略  ------------")
-const { AddFile } = require("./../services/file.mjs");          //这里会得到一个node警告（node:16472），因为在CJS模块中引入了ESM模块，但是不影响使用（当前node版本为实验性功能）
+const { AddFile } = require("../services/file.mjs");          //这里会得到一个node警告（node:16472），因为在CJS模块中引入了ESM模块，但是不影响使用（当前node版本为实验性功能）
 console.info("----------  上述警告忽略  ------------")
 
 /**

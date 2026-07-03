@@ -1,12 +1,12 @@
 const { readdir } = require('node:fs/promises');
-const path = require("path");
+const path = require("node:path");
 const EventManager = require("../../EventManager");
 const Models = require("../Models");
-const Index = require("./../../../Entity/Ebook/Index");
-const Volume = require("./../../../Entity/Ebook/Volume");
-const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/ReviewString");
-const { config: { dataPath } } = require("./../../services/config");
+const Index = require("../../../Entity/Ebook/Index");
+const Volume = require("../../../Entity/Ebook/Volume");
+const Chapter = require("../../../Entity/Ebook/Chapter");
+const { Run: Reviewer } = require("../../Utils/ReviewString");
+const { config: { dataPath } } = require("../../services/config");
 
 /**
  * # 初始化

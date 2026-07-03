@@ -79,7 +79,7 @@ module.exports = () => ({
 所有 API 应使用 `ApiResponse` 类返回标准化的 JSON 响应：
 
 ```javascript
-const ApiResponse = require("./../Entity/ApiResponse");
+const ApiResponse = require("../Entity/ApiResponse");
 
 // 成功响应
 new ApiResponse(data).toCTX(ctx);
@@ -216,7 +216,7 @@ module.exports = () => ({
 **示例**：`Controller/assets.js`
 ```javascript
 const send = require('koa-send');
-const { dataPath } = require("./../config");
+const { dataPath } = require("../config");
 const path = require("path");
 
 module.exports = () => ({
@@ -252,8 +252,8 @@ module.exports = () => ({
 **示例**：`Controller/library/index.js`（部分）
 ```javascript
 const DO = require("../../Core/OTO/DO");
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 
 module.exports = () => ({
     /**

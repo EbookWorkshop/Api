@@ -1,9 +1,9 @@
 const send = require('koa-send');//下载文件
-const { config } = require("./../Core/services/config");
+const { config } = require("../Core/services/config");
 const path = require("node:path");
 const fs = require("node:fs");
-const ApiResponse = require("./../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../Core/Server");
+const ApiResponse = require("../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("../Core/Server");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -84,7 +84,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /archive/book": async (ctx) => {
-        const { ListFile } = require("./../Core/services/file.mjs");
+        const { ListFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const bookFiles = await ListFile(bookDir, { detail: true });
 
@@ -122,7 +122,7 @@ module.exports = () => ({
     "post /archive/book": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["file", "name"]);
         if (param == null) return;
-        const { RenameFile } = require("./../Core/services/file.mjs");
+        const { RenameFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const oldFile = path.join(bookDir, param.file);
         const ext = path.extname(param.file);
@@ -152,7 +152,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "delete /archive/book/:name": async (ctx) => {
-        const { DeleteFile } = require("./../Core/services/file.mjs");
+        const { DeleteFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const bookPath = path.join(bookDir, ctx.params.name);
         const result = await DeleteFile(bookPath);

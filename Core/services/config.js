@@ -1,7 +1,7 @@
-const defaultConfig = require('./../../config');
-const EventManager = require("./../EventManager");
-const fs = require("fs");
-const path = require("path");
+const defaultConfig = require("../../config");
+const EventManager = require("../EventManager");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const UserConfigFilePath = "./UserConfig.json";
 const em = new EventManager();

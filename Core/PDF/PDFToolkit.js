@@ -1,10 +1,10 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
-const fs = require('fs');
-const path = require('path');
-const { config } = require("./../services/config");
+const fs = require('node:fs');
+const path = require('node:path');
+const { config } = require("../services/config");
 const Volume = require("../../Entity/Ebook/Volume");
 const sharp = require("sharp");     //提供图像格式转换
-const { CheckAndMakeDir } = require("./../Server");
+const { CheckAndMakeDir } = require("../Server");
 
 const FONT_PATH = path.join(config.dataPath, config.FOLDER.font);
 /**

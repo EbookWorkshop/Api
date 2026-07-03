@@ -1,6 +1,6 @@
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
-const SocketIO = require("./../../Core/Socket.js");
+const SocketIO = require("../../Core/Socket.js");
 const Message = require("../../Entity/Message");
 
 module.exports = () => ({

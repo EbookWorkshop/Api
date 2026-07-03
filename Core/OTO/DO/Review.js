@@ -1,6 +1,6 @@
 // const DO = require("./index");
-// const Rule = require("./../../../Entity/WebBook/Rule");
-const Models = require("./../Models");
+// const Rule = require("../../../Entity/WebBook/Rule");
+const Models = require("../Models");
 
 
 class OTO_Review {

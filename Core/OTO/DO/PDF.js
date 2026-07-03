@@ -1,6 +1,6 @@
 const DO = require("./index");
-// const Models = require("./../Models");
-// const PDFBook = require("./../../../Entity/PDFBook/PDFBook");
+// const Models = require("../Models");
+// const PDFBook = require("../../../Entity/PDFBook/PDFBook");
 
 
 class OTO_PDF {

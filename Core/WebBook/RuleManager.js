@@ -1,8 +1,8 @@
 //管理站点与爬站规则之间的关系
-const Models = require("./../OTO/Models");
-const IndexOptions = require("./../../Entity/WebBook/IndexOptions");
-const ChapterOptions = require("./../../Entity/WebBook/ChapterOptions");
-const { URL } = require("url");
+const Models = require("../OTO/Models");
+const IndexOptions = require("../../Entity/WebBook/IndexOptions");
+const ChapterOptions = require("../../Entity/WebBook/ChapterOptions");
+const { URL } = require("node:url");
 const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
 const DEFAULT_TIME_OUT = 40_000;

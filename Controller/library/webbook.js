@@ -1,7 +1,7 @@
 const DO = require("../../Core/OTO/DO");
-const WebBookMaker = require("./../../Core/WebBook/WebBookMaker");
-const { parseJsonFromBodyData, parseBodyData } = require("./../../Core/Server");
-const ApiResponse = require("./../../Entity/ApiResponse");
+const WebBookMaker = require("../../Core/WebBook/WebBookMaker");
+const { parseJsonFromBodyData, parseBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
 
 
 

@@ -1,4 +1,4 @@
-const Models = require("./../Models");
+const Models = require("../Models");
 
 
 class OTO_BOOKMARK {

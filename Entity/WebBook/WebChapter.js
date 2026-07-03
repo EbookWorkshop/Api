@@ -1,4 +1,4 @@
-const Chapter = require("./../Ebook/Chapter");
+const Chapter = require("../Ebook/Chapter");
 
 /**
  * 章节

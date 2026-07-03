@@ -1,13 +1,13 @@
 //爬站规则
 
 const RuleManager = require("../../Core/WebBook/RuleManager");
-const Models = require("./../../Core/OTO/Models");
-const Rule = require("./../../Entity/WebBook/Rule");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
+const Models = require("../../Core/OTO/Models");
+const Rule = require("../../Entity/WebBook/Rule");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { VisualizationOfRule } = require("../../Core/WebBook/RuleVis")
 const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
-const fs = require('fs').promises;
+const fs = require('node:fs/promises');
 
 
 module.exports = () => ({

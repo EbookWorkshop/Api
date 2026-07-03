@@ -1,4 +1,4 @@
-const { version } = require("./../package.json");
+const { version } = require("../package.json");
 const jsdoc = require('swagger-jsdoc')
 
 const swaggerDefinition = {

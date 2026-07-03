@@ -1,12 +1,12 @@
 const DO = require("../OTO/DO");
 
-const EventManager = require("./../EventManager");
-const path = require("path");
-const { config: { dataPath, FOLDER } } = require("./../services/config");
-const { GetDefaultReadingFont } = require("./../services/font")
-const WorkerPool = require("./../Worker/WorkerPool");
+const EventManager = require("../EventManager");
+const path = require("node:path");
+const { config: { dataPath, FOLDER } } = require("../services/config");
+const { GetDefaultReadingFont } = require("../services/font")
+const WorkerPool = require("../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
-const FindMyChapters = require("./../Book/FindMyChapters");
+const FindMyChapters = require("../Book/FindMyChapters");
 
 class PDFMaker {
     /**

@@ -1,7 +1,7 @@
 const DO = require("../../Core/OTO/DO");
 const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 
 module.exports = () => ({
     /**
@@ -431,7 +431,7 @@ module.exports = () => ({
         try {
             const bookId = ctx.query.bookid * 1;
             const chapterids = ctx.query.chapterids;
-            const { checkPairedPunctuation } = require("./../../Core/Book/CheckPairedPunctuation");
+            const { checkPairedPunctuation } = require("../../Core/Book/CheckPairedPunctuation");
 
             let cpIds = null;
             try {
@@ -473,7 +473,7 @@ module.exports = () => ({
                 new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
                 return;
             }
-            const { AnalyzeBookText } = require("./../../Core/Book/Analyze");
+            const { AnalyzeBookText } = require("../../Core/Book/Analyze");
 
             const results = await AnalyzeBookText(bookId * 1);
             new ApiResponse(results).toCTX(ctx);

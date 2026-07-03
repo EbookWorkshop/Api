@@ -1,7 +1,7 @@
 //爬站规则
 
 const Models = require("../../Core/OTO/Models");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 
