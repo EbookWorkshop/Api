@@ -218,7 +218,13 @@ class WebBookMaker {
         }
 
         let url = this.GetDefaultUrl(curIndex.URL);
-        if (!url) return false;
+        if (!url) {
+            if (defaultContent != undefined) {
+                curIndex.Content = defaultContent;
+                this.myWebBook.AddChapter(new WebChapter(curIndex))
+            }
+            return false;
+        }
 
         const webRule = await RuleManager.GetRuleByURL(url);
         const { index, chapter, ...option } = { ...webRule };
@@ -256,7 +262,7 @@ class WebBookMaker {
                     if (errObj?.message) errAdd = "，" + contResult[1].message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
                     new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, errObj);
-                    return;
+                    if (defaultContent === undefined) return;
                 }
                 chap.Content = cContentResult.text;
             }

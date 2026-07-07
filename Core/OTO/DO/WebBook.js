@@ -226,6 +226,7 @@ class OTO_WebBook {
             let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: webBook.BookId } });
             if (ebookIndex == null) return;
             let wbookIndex = await ebookIndex.getWebBookIndex();
+            if (wbookIndex == null) return;
             let cp = new WebChapter({ ...wbookIndex.dataValues, ...ebookIndex.dataValues });
             if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);
         }

@@ -214,7 +214,11 @@ module.exports = () => ({
 
         if (typeof setting.runInterval !== "undefined") {
             let { runInterval } = setting;
-            SystemConfigService.setConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval", runInterval)
+            SystemConfigService.setConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval", runInterval);
+            const WorkerPool = require("../../Core/Worker/WorkerPool");
+            const wp = new WorkerPool()
+            wp.autoWorkInterval = runInterval;
+            wp.isRunAutoWorker = runInterval > 0;
         }
 
         new ApiResponse().toCTX(ctx);
