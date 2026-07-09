@@ -298,6 +298,9 @@ module.exports = () => ({
      *                       chapterId:
      *                         type: integer?
      *                         format: int64
+     *                       volumeId:
+     *                         type: integer?
+     *                         format: int64
      *                       content:
      *                         type: string?
      *                       orderNum:

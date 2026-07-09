@@ -24,13 +24,16 @@ async function GetNextWorkInfo() {
         include: [{
             model: myModels.Ebook,
             as: "Ebook",
+            required: true,
             include: [{
                 model: myModels.WebBook,
-                as: "WebBook"
+                as: "WebBook",
+                required: true      // inner join
             }]
         }],
         where: {
             Content: { [Models.Op.is]: null },
+            OrderNum: { [Models.Op.gt]: 0 },        //隐藏章节不采用
         },
         attributes: ["id", "BookId", "Title"],
         order: [["updatedAt", "DESC"]]

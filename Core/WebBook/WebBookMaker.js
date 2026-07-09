@@ -241,20 +241,25 @@ class WebBookMaker {
         }, async (result, err) => {
             if (err) {
                 new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId, err);
-                return;
+                if (defaultContent === undefined) return;
             }
 
             let chap = new WebChapter(curIndex);
-            if (result.has("CapterTitle")) {
+            if (result?.has("CapterTitle")) {
                 let cTitleResult = result.get("CapterTitle")[0];
-                if (cTitleResult?.text) chap.Title = cTitleResult.text;
+                if (cTitleResult?.text) chap.WebTitle = cTitleResult.text;
             }
 
             if (defaultContent !== undefined) {
                 chap.Content = defaultContent;
             }
 
-            if (result.has("Content")) {
+            if (result?.has("URL")) {
+                const resultURL = result.get("URL");
+                console.warn(`《${this.myWebBook.BookName}》章节： ${chap.WebTitle} ,${resultURL.message}\n请求地址：${resultURL.expect};\n响应地址：${resultURL.actual}`);
+            }
+
+            if (result?.has("Content")) {
                 const contResult = result.get("Content");
                 let [cContentResult, errObj] = contResult;
                 if (!cContentResult.text) {
@@ -263,12 +268,12 @@ class WebBookMaker {
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
                     new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, errObj);
                     if (defaultContent === undefined) return;
-                }
-                chap.Content = cContentResult.text;
+                } else
+                    chap.Content = cContentResult.text;
             }
 
             //下一页
-            if (result.has("ContentNextPage")) {
+            if (result?.has("ContentNextPage")) {
                 let nextPageResult = result.get("ContentNextPage")[0];
                 let nextPageUrl = url;
                 while (nextPageResult.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式

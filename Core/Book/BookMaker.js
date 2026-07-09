@@ -211,6 +211,7 @@ class BookMaker {
             if (baseCp.title) chapterSetting.Title = baseCp.title;
             if (baseCp.content) chapterSetting.Content = baseCp.content;
             if (baseCp.orderNum) chapterSetting.OrderNum = baseCp.orderNum;
+            if (baseCp.volumeId) chapterSetting.VolumeId = baseCp.volumeId;
             return chapterSetting;
         }
 

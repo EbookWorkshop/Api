@@ -22,9 +22,14 @@ class OTO_BOOKMARK {
                     model: myModels.Ebook,
                     attributes: ['BookName'],
                     as: 'Ebook'
+                }, {
+                    model: myModels.Volume,
+                    attributes: ['Title'],
+                    require: false,
+                    as: 'Volume'
                 }]
             }],
-            order: [['createdAt', 'DESC']]  
+            order: [['createdAt', 'DESC']]
         });
         return bookmark.map(b => {
             return {
@@ -32,7 +37,8 @@ class OTO_BOOKMARK {
                 createdAt: b.createdAt.toLocaleString(),
                 BookName: b.EbookChapter?.Ebook?.BookName,
                 Title: b.EbookChapter?.Title,
-                ChapterId: b.IndexId
+                ChapterId: b.IndexId,
+                VolumeName:b.EbookChapter.Volume?.Title,
             };
         });
     }
