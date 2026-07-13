@@ -193,8 +193,8 @@ class DO {
                 const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
                 await fs.unlink(thisCoverImg);
-                let imgDir = path.dirname(thisCoverImg);
-                await fs.rmdir(imgDir);
+                // let imgDir = path.dirname(thisCoverImg);
+                // await fs.rmdir(imgDir);
             }
         } catch (err) {
             console.error("删除封面出错：", err);

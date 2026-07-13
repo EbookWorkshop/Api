@@ -454,7 +454,7 @@ class BookMaker {
                     await AddFile(metadata.converFile, path.join(dataPath, coverPath));
                     let isEmbelName = metadata.CoverImg === SHOW_BOOKNAME;          //如果是新上传的文件，需要在CoverImg字段记录嵌入标记
                     delete metadata.converFile;
-                    metadata.CoverImg = coverPath + SHOW_BOOKNAME;
+                    metadata.CoverImg = coverPath + (isEmbelName ? SHOW_BOOKNAME : "");
                     if (!metadata.CoverImg.startsWith("/")) metadata.CoverImg = "/" + metadata.CoverImg;//确保以/做地址开头
                 }
 

@@ -7,6 +7,7 @@ const WebBookMaker = require("../../WebBook/WebBookMaker")
  */
 async function Main() {
     let { BookId, id, Title, BookName } = await GetNextWorkInfo();
+    if (!id) return;
     const webBook = new WebBookMaker(BookId);
     await webBook.loadFromDB;
     await webBook.UpdateOneChapter(id, false, undefined, '');
@@ -47,7 +48,7 @@ async function GetNextWorkInfo() {
                 Content: { [Models.Op.eq]: '' },
             },
         })
-        return null;
+        return { id: -1 };
     }
     let { BookId, id, Title, Ebook: { BookName } } = chapter.dataValues;
     return { BookId, id, Title, BookName }
