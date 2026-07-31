@@ -99,7 +99,7 @@ class OTO_Ebook {
     static async GetEBookInfoById(bookId) {
         const myModels = Models.GetPO();
         const book = await myModels.Ebook.findByPk(bookId, {
-            attributes: ['id', 'BookName', 'Author', 'CoverImg', 'FontFamily']
+            attributes: ['id', 'BookName', 'Author', 'CoverImg']
         });
         if (book == null) return null;
         //简介：

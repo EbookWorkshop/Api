@@ -13,15 +13,6 @@ module.exports = function (sqlConnect) {
             type: DataTypes.STRING(20),
             allowNull: true
         },
-        FontFamily: {
-            type: DataTypes.STRING(10),
-            allowNull: false,
-            defaultValue: "微软雅黑"
-        },
-        FontSize: {
-            type: DataTypes.INTEGER,
-            defaultValue: 22
-        },
         CoverImg: {
             type: DataTypes.STRING(50),
             allowNull: true

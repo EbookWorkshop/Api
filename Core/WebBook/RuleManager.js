@@ -1,10 +1,11 @@
 //管理站点与爬站规则之间的关系
 const Models = require("../OTO/Models");
+const DO = require("../OTO/DO");
 const IndexOptions = require("../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("../../Entity/WebBook/ChapterOptions");
-const { URL } = require("node:url");
 const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
+const SiteHelper = require("../Utils/SiteHelper");
 const DEFAULT_TIME_OUT = 40_000;
 const DEFAULT_SCRAPING = "puppeteer";
 
@@ -17,7 +18,7 @@ class RuleManager {
      * @param {string} url 
      */
     static async GetRuleByURL(url) {
-        const host = RuleManager.GetHost(url);
+        const host = SiteHelper.GetHost(url);
         let result = {
             index: new IndexOptions(),
             chapter: new ChapterOptions(),
@@ -25,11 +26,7 @@ class RuleManager {
             userAgent: undefined,
         };
 
-        let myModels = new Models();
-        let allRules = await myModels.RuleForWeb.findAll({
-            where: { Host: host }
-        });
-
+        let allRules = await RuleManager.GetRules(host);
         if (allRules.length === 0) throw ({ message: `网站尚未配置规则：${host}` });
 
         for (let r of allRules) {
@@ -58,6 +55,11 @@ class RuleManager {
             curRule.GetUrlAction = r.GetUrlAction;
             curRule.CheckSetting = r.CheckSetting;
             curRule.Type = r.Type;
+
+            //设置爬文字典
+            if (curRule.RuleName === "Content"/* || curRule.RuleName === "CapterTitle"*/) {
+                curRule.Dictionaries = await DO.GetDictionaryByURL(host);
+            }
         }
 
         //超时设置
@@ -70,41 +72,20 @@ class RuleManager {
         //爬取方式
         let scraping = await SystemConfigService.getConfig(WEBSITE_SCRAPING, host) || DEFAULT_SCRAPING;
         result.scraping = scraping;
+
         return result;
-    }
-
-
-    /**
-     * 根据网址返回对应的站点
-     * @param {string} url 需要分析的网址
-     * @returns 返回纯粹的域名如 www.abc.com
-     */
-    static GetHost(url) {
-        try {
-            let urlObj = new URL(url);
-            let host = urlObj.host;
-            return host;
-        } catch (err) {
-            console.error(err);
-        }
     }
 
     /**
      * 取得规则配置的json数据
      * @param {string} url 
-     * @returns {json}
+     * @returns {json} 返回**JSON**格式的数据
      */
     static async GetRuleJsonByURL(url) {
         let host = url.startsWith("http") ? this.GetHost(url) : url;
+        let rules = await RuleManager.GetRules(host);
 
-        const myModels = new Models();
-        let rules = await myModels.RuleForWeb.findAll({
-            where: {
-                Host: host
-            }
-        });
         let rsl = [];
-
         for (let r of rules) {
             let {
                 Host: host,
@@ -147,7 +128,13 @@ class RuleManager {
         rsl.push({
             ruleName: "Scraping",
             selector: scraping,
-        })
+        });
+        let dict = await DO.GetDictionaryByURL(host);
+        if (dict)
+            rsl.push({
+                ruleName: "Dictionary",
+                data: dict
+            });
         return rsl;
     }
 
@@ -163,29 +150,30 @@ class RuleManager {
         try {
             //全套规则删除并更新
             const oneHost = rules[0].host;
-            await SystemConfigService.delConfig(WEBSITE_TIMEOUT, oneHost, trans);
-            await SystemConfigService.delConfig(WEBSITE_USERAGENT, oneHost, trans);
-            await SystemConfigService.delConfig(WEBSITE_SCRAPING, oneHost, trans);
-            await myModels.RuleForWeb.destroy({
-                where: { Host: oneHost, },
-                transaction: trans
-            });
+            await RuleManager.DeleteRule(oneHost, trans);
+            await DO.DeleteReviewDictionary(oneHost, trans);
 
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
-                await SystemConfigService.setConfig(WEBSITE_TIMEOUT, timeoutRule.host, timeoutRule.selector, trans);
+                await SystemConfigService.setConfig(WEBSITE_TIMEOUT, oneHost, timeoutRule.selector, trans);
             }
             rules = rules.filter(r => r.ruleName != "Timeout");
             const userAgentRule = rules.find(r => r.ruleName == "UserAgent");
             if (userAgentRule) {
-                await SystemConfigService.setConfig(WEBSITE_USERAGENT, userAgentRule.host, userAgentRule.selector, trans);
+                await SystemConfigService.setConfig(WEBSITE_USERAGENT, oneHost, userAgentRule.selector, trans);
                 rules = rules.filter(r => r.ruleName != "UserAgent");
             }
             const scraping = rules.find(r => r.ruleName == "Scraping");
             if (scraping && scraping.selector != DEFAULT_SCRAPING) {
-                await SystemConfigService.setConfig(WEBSITE_SCRAPING, scraping.host, scraping.selector, trans);
+                await SystemConfigService.setConfig(WEBSITE_SCRAPING, oneHost, scraping.selector, trans);
             }
             rules = rules.filter(r => r.ruleName != "Scraping");
+
+            const dict = rules.find(d => d.ruleName == "Dictionary");
+            if (dict && dict.data) {
+                await DO.SaveDictionaries(oneHost, dict.data, trans);
+                rules = rules.filter(r => r.ruleName != "Dictionary");
+            }
             for (let p of rules) {
                 let rule = {
                     Host: p.host,
@@ -278,18 +266,32 @@ class RuleManager {
     }
 
     /**
-     * 删除网站对应的配置
+     * 获取指定站点所有的规则
+     * @param {*} host 站点
+     * @returns 
+     */
+    static async GetRules(host) {
+        let myModels = new Models();
+        let allRules = await myModels.RuleForWeb.findAll({
+            where: { Host: host }
+        });
+        return allRules;
+    }
+
+    /**
+     * 删除网站对应的所有配置
+     * 包含 SystemConfig 的配置
      * @param {string} host 
      */
-    static async DeleteRule(host) {
+    static async DeleteRule(host, trans) {
         const myModels = new Models();
         await myModels.RuleForWeb.destroy({
             where: {
                 Host: host
-            }
+            },
+            transaction: trans
         });
-
-        await SystemConfigService.delConfig(null, host);
+        await SystemConfigService.delConfig(null, host, trans);
     }
 }
 

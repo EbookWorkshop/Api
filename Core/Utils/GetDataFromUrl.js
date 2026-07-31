@@ -5,6 +5,7 @@ const puppeteer = require('puppeteer')
 const Iconv = require('iconv-lite');
 const EventManager = require("../EventManager");
 const { ExecRule } = require("../WebBook/ExecRule");
+const { UseDictReplace, isExec } = require("../WebBook/ExecDict");
 
 const isDEBUG = debugSwitcher.puppeteer;
 
@@ -14,6 +15,7 @@ const isDEBUG = debugSwitcher.puppeteer;
  * @param {{RuleList:Rule[],timeout:Number?}} setting 爬取的站点配置
  */
 async function FetchTextByPuppeteer(url, setting) {
+    const startTime = new Date();
     //无界面浏览器性能更高更快，有界面一般用于调试开发
     let options = {
         //设置视窗的宽高
@@ -29,6 +31,8 @@ async function FetchTextByPuppeteer(url, setting) {
     if (isDEBUG) {
         options.headless = false;//设置为有界面，如果为true，即为无界面
         options.slowMo *= 5;   //放慢5倍
+
+        new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
     }
     let browser = await puppeteer.launch(options);
     let result = new Map();
@@ -41,6 +45,7 @@ async function FetchTextByPuppeteer(url, setting) {
         // 配置需要访问网址
         await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
         //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
+        result = await GetDataUseRuleFromPage(page, setting.RuleList);
         if (url != page.url()) {
             result.set("URL", {
                 expect: url,
@@ -49,22 +54,8 @@ async function FetchTextByPuppeteer(url, setting) {
             })
         }
 
-        //接管console 网站在浏览器上发的空调信息转发到服务器控台
-        if (isDEBUG) {
-            page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
-            new EventManager().emit("Debug.Puppeteer.OpenUrl", url);
-            await page.screenshot({ path: `${dataPath}/Debug/Test_${Date.now()}.png` });//截图
-        }
-
-        for (let rule of setting.RuleList) {
-            if (rule.Selector === "") continue;
-
-            //执行规则
-            result.set(rule.RuleName, await ExecRule(page, rule));
-        }
-
     } catch (err) {
-        console.warn("[执行失败]FetchTextByPuppeteer::", err.message);
+        console.warn("[执行失败]FetchTextByPuppeteer::", err.message, `\t耗时：${(new Date() - startTime) / 1000}秒`);
         throw err;
     } finally {
         if (browser) await browser.close(); //确保关掉以免因失败耗费内存
@@ -125,7 +116,7 @@ async function requestTextByHttp(url, setting) {
                         const htmlString = buffer.toString("utf-8");
 
                         // 检测实际编码
-                        let charset = detectCharset(res.headers, htmlString.substring(0,Math.min(htmlString.length,8192)));
+                        let charset = detectCharset(res.headers, htmlString.substring(0, Math.min(htmlString.length, 8192)));
 
                         // 解码
                         let result = "";
@@ -167,12 +158,7 @@ async function parseHtmlString(htmlString, url, setting) {
     });
 
     let result = new Map();
-    for (let rule of setting.RuleList) {
-        if (rule.Selector === "") continue;
-        //执行规则
-        result.set(rule.RuleName, await ExecRule(page, rule));
-    }
-
+    result = await GetDataUseRuleFromPage(page, setting.RuleList);
     await browser.close();
 
     //整理结果-将相对地址改为绝对地址
@@ -187,7 +173,9 @@ async function parseHtmlString(htmlString, url, setting) {
 }
 
 /**
- * 
+ * 获取网页的实际编码方式
+ * * 通过请求头的Content-Type获取
+ * * 通过网页源码的meta标签charset属性获取
  * @param {*} headers 
  * @param {*} html 
  * @returns 小写格式 字符编码
@@ -210,17 +198,54 @@ function detectCharset(headers, html) {
 }
 
 /**
+ * 从页面对象中，通过规则抓取实际数据
+ * @param {*} page 
+ * @param {*} Rules 
+ * @returns 
+ */
+async function GetDataUseRuleFromPage(page, Rules) {
+    let result = new Map();
+
+    if (isDEBUG) {
+        //接管console 网站在浏览器上发的空调信息转发到服务器控台
+        page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
+        await page.screenshot({ path: `${dataPath}/Debug/Test_${Date.now()}.png` });//截图
+    }
+
+    for (let rule of Rules) {
+        //执行规则
+        let ruleRsl = await ExecRule(page, rule);
+        if (rule.RuleName === "Content") {
+            await Promise.all(
+                rule.Dictionaries.map(async (item) => {
+                    item.isExecute = await isExec(page, item);
+                })
+            );
+
+            const bigDict = rule.Dictionaries.filter(item => item.isExecute).map(d => d.Data).join("\n");
+            for (let rr of ruleRsl) {
+                rr.text = UseDictReplace(bigDict, rr.text);
+            }
+        }
+        result.set(rule.RuleName, ruleRsl);
+    }
+    return result;
+}
+
+
+
+/**
  * 多线程执行入口
  * @param {{url:string, setting:object}} param 参数
  * @returns {Promise<Map<string,any>>}
  */
 async function RunTask(param) {
     let result = null;
-    const { setting } = { ...param };
+    const { setting, url } = param;
     if (setting.scraping === "http") {
-        result = await FetchTextByHttp(param.url, setting);
+        result = await FetchTextByHttp(url, setting);
     } else {        //if (param.scraping === "puppeteer")
-        result = await FetchTextByPuppeteer(param.url, setting);
+        result = await FetchTextByPuppeteer(url, setting);
     }
     return result
 }

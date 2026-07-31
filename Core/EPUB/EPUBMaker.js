@@ -24,7 +24,7 @@ class EPUBMaker {
         if (ebook == null) return null;
 
         if (!setting) setting = {};//邮件批量生成文件发送时，所有配置为空。
-        let { fontFamily, embedTitle = true, enableIndent, embedBookName } = setting;
+        let { embedTitle = true, enableIndent, embedBookName } = setting;
 
         let chapters = FindMyChapters(ebook, volumes, showChapters);
         await ebook.SetShowChapters(chapters);

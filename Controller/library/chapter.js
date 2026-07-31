@@ -35,8 +35,10 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-
-        new ApiResponse(await DO.GetEBookChapterById(chapterId * 1)).toCTX(ctx);
+        let chp = await DO.GetEBookChapterById(chapterId * 1);
+        const SystemConfigService = require("../../Core/services/SystemConfig");
+        chp.Book.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
+        new ApiResponse(chp).toCTX(ctx);
     },
 
     /**

@@ -6,6 +6,7 @@ const WebBook = require("../../Entity/WebBook/WebBook");
 // const WebIndex = require("../../Entity/WebBook/WebIndex");
 const WebChapter = require("../../Entity/WebBook/WebChapter");
 const RuleManager = require("./RuleManager");
+const SiteHelper = require("../Utils/SiteHelper");
 const EventManager = require("../EventManager");
 const DO = require("../OTO/DO");
 const WorkerPool = require("../Worker/WorkerPool");
@@ -226,7 +227,13 @@ class WebBookMaker {
             return false;
         }
 
-        const webRule = await RuleManager.GetRuleByURL(url);
+        let error = null;
+        const webRule = await RuleManager.GetRuleByURL(url).catch(err => error = err);
+        if (error && defaultContent != undefined) {
+            curIndex.Content = defaultContent;
+            this.myWebBook.AddChapter(new WebChapter(curIndex))
+            return false;
+        }
         const { index, chapter, ...option } = { ...webRule };
         option.RuleList = chapter.GetRuleList();
 
@@ -261,12 +268,13 @@ class WebBookMaker {
 
             if (result?.has("Content")) {
                 const contResult = result.get("Content");
-                let [cContentResult, errObj] = contResult;
+                let [cContentResult, errObj, pageSources] = contResult;
                 if (!cContentResult.text) {
+                    let { message, stack, ...errOther } = errObj;
                     let errAdd = "";
-                    if (errObj?.message) errAdd = "，" + contResult[1].message;
+                    if (message) errAdd = "，" + message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, errObj);
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, { message, stack, ...errOther });
                     if (defaultContent === undefined) return;
                 } else
                     chap.Content = cContentResult.text;
@@ -292,6 +300,11 @@ class WebBookMaker {
                         highPriority: true,
                     });
 
+                    if (!tempResult.get("Content")[0].text) {
+                        console.log("存在内容缺页，请重新抓取试试：", nextPageUrl, tempResult);
+                        //throw new Error(`存在内容缺页，请重新抓取试试：${nextPageUrl}`)
+                        return false;
+                    }
                     chap.Content += tempResult.get("Content")[0].text;
                     nextPageResult = tempResult.get("ContentNextPage")[0];          //TODO: 需要更合适的方式找到命中的那页
                 }
@@ -400,7 +413,7 @@ class WebBookMaker {
      */
     GetDefaultUrl(urls) {
         let indexUrl = this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
-        let hostName = RuleManager.GetHost(indexUrl);
+        let hostName = SiteHelper.GetHost(indexUrl);
 
         for (let u of urls) {
             if (u.Path.includes(hostName)) return u.Path;

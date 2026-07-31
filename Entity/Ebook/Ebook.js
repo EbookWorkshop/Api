@@ -2,7 +2,7 @@
  * 电子书
  */
 class Ebook {
-    constructor({ id, BookId, BookName, Author, FontFamily, FontSize, CoverImg, Introduction }) {
+    constructor({ id, BookId, BookName, Author, CoverImg, Introduction }) {
         /**
          * @prop {Map<{string,string}>} 章节，标题-文章内容 对照表
          *  (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
@@ -30,11 +30,6 @@ class Ebook {
         //简介
         this.Introduction = Introduction;
 
-        //字体
-        this.FontFamily = FontFamily;
-
-        //字号
-        this.FontSize = FontSize || 29;   //pt
         //封面图片
         this.CoverImg = CoverImg;
 
