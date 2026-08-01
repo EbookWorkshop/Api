@@ -6,6 +6,7 @@ class Ebook {
         /**
          * @prop {Map<{string,string}>} 章节，标题-文章内容 对照表
          *  (Key:章节标题,Value:章节文章-不分页（有分页的话得先合并）)
+         * TODO: 章节名相同时需要优化
          */
         this.Chapters = new Map();
         /**

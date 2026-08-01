@@ -52,8 +52,9 @@ class EPUBMaker {
         let useTempCover = false;
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#") && embedBookName == false) {//读系统的图片作封面(系统封面没嵌入书名)
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
+                if (ebook.CoverImg.endsWith("#showname")) ebook.CoverImg = ebook.CoverImg.replace("#showname", "");
+                
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
-
                 //进行文件格式兼容
                 if (option.cover.endsWith(".webp") || option.cover.endsWith(".jpg")) {
                     const tempFile = path.join(option.tempDir, ebook.BookName + ".png");

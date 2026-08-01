@@ -105,6 +105,40 @@ module.exports = () => ({
                 new ApiResponse(err, err.message, 50000).toCTX(ctx);
             });
     },
+    /**
+     * @swagger
+     * /library/webbook/singlechapter:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 抓取单章
+     *     description: 直接抓取单章内容，并存储文件到库存中
+     *     parameters:
+     *     - name: bookIndexUrl
+     *       in: body
+     *       required: true
+     *       description: 需获取的章节地址
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - text/plan
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /singlechapter": async (ctx) => {
+        let bookUrl = await parseBodyData(ctx);
+        const { ScrapingFromUrl } = require("../../Core/WebBook/WebChapterMaker");
+        
+        await ScrapingFromUrl(bookUrl)
+            .then(result => {
+                new ApiResponse("已启动内容抓取，请稍候。").toCTX(ctx);
+            }).catch((err) => {
+                new ApiResponse(err, err.message, 50000).toCTX(ctx);
+            });
+    },
 
     /**
      * @swagger
@@ -398,8 +432,8 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Library - WebBook —— 网文图书馆
-     *     summary: 拿到指定章节的来源地址
-     *     description: 拿到指定章节的网页来源的地址
+     *     summary: 修改章节的网页来源的地址
+     *     description: 修改章节的网页来源的地址
      *     parameters:
      *     - name: chapterid
      *       in: query

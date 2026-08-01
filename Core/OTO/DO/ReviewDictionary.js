@@ -18,9 +18,13 @@ class OTO_ReviewDictionary {
 
     static async DeleteReviewDictionary(host, trans) {
         const myModels = new Models();
+        const Op = Models.Op;
         await myModels.ReviewDictionary.destroy({
             where: {
-                Host: host
+                [Op.or]: [
+                    { Host: host },
+                    { Host: { [Op.notIn]: myModels.sequelize.literal('(SELECT Host FROM RuleForWebs)') } }
+                ]
             },
             transaction: trans
         });

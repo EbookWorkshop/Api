@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
-const { config: { databasePath } } = require("../services/config");
+const { config: { databasePath, debugSwitcher } } = require("../services/config");
 // const EventManager = require("../EventManager");
 // const em = new EventManager();
 
@@ -20,7 +20,7 @@ class DB {
         return new Sequelize({
             dialect: 'sqlite',
             storage: DB.myDbPath,
-            logging: false,            // console.log,//在控制台输出sql
+            logging: debugSwitcher.database,            // console.log,//在控制台输出sql
             //timezone: '+08:00',
             pool: {
                 max: 5,

@@ -9,8 +9,15 @@ const { DataTypes } = require("sequelize");
 module.exports = function (sqlConnect) {
     return sqlConnect.define("ReviewDictionary", {
         Host: { type: DataTypes.STRING(100), allowNull: false },            //应用的站点
-        ExecuteType:{ type: DataTypes.STRING(50), allowNull: true },        //分类执行条件
+        ExecuteType: { type: DataTypes.STRING(50), allowNull: true },        //分类执行条件
         Execute: { type: DataTypes.STRING(50), allowNull: true },           //应用条件：即达到条件，这份对照字典才启用
         Data: { type: DataTypes.STRING(1000), allowNull: false },           //实际存储字典数据
+    }, {
+        indexes: [
+            {
+                name: 'review_dictionary_host_index',
+                fields: ['Host']
+            }
+        ]
     });
 }

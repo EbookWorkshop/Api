@@ -151,7 +151,6 @@ class RuleManager {
             //全套规则删除并更新
             const oneHost = rules[0].host;
             await RuleManager.DeleteRule(oneHost, trans);
-            await DO.DeleteReviewDictionary(oneHost, trans);
 
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
@@ -171,6 +170,7 @@ class RuleManager {
 
             const dict = rules.find(d => d.ruleName == "Dictionary");
             if (dict && dict.data) {
+                await DO.DeleteReviewDictionary(oneHost, trans);
                 await DO.SaveDictionaries(oneHost, dict.data, trans);
                 rules = rules.filter(r => r.ruleName != "Dictionary");
             }

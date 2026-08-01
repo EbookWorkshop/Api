@@ -28,24 +28,19 @@ class DO {
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
-    
+
         /**
          * [LoadIndex]重新加载所有章节
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({
-                where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } }, 
-                order: ["OrderNum"]
+            let eIndexs = await myModels.EbookIndex.scope('withHasContent').findAll({
+                where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } },
+                attributes: { exclude: ['Content', "createdAt", "updatedAt"] },
+                order: ["OrderNum"],
+                raw: true,
             });
-            for (let i of eIndexs) {
-                let index = new Index({ 
-                    ...i.dataValues, 
-                    HasContent: i.HasContent,
-                    VolumeId: i.VolumeId
-                });
-                ebook.Index.push(index);
-            }
+            ebook.Index = eIndexs.map(i => new Index({ ...i }));
         };
 
         /**
@@ -150,11 +145,11 @@ class DO {
                 where: {
                     BookId: ebook.BookId,
                     Title: Chapter.IntroductionName
-                }
+                },
+                attributes: ["Content"],
+                raw: true,
             });
-            if (intro) {
-                ebook.Introduction = intro.Content;
-            }
+            ebook.Introduction = intro?.Content;
         }
 
         /**
@@ -163,7 +158,7 @@ class DO {
         ebook.ReloadVolumes = async () => {
             const myModels = new Models();
             let volumes = await myModels.Volume.findAll({
-                where: { BookId: ebook.BookId }, 
+                where: { BookId: ebook.BookId },
                 order: ["OrderNum"]
             });
             for (let v of volumes) {
@@ -192,6 +187,8 @@ class DO {
             if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
                 const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
+                if (thisCoverImg.endsWith("#showname")) thisCoverImg = thisCoverImg.replace("#showname", "");
+
                 await fs.unlink(thisCoverImg);
                 // let imgDir = path.dirname(thisCoverImg);
                 // await fs.rmdir(imgDir);

@@ -25,19 +25,23 @@ async function GetNextWorkInfo() {
         include: [{
             model: myModels.Ebook,
             as: "Ebook",
-            required: true,
+            required: true,            // INNER JOIN
             include: [{
                 model: myModels.WebBook,
                 as: "WebBook",
-                required: true      // inner join
-            }]
+                required: true,         // INNER JOIN
+                attributes: []
+            }],
+            attributes: ['BookName']   // 只取 Ebooks 的 BookName
         }],
         where: {
             Content: { [Models.Op.is]: null },
-            OrderNum: { [Models.Op.gt]: 0 },        //隐藏章节不采用
+            OrderNum: { [Models.Op.gt]: 0 }
         },
-        attributes: ["id", "BookId", "Title"],
-        order: [["updatedAt", "DESC"]]
+        attributes: ['id', 'BookId', 'Title'],
+        order: [[myModels.sequelize.col('EbookChapter.updatedAt'), 'DESC']],         // 按主表 updatedAt 排序
+        subQuery: false,               // 强制单查询，避免拆分
+        raw: true,
     });
 
     if (!chapter) {
@@ -50,7 +54,7 @@ async function GetNextWorkInfo() {
         })
         return { id: -1 };
     }
-    let { BookId, id, Title, Ebook: { BookName } } = chapter.dataValues;
+    let { BookId, id, Title, ["Ebook.BookName"]: BookName } = chapter;
     return { BookId, id, Title, BookName }
 }
 

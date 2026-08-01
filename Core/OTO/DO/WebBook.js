@@ -81,15 +81,21 @@ class OTO_WebBook {
      * @param {*} chapterId 章节ID
      */
     static async GetWebBookChapterSourcesById(chapterId) {
+        if (!chapterId) return [];
         const myModels = new Models();
-        let webBook = await myModels.WebBookIndex.findOne({
-            include: myModels.WebBookIndexURL,
-            where: { IndexId: chapterId }
+        // console.log("GetWebBookChapterSourcesById::", chapterId);
+        // 直接查 URL 表
+        const urls = await myModels.WebBookIndexURL.findAll({
+            include: [{
+                model: myModels.WebBookIndex, // 关联章节表
+                where: { IndexId: chapterId },
+                attributes: [], // 不需要查章节字段，只用来做过滤
+                required: true  // 转为 INNER JOIN，确保关联存在才返回
+            }],
+            raw: true,
         });
-        if (webBook == null) return null;
-        let webBookIndex = await webBook;
 
-        return webBookIndex.WebBookIndexURLs;
+        return urls; // 直接返回纯净的 URL 数组
     }
 
     static async SetWebBookChapterSources(id, url) {
@@ -152,8 +158,11 @@ class OTO_WebBook {
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
         await ebookObj.LoadIntroduction();
         let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
-        let urls = await webModel.getWebBookIndexSourceURLs();
-        for (let u of urls) webBook.IndexUrl.push(u.Path);
+        let urls = await webModel.getWebBookIndexSourceURLs({
+            attributes: ['Path'],
+            raw: true
+        });
+        webBook.IndexUrl = urls?.map(u => u.Path);
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
         webBook.LoadIntroduction = async () => { return await ebookObj.LoadIntroduction(); }
@@ -184,35 +193,45 @@ class OTO_WebBook {
          */
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({
-                where: {
-                    BookId: webBook.BookId,
-                    OrderNum: { [Models.Op.gte]: 0 } //大于0的章节
-                },
-                order: ["OrderNum"]
-            });
             await ebookObj.InitReviewRules();       //注意：InitReviewRules定义在 DO.ModelToBookObj 创建的实体上
 
-            let sourceUrls = await webModel.getWebBookIndexSourceURLs();
+            //通过默认目录地址推断出站点
+            let sourceUrls = await webModel.getWebBookIndexSourceURLs({
+                attributes: ["Path"],
+                raw: true,
+            });
             let defaultIndex = webBook.defaultIndex;
             if (defaultIndex > sourceUrls.length) defaultIndex = 0;
             const defaultHost = sourceUrls.length > 0 ? new URL(sourceUrls[defaultIndex].Path).host : null;
 
-            //加载每章的网址
-            for (let i of eIndexs) {
-                const eI = await myModels.WebBookIndex.findOne({
-                    where: { IndexId: i.id },
-                    include: {
+            let eIndexs = await myModels.EbookIndex.scope('withHasContent').findAll({
+                where: {
+                    BookId: webBook.BookId,
+                    OrderNum: { [Models.Op.gte]: 0 } //大于0的章节
+                },
+                attributes: {
+                    //["Title", "OrderNum", "id", "VolumeId"],
+                    exclude: ['Content', "createdAt", "updatedAt"]   //不需要的列 避免大字段Content查询的开销
+                },
+                include: [{
+                    model: myModels.WebBookIndex,
+                    as: "WebBookIndex",
+                    include: [{
                         model: myModels.WebBookIndexURL,
-                        as: "WebBookIndexURLs"
-                    }
-                });
-                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
-                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
-                webBook.Index.push(tIdx);
+                        as: "WebBookIndexURLs",
+                        attributes: ["id", "Path"],
+                    }],
+                    attributes: ["WebTitle"]
+                }],
+                order: ["OrderNum"],
+            });
 
-                if (eI == null) continue; //没有对应的章节时跳过
-                for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
+            for (let i of eIndexs) {
+                let bIdx = i.toJSON();
+                [bIdx.Title] = Reviewer(ebookObj.ReviewRules, [bIdx.Title])
+                let WebTitle = bIdx?.WebBookIndex?.WebTitle;
+                let tIdx = new WebIndex({ WebTitle, URL: bIdx?.WebBookIndex?.WebBookIndexURLs, curHost: defaultHost, ...bIdx });
+                webBook.Index.push(tIdx);
             }
         }
 
@@ -222,11 +241,11 @@ class OTO_WebBook {
          */
         webBook.ReloadChapter = async (cId) => {
             let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: webBook.BookId } });
-            if (ebookIndex == null) return;
+            if (ebookIndex == null || !ebookIndex.Content) return;
             let wbookIndex = await ebookIndex.getWebBookIndex();
             if (wbookIndex == null) return;
             let cp = new WebChapter({ ...wbookIndex.dataValues, ...ebookIndex.dataValues });
-            if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);
+            if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);          //TODO: 这里限制了章节名称不能相同
         }
 
         /**

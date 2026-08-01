@@ -40,6 +40,7 @@ async function isExec(page, dict) {
  * @param {string} text 待替换原文本
  */
 function UseDictReplace(dictData, text) {
+    if (!text) { console.warn("UseDictReplace：：转换失败，待转换文本为空！"); return text; }//throw new Error("UseDictReplace：：转换失败，待转换文本为空！");
     let ddMap = new Map();
     let rows = dictData.split("\n");
 

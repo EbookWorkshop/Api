@@ -19,6 +19,8 @@ class SystemConfigService {
                     Group,
                     Name
                 },
+                attributes: ['Value'],        // 🔥 只查询 Value 字段，减少网络传输和回表开销
+                raw: true,                    // 🔥 直接返回 JSON 对象，跳过 Model 实例化（更快）
                 transaction: trans
             });
             return config ? config.Value : null;
@@ -38,27 +40,15 @@ class SystemConfigService {
     static async setConfig(Group, Name, Value, trans) {
         try {
             let myModel = Models.GetPO();
-            let config = await myModel.SystemConfig.findOne({
-                where: {
-                    Group,
-                    Name
-                },
-                transaction: trans
+            //INSERT ... ON DUPLICATE KEY UPDATE 语法（Sequelize 封装为 upsert 方法）
+            //upsert 就是 Update + Insert 的合并原子操作，当数据存在时就更新，不存在则创建
+            const [config, created] = await myModel.SystemConfig.upsert({
+                Group,
+                Name,
+                Value
+            }, {
+                transaction: trans,
             });
-
-            if (config) {
-                config.Value = Value;
-                await config.save({ transaction: trans });
-            } else {
-                config = await myModel.SystemConfig.create({
-                    Group,
-                    Name,
-                    Value
-                }, {
-                    transaction: trans
-                });
-            }
-
             return config;
         } catch (error) {
             console.error(`保存系统配置失败：\n功能分组：${Group}\n配置名：${Name}\n`, error);
