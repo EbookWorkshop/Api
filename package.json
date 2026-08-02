@@ -17,10 +17,10 @@
   "author": "c0618c",
   "license": "MIT",
   "dependencies": {
-    "@koa/router": "^15.6.0",
+    "@koa/router": "^15.7.0",
     "async_hooks": "^1.0.0",
     "epub-gen": "^0.1.0",
-    "iconv-lite": "^0.7.2",
+    "iconv-lite": "^0.7.3",
     "koa": "^3.2.1",
     "koa-body": "^8.0.0",
     "koa-send": "^5.0.1",

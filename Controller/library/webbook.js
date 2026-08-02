@@ -1,6 +1,6 @@
 const DO = require("../../Core/OTO/DO");
 const WebBookMaker = require("../../Core/WebBook/WebBookMaker");
-const { parseJsonFromBodyData, parseBodyData } = require("../../Core/Server");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 
@@ -80,14 +80,22 @@ module.exports = () => ({
      *     summary: 创建书并建立目录
      *     description: 通过传入网文目录页，建立对应的书籍，并建立目录
      *     parameters:
-     *     - name: bookIndexUrl
-     *       in: body
-     *       required: true
-     *       description: 需获取的书的目录地址
-     *       schema:
-     *         type: string
+     *       - in: body
+     *         name: bookInfo
+     *         description: 需获取的书的目录地址，以及是否在封面中嵌入书名
+     *         schema:
+     *           type: object
+     *           required:
+     *             - url
+     *           properties:
+     *             url:
+     *               type: string
+     *               description: 目录页地址
+     *             isEmbedBookName:
+     *               type: boolean
+     *               description: 是否在导出封面中嵌入书名
      *     consumes:
-     *       - text/plan
+     *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
@@ -95,11 +103,17 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let bookUrl = await parseBodyData(ctx);
+        let param = await parseJsonFromBodyData(ctx, ["url"]);
+        if (!param) return;
 
+        const bookUrl = param.url;
         let wbm = new WebBookMaker(bookUrl);
+        if (typeof (param.isEmbedBookName) === "boolean") {
+            wbm.GetBook().embedBookName = param.isEmbedBookName;
+        }
+
         await wbm.UpdateIndex()
-            .then(result => {
+            .then(() => {
                 new ApiResponse("已启动分析，稍后将生成书本配置。").toCTX(ctx);
             }).catch((err) => {
                 new ApiResponse(err, err.message, 50000).toCTX(ctx);
@@ -114,14 +128,20 @@ module.exports = () => ({
      *     summary: 抓取单章
      *     description: 直接抓取单章内容，并存储文件到库存中
      *     parameters:
-     *     - name: bookIndexUrl
-     *       in: body
-     *       required: true
-     *       description: 需获取的章节地址
-     *       schema:
-     *         type: string
+     *       - in: body
+     *         name: chapterInfo
+     *         required: true
+     *         description: 请求参数对象
+     *         schema:
+     *           type: object
+     *           required:
+     *             - url
+     *           properties:
+     *             url:
+     *               type: string
+     *               description: 章节地址
      *     consumes:
-     *       - text/plan
+     *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
@@ -129,11 +149,13 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post /singlechapter": async (ctx) => {
-        let bookUrl = await parseBodyData(ctx);
-        const { ScrapingFromUrl } = require("../../Core/WebBook/WebChapterMaker");
-        
-        await ScrapingFromUrl(bookUrl)
-            .then(result => {
+        let param = await parseJsonFromBodyData(ctx, ["url"]);
+        if (!param) return;
+
+        const { ScrapingFromUrlOnWatch } = require("../../Core/WebBook/WebChapterMaker");
+
+        await ScrapingFromUrlOnWatch(param.url, -1)
+            .then(() => {
                 new ApiResponse("已启动内容抓取，请稍候。").toCTX(ctx);
             }).catch((err) => {
                 new ApiResponse(err, err.message, 50000).toCTX(ctx);
