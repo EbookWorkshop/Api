@@ -55,10 +55,12 @@ class WebBookMaker {
     /**
      * 更新章节目录 抓目录
      *  更新封面
-     * @param {*} url 默认为空，在章节分页时递归往下找
+     * @param {boolean} isEmbedBookName （如果封面是图片时）是否在封面嵌入书名
+     * @param {string} url 默认为空，在章节分页时递归往下找
+     * @param {number} [orderNum=1] 章节排序开始序号
      * @returns 
      */
-    async UpdateIndex(url = "", orderNum = 1) {
+    async UpdateIndex(isEmbedBookName, url = "", orderNum = 1) {
         let curUrl = url || this.myWebBook.IndexUrl[this.myWebBook.defaultIndex];
         const webRule = await RuleManager.GetRuleByURL(curUrl);
         let { index, chapter, ...option } = { ...webRule };
@@ -135,7 +137,7 @@ class WebBookMaker {
                 let imgPath = cv.text;
                 if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
 
-                const coverImgPath = path.join(config.FOLDER.BookCover, `${this.myWebBook.BookName}_${path.basename(imgPath)}`);//图片存储的相对位置
+                let coverImgPath = path.join(config.FOLDER.BookCover, `${this.myWebBook.BookName}_${path.basename(imgPath)}`);//图片存储的相对位置
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTaskAsync({
@@ -147,6 +149,7 @@ class WebBookMaker {
                     highPriority: true
                 }).then((result) => {
                     new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
+                    if (isEmbedBookName && !coverImgPath.endsWith(BookMaker.SHOW_BOOKNAME)) coverImgPath += BookMaker.SHOW_BOOKNAME;
                     this.myWebBook.SetCoverImg(coverImgPath);
                 }).catch(err => {
                     new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", err);
@@ -186,7 +189,7 @@ class WebBookMaker {
                     return;
                 }
 
-                return this.UpdateIndex(nextPage, orderNum);
+                return this.UpdateIndex(isEmbedBookName, nextPage, orderNum);
             } else {
                 new EventManager().emit(finishMsg, this.myWebBook.BookId, this.myWebBook.BookName, data);
             }

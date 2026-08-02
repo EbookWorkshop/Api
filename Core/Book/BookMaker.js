@@ -715,4 +715,5 @@ class BookMaker {
         }
     }
 }
+BookMaker.SHOW_BOOKNAME = SHOW_BOOKNAME;
 module.exports = BookMaker;

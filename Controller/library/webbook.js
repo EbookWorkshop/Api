@@ -93,7 +93,7 @@ module.exports = () => ({
      *               description: 目录页地址
      *             isEmbedBookName:
      *               type: boolean
-     *               description: 是否在导出封面中嵌入书名
+     *               description: 是否在封面中嵌入书名
      *     consumes:
      *       - application/json
      *     responses:
@@ -108,11 +108,8 @@ module.exports = () => ({
 
         const bookUrl = param.url;
         let wbm = new WebBookMaker(bookUrl);
-        if (typeof (param.isEmbedBookName) === "boolean") {
-            wbm.GetBook().embedBookName = param.isEmbedBookName;
-        }
 
-        await wbm.UpdateIndex()
+        await wbm.UpdateIndex(param.isEmbedBookName)
             .then(() => {
                 new ApiResponse("已启动分析，稍后将生成书本配置。").toCTX(ctx);
             }).catch((err) => {
