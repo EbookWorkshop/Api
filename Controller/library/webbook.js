@@ -196,7 +196,48 @@ module.exports = () => ({
             new ApiResponse(err, "删除出错：" + err.message, 50000).toCTX(ctx);
         })
     },
+    /**
+     * @swagger
+     * /library/webbook/autosync:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 设置网文是否允许自动更新
+     *     description: 自动更新将在系统闲时，后台静默更新。若设置为启用，将同时将该书的空章节在更新队列安排到队首
+     *     parameters:
+     *       - in: body
+     *         name: bookInfo
+     *         description: 获取需要更新的书ID，和是否启用自动更新的设置
+     *         schema:
+     *           type: object
+     *           required:
+     *             - bookid
+     *           properties:
+     *             bookid:
+     *               type: integer
+     *               description: 需要修改的书籍ID
+     *             autoSyncEnabled:
+     *               type: boolean
+     *               description: 是否允许自动更新/同步
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /autosync": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["bookid"]);
+        if (!param) return;
+        let { bookid, autoSyncEnabled } = param;
 
+        await WebBookMaker.SetAutoSync(bookid, autoSyncEnabled).then((rsl) => {
+            new ApiResponse().toCTX(ctx);
+        }).catch((err) => {
+            new ApiResponse(err, "更新【自动更新】设置出错：" + err.message, 50000).toCTX(ctx);
+        });
+    },
     /**
      * @swagger
      * /library/webbook/updatechapter:

@@ -7,9 +7,14 @@ class WebBook extends Ebook {
     /**
      * 网文电子书
      */
-    constructor({ WebBookName, defaultIndex, isCheckEnd, isCheckRepeat, ...x } = {}) {
+    constructor({ WebBookId = -1, WebBookName, defaultIndex, AutoSyncEnabled, isCheckRepeat, ...x } = {}) {
         if (x.BookId) x.id = x.BookId;
         super(x);
+
+        /**
+         * 网文在WebBook表中对应的记录ID
+         */
+        this.WebBookId = WebBookId;
 
         this.IndexUrl = [];     //可供爬书的目录页-数组，用于支持多网站来源
         /**
@@ -25,9 +30,9 @@ class WebBook extends Ebook {
         this.WebBookName = WebBookName;
 
         /**
-         * 是否检查文章正常结束
+         * 是否自动获取内容
          */
-        this.isCheckEnd = isCheckEnd || true;
+        this.AutoSyncEnabled = AutoSyncEnabled || true;
 
         /**
          * 是否检查章节重复

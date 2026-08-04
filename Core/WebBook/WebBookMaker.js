@@ -80,9 +80,11 @@ class WebBookMaker {
                 return;
             }
             let addChapterNum = 0;
+            let nameFromWeb = null;//从网页取得的原始名，当ebook版本名已存在时尝试以原始名处理
             //初始化书名
             if (result.has("BookName")) {
                 let bn = result.get("BookName")[0];
+                nameFromWeb = bn.text;
                 //去掉书名中的注释部分
                 let tempName = bn.text;
                 if (/[（\(【]/.test(tempName)) {
@@ -110,7 +112,22 @@ class WebBookMaker {
 
             //根据书名从现有内容取得图书设置
             if (!this.myWebBook.BookId) {   //没登记书ID，则进行数据库初始化
-                this.myWebBook = await DO.GetOrCreateWebBookByName(this.myWebBook.WebBookName);
+                const name1fst = this.myWebBook.WebBookName;
+                const name2sec = nameFromWeb;
+                this.myWebBook = await DO.GetOrCreateWebBookByName(name1fst);
+                if (!this.myWebBook && name2sec && name1fst != name2sec) {
+                    this.myWebBook = await DO.GetOrCreateWebBookByName(name2sec);  //格式化过的名冲突的概率高，创建失败的话尝试以原始书名再试试
+                }
+
+                if (!this.myWebBook) {//创建书失败
+                    let secondtry = name1fst != name2sec ? `、《${nameFromWeb}》均` : "";
+                    new EventManager().SendErrorToUI(new Message(`已尝试使用书名《${this.myWebBook.WebBookName}》${secondtry}失败，请检查采集结果和查看相关信息。`, "notice", {
+                        title: "添加新书初始化失败",
+                        subTitle: "可能已存在同名书籍",
+                    }), Object.fromEntries(result));
+                    return;
+                }
+
                 this.isCreateBook = this.myWebBook.isNewCreate;
                 await this.myWebBook.AddIndexUrl(curUrl);
             }
@@ -125,7 +142,6 @@ class WebBookMaker {
                     }), Object.fromEntries(result));
                     return;
                 }
-                if (this.myWebBook.tempMergeIndex == null) this.myWebBook.tempMergeIndex = new Map();
                 for (let i of cl) {
                     let hasAdd = await this.myWebBook.MergeIndex({ title: i.text, url: i.url }, orderNum++);
                     if (hasAdd) addChapterNum++;
@@ -423,6 +439,16 @@ class WebBookMaker {
         }
 
         return urls[0]?.Path;
+    }
+
+    /**
+     * 设置网文是否允许自动更新
+     * 自动更新将在系统闲时，后台静默更新。若设置为启用，将同时将该书的空章节在更新队列安排到队首
+     * @param {number} bookid 
+     * @param {boolean} autoSyncEnabled 
+     */
+    static async SetAutoSync(bookid, autoSyncEnabled) {
+        return DO.WebBookSetAutoSync(bookid, autoSyncEnabled);
     }
 
 }

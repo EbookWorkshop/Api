@@ -5,14 +5,15 @@ const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
 const Volume = require("../../Entity/Ebook/Volume");
-const Do2Po = require("../OTO/DO");
-const path = require("path");
+const path = require("node:path");
+const fs = require('node:fs');
+const { finished } = require('stream/promises');
 const { config: { dataPath, FOLDER } } = require("../services/config");
-const fs = require('fs');
+const Do2Po = require("../OTO/DO");
+const Models = require("../OTO/Models");
 const { CheckAndMakeDir } = require("../Server")
 const similarity = require('string-similarity'); // 新增相似度计算库
 const SystemConfigService = require("../services/SystemConfig");
-const Models = require("../OTO/Models");
 const FindMyChapters = require("./FindMyChapters");
 
 const SHOW_BOOKNAME = "#showname";
@@ -86,62 +87,57 @@ class BookMaker {
 
         await ebook.LoadIntroduction();
 
-        return new Promise((resolve, reject) => {
-            const fileInfo = {
-                filename: ebook.BookName + ".txt",
-                path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.txt'),
-                chapterCount: ebook.showIndexId.length,           //含有多少章
-                chapterIds: showIndexId
-            };
+        const fileInfo = {
+            filename: ebook.BookName + ".txt",
+            path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.txt'),
+            chapterCount: ebook.showIndexId.length,           //含有多少章
+            chapterIds: showIndexId
+        };
 
-            CheckAndMakeDir(fileInfo.path);
-            const writeStream = fs.createWriteStream(fileInfo.path);
-            writeStream.on('error', function (err) {
-                reject(err);
-            });
-            writeStream.on('finish', function () {
-                resolve(fileInfo);
-            });
-            const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
-            writeStream.write(`${ebook.BookName}\n${author}\n`);
+        CheckAndMakeDir(fileInfo.path);
+        const writeStream = fs.createWriteStream(fileInfo.path);
 
-            if (ebook.Introduction) {
-                writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+        const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
+        writeStream.write(`${ebook.BookName}\n${author}\n`);
+
+        if (ebook.Introduction) {
+            writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+        }
+
+        let vM = new Map();
+        // 按卷分类章节
+        for (let i of ebook.showIndexId) {
+            let c = ebook.GetChapter(i);
+            if (!vM.has(c.VolumeId)) {
+                vM.set(c.VolumeId, new Array());
             }
-
-            let vM = new Map();
-            // 按卷分类章节
-            for (let i of ebook.showIndexId) {
-                let c = ebook.GetChapter(i);
-                if (!vM.has(c.VolumeId)) {
-                    vM.set(c.VolumeId, new Array());
+            vM.get(c.VolumeId).push(c);
+        }
+        if (vM.has(null)) {
+            ebook.Volumes.push(new Volume({
+                id: null,
+                Title: "未分卷章节",
+                Introduction: ""
+            }));
+        }
+        for (let e of ebook.Volumes) {
+            if (!vM.has(e.VolumeId)) continue;
+            if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
+            for (let c of vM.get(e.VolumeId)) {
+                let content = c.Content || "-=章节内容缺失=-";
+                if (enableIndent) {
+                    let multiLine = content.split("\n");
+                    multiLine = multiLine.map(t => `\t${t.trimStart()}`);    //去除行首空格
+                    content = multiLine.join("\n");
                 }
-                vM.get(c.VolumeId).push(c);
+                if (embedTitle) writeStream.write(`${c.Title}\n${content}\n\n`);
+                else if (content) writeStream.write(`${content}\n`);
+                else writeStream.write(`--当前章节内容缺失--\n\n`);
             }
-            if (vM.has(null)) {
-                ebook.Volumes.push(new Volume({
-                    id: null,
-                    Title: "未分卷章节",
-                    Introduction: ""
-                }));
-            }
-            for (let e of ebook.Volumes) {
-                if (!vM.has(e.VolumeId)) continue;
-                if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
-                for (let c of vM.get(e.VolumeId)) {
-                    let content = c.Content || "-=章节内容缺失=-";
-                    if (enableIndent) {
-                        let multiLine = content.split("\n");
-                        multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
-                        content = multiLine.join("\n");
-                    }
-                    if (embedTitle) writeStream.write(`${c.Title}\n${content}\n\n`);
-                    else if (content) writeStream.write(`${content}\n`);
-                    else writeStream.write(`--当前章节内容缺失--\n\n`);
-                }
-            }
-            writeStream.end();
-        });
+        }
+        writeStream.end();
+        await finished(writeStream);
+        return fileInfo;
     }
 
     /**
@@ -175,6 +171,9 @@ class BookMaker {
                 duplicates: []
             }
             for (let j = i + 1; j < chapters.length; j++) {
+                const ratio = chapterInfos[i].length / (chapterInfos[j].length || 1);
+                if (ratio < 0.7 || ratio > 1.3) continue;// 长度相差太大，跳过
+
                 const sim = similarity.compareTwoStrings(
                     chapters[i].Content || "",
                     chapters[j].Content || ""
@@ -232,9 +231,12 @@ class BookMaker {
                     await t.commit();
                     return;
                 }
+                //计算总章节偏移量：
+                let moveLength = operations.filter(item => item.operationType !== "delete").reduce((sum, item) => sum + item.chapters.length, 0);
+
                 //基准章节后续章节后移
                 await myModels.EbookIndex.update({
-                    OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
+                    OrderNum: myModels.sequelize.literal('OrderNum + ' + moveLength)
                 }, {
                     where: {
                         BookId: bookId,
@@ -248,7 +250,7 @@ class BookMaker {
 
             for (let chap of settings?.operations) {
                 for (let cp of chap.chapters) {
-                    const curChapSetting = _setChapter(cp);
+                    const curChapSetting = chap.operationType !== "delete" ? _setChapter(cp) : {};
                     switch (chap.operationType) {        //[update, delete, create]
                         case "delete":
                             await myModels.EbookIndex.destroy({
@@ -276,7 +278,7 @@ class BookMaker {
 
             await t.commit();
         } catch (err) {
-            t.rollback();
+            await t.rollback();
             throw err;
         }
     }

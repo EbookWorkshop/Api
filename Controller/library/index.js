@@ -254,7 +254,6 @@ module.exports = () => ({
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
         if (bookInfo.coverType === "默认") metadata.CoverImg = null;
 
-
         try {
             let rsl = await BookMaker.EditEBookInfo(bookInfo.id, metadata);
             ApiResponse.GetResult(rsl).toCTX(ctx);

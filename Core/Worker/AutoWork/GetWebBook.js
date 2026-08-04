@@ -30,6 +30,7 @@ async function GetNextWorkInfo() {
                 model: myModels.WebBook,
                 as: "WebBook",
                 required: true,         // INNER JOIN
+                where: { AutoSyncEnabled: { [Models.Op.eq]: true } },
                 attributes: []
             }],
             attributes: ['BookName']   // 只取 Ebooks 的 BookName

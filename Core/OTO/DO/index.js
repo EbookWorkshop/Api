@@ -140,6 +140,7 @@ class DO {
          * 加载书籍简介
          */
         ebook.LoadIntroduction = async () => {
+            if (ebook.Introduction) return;
             const myModels = Models.GetPO();
             const intro = await myModels.EbookIndex.findOne({
                 where: {

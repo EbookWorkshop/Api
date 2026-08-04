@@ -140,6 +140,10 @@ class OTO_WebBook {
                 }, { transaction: trans });
                 trans.commit();
                 created = true;
+            } else if (ebook) {
+                //创建电子书失败，已存在同名书籍。
+                await trans.rollback();
+                return null;
             }
         }
 
@@ -156,8 +160,8 @@ class OTO_WebBook {
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
-        await ebookObj.LoadIntroduction();
-        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
+        // await ebookObj.LoadIntroduction();
+        let webBook = new WebBook({ WebBookId: webModel.id, ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
         let urls = await webModel.getWebBookIndexSourceURLs({
             attributes: ['Path'],
             raw: true
@@ -288,6 +292,7 @@ class OTO_WebBook {
         webBook.MergeIndex = async ({ title, url }, orderNum) => {
             const myModels = new Models();
             let hasAddChapter = false;
+            if (webBook.tempMergeIndex == null) webBook.tempMergeIndex = new Map();
 
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
                 webBook.tempMergeIndex.get(title).urls.push(url);//没啥用，没存入数据库的
@@ -351,6 +356,29 @@ class OTO_WebBook {
         webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
         await webBook.ReloadIndex();
         return webBook;
+    }
+
+
+    /**
+     * 设置网文是否允许自动更新
+     * 自动更新将在系统闲时，后台静默更新。若设置为启用，将同时将该书的空章节在更新队列安排到队首
+     * @param {number} bookid 
+     * @param {boolean} autoSyncEnabled 
+     */
+    static async WebBookSetAutoSync(bookid, autoSyncEnabled) {
+        const myModels = Models.GetPO();
+        let [rows] = await myModels.WebBook.update({ AutoSyncEnabled: autoSyncEnabled, },
+            { where: { BookId: bookid } });
+
+        if (rows > 0 && autoSyncEnabled) {
+            [rows] = await myModels.EbookIndex.update({ Content: null }, {
+                where: {
+                    BookId: bookid,
+                    Content: { [Models.Op.eq]: "" }
+                }
+            })
+        }
+        return rows > 0;
     }
 
 
