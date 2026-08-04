@@ -55,7 +55,7 @@ class WebBookMaker {
     /**
      * 更新章节目录 抓目录
      *  更新封面
-     * @param {boolean} isEmbedBookName （如果封面是图片时）是否在封面嵌入书名
+     * @param {boolean?} isEmbedBookName （如果封面是图片时）是否在封面嵌入书名 若为null则沿用之前的设置
      * @param {string} url 默认为空，在章节分页时递归往下找
      * @param {number} [orderNum=1] 章节排序开始序号
      * @returns 
@@ -149,6 +149,10 @@ class WebBookMaker {
             }
 
             if (result.has("BookCover")) {  //保存封面
+                if (isEmbedBookName === null) {
+                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(BookMaker.SHOW_BOOKNAME);
+                }
+
                 let cv = result.get("BookCover")[0];
                 let imgPath = cv.text;
                 if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
@@ -289,7 +293,7 @@ class WebBookMaker {
                 const contResult = result.get("Content");
                 let [cContentResult, errObj, pageSources] = contResult;
                 if (!cContentResult.text) {
-                    let { message, stack, ...errOther } = errObj;
+                    let { message, stack, ...errOther } = errObj || {};
                     let errAdd = "";
                     if (message) errAdd = "，" + message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
@@ -303,7 +307,7 @@ class WebBookMaker {
             if (result?.has("ContentNextPage")) {
                 let nextPageResult = result.get("ContentNextPage")[0];
                 let nextPageUrl = url;
-                while (nextPageResult.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
+                while (nextPageResult?.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
                     if (nextPageUrl == nextPageResult?.url) break;        //防止死循环
                     nextPageUrl = nextPageResult.url;
                     if (!nextPageUrl) break;

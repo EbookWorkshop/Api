@@ -7,7 +7,7 @@ const EventManager = require("../EventManager");
 const { ExecRule } = require("../WebBook/ExecRule");
 const { UseDictReplace, isExec } = require("../WebBook/ExecDict");
 
-const isDEBUG = debugSwitcher.puppeteer;
+const { puppeteer: isDEBUG } = debugSwitcher;
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -51,7 +51,7 @@ async function FetchTextByPuppeteer(url, setting) {
                 expect: url,
                 actual: page.url(),
                 message: "请求地址与实际地址不一致，发生过重定向。",
-            })
+            });
         }
 
     } catch (err) {
@@ -210,6 +210,7 @@ async function GetDataUseRuleFromPage(page, Rules) {
         //接管console 网站在浏览器上发的空调信息转发到服务器控台
         page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
         await page.screenshot({ path: `${dataPath}/Debug/Test_${Date.now()}.png` });//截图
+        result.set("source", { text: await page.content() });   //记录页面源代码
     }
 
     for (let rule of Rules) {

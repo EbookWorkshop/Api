@@ -15,7 +15,7 @@ class Rule {
         this.RuleName = ruleName;
 
         /**
-         * 选择器（css选择器）
+         * 选择器（css选择器）/必填，若空则会被忽略
          */
         this.Selector = "";
         /**
