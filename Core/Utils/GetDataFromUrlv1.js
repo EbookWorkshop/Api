@@ -3,7 +3,7 @@ const { config: { dataPath, debugSwitcher } } = require("../services/config");
 // 引入 Puppeteer 模块
 const puppeteer = require('puppeteer')
 const Iconv = require('iconv-lite');
-const EventManager = require("../EventManager");
+// const EventManager = require("../EventManager");         //单例模块，在子线程使用时会新开实例导致消息丢失，不应使用
 const { ExecRule } = require("../WebBook/ExecRule");
 const { UseDictReplace, isExec } = require("../WebBook/ExecDict");
 

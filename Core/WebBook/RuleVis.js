@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer');
 const Rule = require("../../Entity/WebBook/Rule");
 
-const { ExecRule } = require("./ExecRule");
+const { ExecRule } = require("../Utils/GetDataFromUrl/Engines/rule");
 
 //浏览器
 let curBrowser = null;
