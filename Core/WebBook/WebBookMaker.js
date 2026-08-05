@@ -297,7 +297,7 @@ class WebBookMaker {
                     let errAdd = "";
                     if (message) errAdd = "，" + message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, { message, stack, ...errOther });
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, Object.fromEntries(Object.entries({ result: Object.fromEntries(result), message, stack, ...errOther }).filter(([_, v]) => v)));
                     if (defaultContent === undefined) return;
                 } else
                     chap.Content = cContentResult.text;

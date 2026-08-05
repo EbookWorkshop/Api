@@ -49,28 +49,28 @@ class WebBook extends Ebook {
      * 添加来源地址
      * @param {string} url 
      */
-    AddIndexUrl(url) { console.warn("WebBook::AddIndexUrl 尚未初始化，未有实现。"); console.trace(); return 0; }
+    AddIndexUrl(url) { console.warn("WebBook::AddIndexUrl 尚未初始化，未有实现。", this); console.trace(); return 0; }
     /**
      * 从数据库加载所有目录信息 初始化Index数组
      */
-    ReloadIndex() { console.warn("WebBook::ReloadIndex 尚未初始化，未有实现。"); console.trace(); return 0; }
+    ReloadIndex() { console.warn("WebBook::ReloadIndex 尚未初始化，未有实现。", this); console.trace(); return 0; }
     /**
      * 通过目录ID，加载指定章节到当前对象
      * @param {int} cId 章节ID
      */
-    ReloadChapter(cId) { console.warn("WebBook::ReloadChapter 尚未初始化，未有实现。"); console.trace(); return 0; }
+    ReloadChapter(cId) { console.warn("WebBook::ReloadChapter 尚未初始化，未有实现。", this); console.trace(); return 0; }
     /**
      * 根据目录ID，返回指定的目录对象
      * @param {int} cId 目录ID
      * @returns WebIndex 
      */
-    GetIndex(cId) { console.warn("WebBook::GetIndex 尚未初始化，未有实现。"); console.trace(); return 0; }
+    GetIndex(cId) { console.warn("WebBook::GetIndex 尚未初始化，未有实现。", this); console.trace(); return 0; }
     /**
      * 根据目录ID，返回指定的章节对象
      * @param {int} cId 目录ID
      * @returns WebIndex 
      */
-    GetChapter(cId) { console.warn("WebBook::GetChapter 尚未初始化，未有实现。"); console.trace(); return 0; }
+    GetChapter(cId) { console.warn("WebBook::GetChapter 尚未初始化，未有实现。", this); console.trace(); return 0; }
 
     /**
      * 拿到章节的最大序号

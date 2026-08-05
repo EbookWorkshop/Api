@@ -55,7 +55,7 @@ async function FetchTextByPuppeteer(url, setting) {
         }
 
     } catch (err) {
-        console.warn("[执行失败]FetchTextByPuppeteer::", err.message, `\t耗时：${(new Date() - startTime) / 1000}秒`);
+        console.warn("[执行失败]FetchTextByPuppeteer::", err.message, `\t耗时：${(new Date() - startTime) / 1000}秒`, url);
         throw err;
     } finally {
         if (browser) await browser.close(); //确保关掉以免因失败耗费内存
@@ -135,7 +135,7 @@ async function requestTextByHttp(url, setting) {
             }).end();
         })
     } catch (err) {
-        console.warn("[执行失败]FetchTextByHttp::", err.message);
+        console.warn("[执行失败]FetchTextByHttp::", err.message, url);
         throw err;
     }
 }
