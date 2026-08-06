@@ -1,8 +1,14 @@
-const Sequelize = require("sequelize");
+import Sequelize from "sequelize";
+
+import { config } from "../services/config.js";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const Models = require("./Models");
-const { config: { databasePath, debugSwitcher } } = require("../services/config");
-// const {EventManager} = require("../EventManager");
-// const em = new EventManager();
+const { databasePath, debugSwitcher } = config;
 
 class DB {
     constructor() {
@@ -52,5 +58,4 @@ class DB {
 
 const instance = new DB();
 Object.freeze(instance);
-
-module.exports = instance;
+export default instance;

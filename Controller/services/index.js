@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path")
 const myPackage = require("../../package.json");
-const ApiResponse = require("../../Entity/ApiResponse");
+const {ApiResponse} = require("../../Entity/ApiResponse");
 const { isSiteAccessible } = require("../../Core/Utils/IsSiteAccesssible");
 const { config: { dataPath, databasePath } } = require("../../Core/services/config");
 
@@ -44,7 +44,7 @@ module.exports = () => ({
                 memFree: (os.freemem() / 1024 / 1024 / 1024).toFixed(2),
                 memTotal: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2),
             }
-            new ApiResponse(result).toCTX(ctx);
+             new ApiResponse(result).toCTX(ctx);
         } catch (_) { }
 
     },

@@ -1,11 +1,11 @@
-const fs = require("fs");
-const path = require("path")
-const ApiResponse = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const { saveUserConfig } = require("../../Core/services/config");
+import fs from "node:fs";
+import path from "node:path";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import { saveUserConfig } from "../../Core/services/config.js";
 
 //获取静态资源文件
-module.exports = () => ({
+export default {
 
     /**
      * @swagger
@@ -224,4 +224,4 @@ module.exports = () => ({
         new ApiResponse().toCTX(ctx);
     },
 
-});
+};

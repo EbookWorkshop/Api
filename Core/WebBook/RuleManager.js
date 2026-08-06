@@ -1,24 +1,31 @@
 //管理站点与爬站规则之间的关系
+
+import { GetHost } from "../Utils/SiteHelper";
+import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from "../../Entity/SystemConfigGroup";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const Models = require("../OTO/Models");
 const DO = require("../OTO/DO");
 const IndexOptions = require("../../Entity/WebBook/IndexOptions");
 const ChapterOptions = require("../../Entity/WebBook/ChapterOptions");
-const { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } = require("../../Entity/SystemConfigGroup");
 const SystemConfigService = require("../services/SystemConfig");
-const SiteHelper = require("../Utils/SiteHelper");
 const DEFAULT_TIME_OUT = 40_000;
 const DEFAULT_SCRAPING = "puppeteer";
 
 /**
  * 规则管理器 
  */
-class RuleManager {
+export default class RuleManager {
     /**
      * 通过地址获得对应的规则配置
      * @param {string} url 
      */
     static async GetRuleByURL(url) {
-        const host = SiteHelper.GetHost(url);
+        const host = GetHost(url);
         let result = {
             index: new IndexOptions(),
             chapter: new ChapterOptions(),
@@ -295,8 +302,4 @@ class RuleManager {
     }
 }
 
-
-
-
-
-module.exports = RuleManager;
+export { RuleManager };

@@ -1,7 +1,7 @@
 const DO = require("../../Core/OTO/DO");
 
 const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require('../../Entity/ApiResponse');
+const {ApiResponse} = require('../../Entity/ApiResponse');
 
 module.exports = () => ({
     /**

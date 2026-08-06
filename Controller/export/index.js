@@ -5,7 +5,7 @@ const BookMaker = require("../../Core/Book/BookMaker");
 const PDFMaker = require("../../Core/PDF/PDFMaker");
 const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
 const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
+const {ApiResponse} = require("../../Entity/ApiResponse");
 const { SendAMail } = require("../../Core/services/email");
 const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
 

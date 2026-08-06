@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "node:path";
 import Router from "@koa/router";
+import EventManager from "../Core/EventManager.js";
+import { ApiResponse } from "../Entity/ApiResponse.js";
 
 // 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
-const {EventManager} = require("../Core/EventManager");
-const ApiResponse = require("../Entity/ApiResponse");
 
 const __dirname = import.meta.dirname;
 const __filename = import.meta.filename;
@@ -45,8 +45,17 @@ async function load(dir, fatherRouter, cb_loader) {
                 cb_loader(curfilename, fatherRouter, routes);
             }
         } catch (err) {
-            console.warn(`加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
+            //console.warn(`${isESM ? '[ESM]' : '[CJS]'} 加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
             // return;
+
+            try {
+                import(routerPath + ".js").then(routes => {//ESM模块只能用相对路径加载
+                    cb_loader(curfilename, fatherRouter, routes.default);
+                })
+                console.log("已改为ESM", routerPath)
+            } catch (err2) {
+                console.warn(`${isESM ? '[ESM]' : '[CJS]'} 加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
+            }
         }
 
         //递归加载子目录
@@ -64,6 +73,9 @@ async function load(dir, fatherRouter, cb_loader) {
 function loader(filename, fatherRouter, routes) {
     if (typeof (routes) === "function") //模块文件导出为function形式的处理
         routes = routes();
+
+    //ESM模块用了CJS方式导入，ESM迁移中的过渡情况，合并到主干时要删除
+    if (routes.__esModule) { routes = routes.default; }
 
     const prefix = routes.prefix ? path.posix.join(routes.prefix, filename) : path.posix.join('/', fatherRouter, filename);      //控制器文件名为一级路由
 

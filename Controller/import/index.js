@@ -1,11 +1,11 @@
-const path = require("path");
-const ApiResponse = require("../../Entity/ApiResponse");
-const File = require("../../Core/services/file.mjs");
-const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
+import path from "node:path";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { AddFile } from "../../Core/services/file.mjs"
+import { config } from "../../Core/services/config.js"
+const { dataPath, FOLDER } = config;
 
 
-module.exports = () => ({
-
+export default {
     /**
      * @swagger
      * /import/add:
@@ -33,13 +33,13 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-        
+
         //TODO: 根据文件类型进行后续不同的处理
 
         // 指定保存文件的路径
         let filePath = path.join(dataPath, FOLDER.BookStorage, file.originalFilename);
 
-        let rsl = await File.AddFile(file, filePath);
+        let rsl = await AddFile(file, filePath);
         new ApiResponse(rsl).toCTX(ctx);
     },
-})
+}

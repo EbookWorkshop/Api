@@ -1,9 +1,11 @@
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
-const SocketIO = require("../../Core/Socket.js");
-const Message = require("../../Entity/Message");
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import SocketIO from "../../Core/Socket.js";
+import Message from "../../Entity/Message.js";
 
-module.exports = () => ({
+const __filename = import.meta.filename;
+
+export default {
     /**
      * @swagger
      * /services/debug/message:
@@ -138,4 +140,4 @@ module.exports = () => ({
     //     );
     // },
 
-});
+};

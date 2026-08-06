@@ -9,14 +9,8 @@ import system from "./Core/System.js"
 import Serialize from "./Core/Utils/Serialize.js"
 import router from "./Controller/router.js"
 import EventManager from './Core/EventManager.js';
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-
-const { config: myConfig } = require("./Core/services/config");
-const ApiResponse = require("./Entity/ApiResponse");
+import { ApiResponse } from './Entity/ApiResponse.js';
+import { config as myConfig } from "./Core/services/config.js"
 
 const app = new Koa();
 

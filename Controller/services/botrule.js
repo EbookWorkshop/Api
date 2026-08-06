@@ -1,16 +1,20 @@
 //爬站规则
+import fs from 'node:fs/promises';
+import RuleManager from "../../Core/WebBook/RuleManager.js";
+import Rule from "../../Entity/WebBook/Rule.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import { ApiResponse } from "../../Entity/ApiResponse.js";
 
-const RuleManager = require("../../Core/WebBook/RuleManager");
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 const Models = require("../../Core/OTO/Models");
-const Rule = require("../../Entity/WebBook/Rule");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
 const { VisualizationOfRule } = require("../../Core/WebBook/RuleVis")
 const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
-const fs = require('node:fs/promises');
 
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /services/botrule:
@@ -467,4 +471,4 @@ module.exports = () => ({
 
         new ApiResponse(result, null, result ? 20000 : 50000).toCTX(ctx);
     },
-});
+};

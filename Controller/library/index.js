@@ -1,6 +1,6 @@
 const DO = require("../../Core/OTO/DO");
 const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("../../Entity/ApiResponse");
+const {ApiResponse} = require("../../Entity/ApiResponse");
 const { parseJsonFromBodyData } = require("../../Core/Server");
 
 module.exports = () => ({

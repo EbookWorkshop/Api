@@ -1,12 +1,13 @@
-const send = require('koa-send');//下载文件
-const { config } = require("../Core/services/config");
-const path = require("node:path");
-const fs = require("node:fs");
-const ApiResponse = require("../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../Core/Server");
+import fs from "node:fs";
+import path from "node:path";
+import send from "koa-send";//下载文件
+import ApiResponse from "../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../Core/Server.js";
+import { config } from "../Core/services/config.js";
+
 
 //获取静态资源文件
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /assets/download/{path}:
@@ -159,4 +160,4 @@ module.exports = () => ({
 
         new ApiResponse(result).toCTX(ctx);
     }
-});
+};

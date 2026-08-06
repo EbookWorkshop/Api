@@ -1,12 +1,18 @@
-const socketIO = require('socket.io');
-const {EventManager} = require("./EventManager");
+import { Server as socketIO } from "socket.io";
+import EventManager from "./EventManager.js";
+import Message from "../Entity/Message.js"
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const WorkerPool = require("./Worker/WorkerPool");
-const Message = require("../Entity/Message.js");
 const MemoryCache = require("./MemoryCache.js").getInstance();
 
 let myIO = null;
 
-class SocketIO {
+export default class SocketIO {
   /**
    * 
    * @param {KoaServer} server 
@@ -17,7 +23,7 @@ class SocketIO {
 
     this.myEM = new EventManager();
 
-    myIO = socketIO(server, {
+    myIO = new socketIO(server, {
       cors: {
         origin: '*',//允许跨域
         methods: ['GET', 'POST'],
@@ -192,5 +198,3 @@ class SocketIO {
     });
   }
 }
-
-module.exports = SocketIO; 

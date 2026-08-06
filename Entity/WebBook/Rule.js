@@ -2,7 +2,7 @@
  * # BotRule
  * 爬站规则-内容提取规则
  */
-class Rule {
+export default class Rule {
     /**
      * 创建提取规则（通过配置querySelector，设定需要提取的内容）
      * @param {*} ruleName 规则名称
@@ -54,5 +54,3 @@ class Rule {
         this.CheckSetting = null;
     }
 }
-
-module.exports = Rule;

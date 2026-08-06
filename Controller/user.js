@@ -1,4 +1,4 @@
-const ApiResponse = require("../Entity/ApiResponse");
+const {ApiResponse} = require("../Entity/ApiResponse");
 
 
 module.exports = () => ({

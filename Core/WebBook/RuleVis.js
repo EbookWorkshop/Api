@@ -1,6 +1,6 @@
 //规则可视化
-const puppeteer = require('puppeteer');
-const Rule = require("../../Entity/WebBook/Rule");
+import puppeteer from 'puppeteer';
+import Rule from "../../Entity/WebBook/Rule.js";
 
 const { ExecRule } = require("./ExecRule");
 

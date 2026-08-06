@@ -1,7 +1,15 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import EventManager from "../EventManager.js";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const defaultConfig = require("../../config");
-const {EventManager} = require("../EventManager");
-const fs = require("node:fs");
-const path = require("node:path");
+
 
 const UserConfigFilePath = "./UserConfig.json";
 const em = new EventManager();
@@ -61,29 +69,22 @@ function latestConfig() {
 
     //检查用户资料库的必须目录并创建缺失部分
     let checkPath = cf.dataPath;
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});//linux  下回调函数是必须的
-    checkPath = path.join(cf.dataPath,cf.FOLDER.BookCover);
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath ,{ recursive: true },()=>{});
-    checkPath = path.join(cf.dataPath,cf.FOLDER.BookStorage);
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
-    checkPath = path.join(cf.dataPath,cf.FOLDER.font);
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
-    checkPath = path.join(cf.dataPath,cf.FOLDER.TempBookOutput);
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
-    checkPath = path.join(cf.dataPath,cf.FOLDER.TempFile);
-    if(!fs.existsSync(checkPath)) fs.mkdir(checkPath,{ recursive: true },()=>{});
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });//linux  下回调函数是必须的
+    checkPath = path.join(cf.dataPath, cf.FOLDER.BookCover);
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });
+    checkPath = path.join(cf.dataPath, cf.FOLDER.BookStorage);
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });
+    checkPath = path.join(cf.dataPath, cf.FOLDER.font);
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });
+    checkPath = path.join(cf.dataPath, cf.FOLDER.TempBookOutput);
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });
+    checkPath = path.join(cf.dataPath, cf.FOLDER.TempFile);
+    if (!fs.existsSync(checkPath)) fs.mkdir(checkPath, { recursive: true }, () => { });
 
     return cf;
 }
 
 
 
-module.exports = {
-    defaultConfig,
-    /**
-     * 配置文件——注意有缓存
-     */
-    config: latestConfig(),
-    latestConfig,
-    saveUserConfig,
-}
+export const config = latestConfig();
+export { defaultConfig, latestConfig, saveUserConfig };
