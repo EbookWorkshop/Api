@@ -1,3 +1,5 @@
+const { isNativeError } = require('node:util/types');
+
 /**
  * 将 Error 对象序列化为可安全传输的普通对象
  * Error 对象的 name、message、stack 等属性是不可枚举的，统一处理
@@ -5,8 +7,7 @@
  * @returns {object} 可序列化的普通对象
  */
 function Error(err) {
-    // 非 Error 实例直接返回原值
-    if (!(err instanceof Error)) {
+    if (!isNativeError(err)) {//node 方法，判断是否原生错误类型
         return err;
     }
 

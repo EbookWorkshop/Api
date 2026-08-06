@@ -8,6 +8,7 @@ const ApiResponse = require("../Entity/ApiResponse");
 const em = new EventManager();
 const router = new Router();
 
+const Serialize = require("../Core/Utils/Serialize");
 /**
  * 路由模块装载器
  * 如 func1.js 含对应路由规则：`get /test`，映射的路由为：/func1/test
@@ -69,14 +70,14 @@ function loader(filename, fatherRouter, routes) {
         let mType = `[${method.toUpperCase()}]`.padStart(10, " ");
         let realPath = path.posix.join(prefix, rPath)
         em.emit("Debug.Log", `已加载路由：\t${mType}\t${(realPath).padEnd(40, " ")}\t/Controller/${fatherRouter ? fatherRouter + "/" : ""}${filename}`, "ROUTER");
-        router[method.toLowerCase()](realPath, (ctx) => {
+        router[method.toLowerCase()](realPath, async (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
 
             //在最顶层捕获错误，以防出错后程序中断
             try {
-                return routes[key](ctx);
+                return await routes[key](ctx);
             } catch (err) {
-                new ApiResponse(null, "未捕获的接口异常：" + err.message, 50000).toCTX(ctx);
+                new ApiResponse(Serialize.Error(err), "通用接口异常捕获：" + err.message, 50000).toCTX(ctx);
             }
         });
     })
