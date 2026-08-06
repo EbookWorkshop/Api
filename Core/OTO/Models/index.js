@@ -1,10 +1,11 @@
-const { readdir } = require('node:fs/promises');
-const path = require("node:path");
-const Sequelize = require("sequelize");
-const {EventManager} = require("../../EventManager");
-const Relational = require("./Relational");
-const Serialize = require("../../Utils/Serialize")
+import { readdir } from 'node:fs/promises';
+import path from "node:path";
+import Sequelize from "sequelize";
+import EventManager from "../../EventManager.js";
+import Relational from "./Relational/index.js";
+import Serialize from "../../Utils/Serialize.js";
 
+const __dirname = import.meta.dirname;
 let PO_MODELS = null;//PO对象
 
 /**
@@ -12,7 +13,7 @@ let PO_MODELS = null;//PO对象
  * 每个属性对应数据库中某个表，一个表就是一个类,每张表的字段就是类中的一个属性    
  * __注意；PO中应该不包含任何对数据的操作__
  */
-class Models {
+export default class Models {
     constructor(sequelizeConnect) {
         if (PO_MODELS != null) return PO_MODELS;
 
@@ -78,14 +79,13 @@ class Models {
  */
 function AutoInit(sqlConnect) {
     const em = new EventManager();
-    readdir(__dirname).then(fileList => {
+    readdir(__dirname).then(async fileList => {
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
             const MODEL_NAME = file.replace(".js", "");
-            const define = require(path.join(__dirname, file));        //按文件装模型
+            const { default: define } = await import(path.join(__dirname, file));        //按文件装模型
 
             PO_MODELS[MODEL_NAME] = define(sqlConnect);
-
         }
 
         Relational(PO_MODELS);
@@ -104,5 +104,4 @@ function AutoInit(sqlConnect) {
 
 }
 
-module.exports = Models;
 

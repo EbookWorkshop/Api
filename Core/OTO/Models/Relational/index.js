@@ -1,10 +1,10 @@
-const Scope = require("./scope");
+import Scope from "./scope.js";
 /**
  * 设置模型之间的关系
  * 临时的做法 以后看要怎么优化
  * @param {*} models 
  */
-module.exports = function (models) {
+export default function (models) {
 
     // Ebook <-- --> Volume
     models.Ebook.hasMany(models.Volume, { foreignKey: 'BookId', sourceKey: 'id', as: "Volumes", onDelete: 'CASCADE' });

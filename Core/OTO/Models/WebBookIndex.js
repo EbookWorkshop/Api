@@ -1,11 +1,11 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * 网文目录
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("WebBookChapter", {
         //-网文合并的唯一标识
         WebTitle: { type: DataTypes.STRING(50), allowNull: false },

@@ -1,14 +1,16 @@
-const { SYSTEM_DEFAULT_FONT } = require("../../Entity/SystemConfigGroup");
-const SystemConfigService = require("./SystemConfig");
-const { config: { dataPath, FOLDER } } = require("../services/config");
-const fs = require('node:fs');
-const path = require('node:path');
+import SystemConfigService from "./SystemConfig.js";
+import { config } from "../services/config.js";
+import fs from 'node:fs';
+import path from 'node:path';
+import { SYSTEM_DEFAULT_FONT } from "../../Entity/SystemConfigGroup.js";
+
+const { dataPath, FOLDER } = config;
 const FONT_PATH = path.join(dataPath, FOLDER.font);
 
 /**
  * 获取默认阅读字体
  */
-async function GetDefaultReadingFont() {
+export async function GetDefaultReadingFont() {
     return await SystemConfigService.getConfig(SYSTEM_DEFAULT_FONT, "defaultReadingFont");
 }
 
@@ -16,11 +18,11 @@ async function GetDefaultReadingFont() {
  * 设置默认阅读字体
  * @param {*} fontName 字体名
  */
-async function SetDefaultReadingFont(fontName) {
+export async function SetDefaultReadingFont(fontName) {
     return await SystemConfigService.setConfig(SYSTEM_DEFAULT_FONT, "defaultReadingFont", fontName);
 }
 
-async function GetDefaultUIFont() {
+export async function GetDefaultUIFont() {
     let fontName = await SystemConfigService.getConfig(SYSTEM_DEFAULT_FONT, "defaultUIFont");
     //找到字体名，确认字体实际路径和后缀
     const files = await fs.promises.readdir(FONT_PATH);
@@ -43,15 +45,9 @@ async function GetDefaultUIFont() {
  * 设置默认UI字体
  * @param {*} fontName 字体名
  */
-async function SetDefaultUIFont(fontName) {
+export async function SetDefaultUIFont(fontName) {
     return await SystemConfigService.setConfig(SYSTEM_DEFAULT_FONT, "defaultUIFont", fontName);
 }
 
 
-module.exports = {
-    GetDefaultReadingFont,
-    SetDefaultReadingFont,
-    GetDefaultUIFont,
-    SetDefaultUIFont,
-    SYSTEM_DEFAULT_FONT,
-}
+

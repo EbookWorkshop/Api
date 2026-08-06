@@ -4,6 +4,7 @@ import send from "koa-send";//下载文件
 import ApiResponse from "../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../Core/Server.js";
 import { config } from "../Core/services/config.js";
+import { ListFile,DeleteFile,RenameFile } from "../Core/services/file.mjs";
 
 
 //获取静态资源文件
@@ -85,7 +86,6 @@ export default {
      *         description: 请求失败
      */
     "get /archive/book": async (ctx) => {
-        const { ListFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const bookFiles = await ListFile(bookDir, { detail: true });
 
@@ -123,7 +123,6 @@ export default {
     "post /archive/book": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["file", "name"]);
         if (param == null) return;
-        const { RenameFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const oldFile = path.join(bookDir, param.file);
         const ext = path.extname(param.file);
@@ -153,7 +152,6 @@ export default {
      *         description: 请求失败
      */
     "delete /archive/book/:name": async (ctx) => {
-        const { DeleteFile } = require("../Core/services/file.mjs");
         const bookDir = path.join(config.dataPath, config.FOLDER.BookStorage);
         const bookPath = path.join(bookDir, ctx.params.name);
         const result = await DeleteFile(bookPath);

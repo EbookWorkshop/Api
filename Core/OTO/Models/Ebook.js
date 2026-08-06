@@ -1,9 +1,9 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * Ebook 表
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("Ebook", {
         BookName: {
             type: DataTypes.STRING(50),

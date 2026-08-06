@@ -1,7 +1,7 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("PDFBook", {
         FontFamily: { type: DataTypes.STRING(10), allowNull: true, },
         FontSize: { type: DataTypes.INTEGER, defaultValue: 22 },

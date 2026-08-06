@@ -3,13 +3,15 @@ import EventManager from "./EventManager.js"
 import IO from "./Socket.js"
 import db from "./OTO/DatabaseHelper.js";
 
+import SystemConfigService from "./services/SystemConfig.js"; // 假设服务类位于 Services 目录
+
+
 // 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 const WP = require("./Worker/WorkerPool");
 const MemoryCache = require("./MemoryCache"); // 引入内存缓存服务
-const SystemConfigService = require("./services/SystemConfig"); // 假设服务类位于 Services 目录
 const packageJson = require("../package.json"); // 指向项目根目录的 package.json
 
 const { config: { debug: isDebug } } = require("./services/config");

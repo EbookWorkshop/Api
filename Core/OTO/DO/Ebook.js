@@ -1,10 +1,15 @@
-const DO = require("./index");
+import DO from "./index.js";
+import Models from "../Models/index.js";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 const Ebook = require("../../../Entity/Ebook/Ebook");
-const Models = require("../Models");
 const Chapter = require("../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("../../Utils/ReviewString");
 
-class OTO_Ebook {
+export default class OTO_Ebook {
 
 
     /**
@@ -350,5 +355,3 @@ class OTO_Ebook {
     }
 }
 
-
-module.exports = OTO_Ebook;

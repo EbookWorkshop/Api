@@ -1,13 +1,7 @@
 import Sequelize from "sequelize";
-
+import Models from "./Models/index.js";
 import { config } from "../services/config.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-
-const Models = require("./Models");
 const { databasePath, debugSwitcher } = config;
 
 class DB {

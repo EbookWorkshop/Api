@@ -3,7 +3,7 @@
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("Bookmark", {
         //TODO: 显式定义外键后数据库创建不了
         // IndexId: { type: DataTypes.INTEGER, allowNull: false },

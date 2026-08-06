@@ -3,12 +3,12 @@ import { readdir } from 'node:fs/promises';
 import EventManager from "../../EventManager.js";
 import Serialize from "../../Utils/Serialize.js";
 import { config } from "../../services/config.js";
+import Models from "../Models/index.js";
 
 // 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
-const Models = require("../Models");
 const Index = require("../../../Entity/Ebook/Index");
 const Volume = require("../../../Entity/Ebook/Volume");
 const Chapter = require("../../../Entity/Ebook/Chapter");
@@ -236,7 +236,8 @@ function AutoInit() {
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
             // const FILE_NAME = file.replace(".js", "");
-            const CLASS = require(path.join(__dirname, file));        //按文件装模型
+            let CLASS = require(path.join(__dirname, file));        //按文件装模型
+            CLASS = CLASS.__esModule ? CLASS.default : CLASS;
 
             Object.getOwnPropertyNames(CLASS).forEach(methodName => {
                 if (notIncludeMethod.includes(methodName)) return;
