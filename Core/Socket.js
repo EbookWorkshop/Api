@@ -2,7 +2,11 @@ const socketIO = require('socket.io');
 const EventManager = require("./EventManager");
 const WorkerPool = require("./Worker/WorkerPool");
 const Message = require("../Entity/Message.js");
+const Serialize = require("./Utils/Serialize.js")
 const MemoryCache = require("./MemoryCache.js").getInstance();
+
+const { isMainThread } = require('node:worker_threads');
+if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[SocketIO]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
 
 let myIO = null;
 
@@ -91,20 +95,19 @@ class SocketIO {
     this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId, errObj) => {
       let msgId = -1;
       if (errObj) {
-        const msg = new Message(err?.name || err, "message", {
-          title: "更新章节失败"
-        });
+        const msg = new Message(err?.name || err, "message", { title: "更新章节失败" });
 
-        let { message, stack, name, ...errRest } = errObj
+        errObj = Serialize.Error(errObj);
         MemoryCache.set(msg.id, {
           type: "ErrorMessage",
-          message: msg, err: { name, message, stack, ...errRest }, data: null
+          message: msg, err: errObj, data: null
         });
         msgId = msg.id;
       }
+      if (typeof (err) === "string") err = { name: err, message: err };
 
-      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err }, msgId });
-      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err, msgId);//分发给当前任务线程
+      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { ...err, ...errObj }, msgId });
+      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, { ...err, ...errObj }, msgId);//分发给当前任务线程
 
     })
 

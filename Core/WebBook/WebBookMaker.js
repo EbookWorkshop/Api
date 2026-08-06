@@ -7,6 +7,7 @@ const WebBook = require("../../Entity/WebBook/WebBook");
 const WebChapter = require("../../Entity/WebBook/WebChapter");
 const RuleManager = require("./RuleManager");
 const SiteHelper = require("../Utils/SiteHelper");
+const Serialize = require("../Utils/Serialize");
 const EventManager = require("../EventManager");
 const DO = require("../OTO/DO");
 const WorkerPool = require("../Worker/WorkerPool");
@@ -55,7 +56,7 @@ class WebBookMaker {
     /**
      * 更新章节目录 抓目录
      *  更新封面
-     * @param {boolean} isEmbedBookName （如果封面是图片时）是否在封面嵌入书名
+     * @param {boolean?} isEmbedBookName （如果封面是图片时）是否在封面嵌入书名 若为null则沿用之前的设置
      * @param {string} url 默认为空，在章节分页时递归往下找
      * @param {number} [orderNum=1] 章节排序开始序号
      * @returns 
@@ -76,7 +77,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (result == null || err != null) {
-                new EventManager().emit("WebBook.UpdateIndex.Error", err, curUrl, result);
+                new EventManager().emit("WebBook.UpdateIndex.Error", Serialize.Error(err), curUrl, Serialize.Result(result));
                 return;
             }
             let addChapterNum = 0;
@@ -149,6 +150,10 @@ class WebBookMaker {
             }
 
             if (result.has("BookCover")) {  //保存封面
+                if (isEmbedBookName === null) {
+                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(BookMaker.SHOW_BOOKNAME);
+                }
+
                 let cv = result.get("BookCover")[0];
                 let imgPath = cv.text;
                 if (imgPath?.startsWith("cache::")) imgPath = imgPath.replace("cache::", "");//针对特定情况的补丁代码，应该优化
@@ -168,7 +173,7 @@ class WebBookMaker {
                     if (isEmbedBookName && !coverImgPath.endsWith(BookMaker.SHOW_BOOKNAME)) coverImgPath += BookMaker.SHOW_BOOKNAME;
                     this.myWebBook.SetCoverImg(coverImgPath);
                 }).catch(err => {
-                    new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", err);
+                    new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", Serialize.Error(err));
                 });
             }
 
@@ -266,6 +271,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (err) {
+                err = Serialize.Error(err);
                 new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId, err);
                 if (defaultContent === undefined) return;
             }
@@ -289,11 +295,12 @@ class WebBookMaker {
                 const contResult = result.get("Content");
                 let [cContentResult, errObj, pageSources] = contResult;
                 if (!cContentResult.text) {
-                    let { message, stack, ...errOther } = errObj;
+                    errObj = Serialize.Error(errObj || {});
+                    let { message } = errObj;
                     let errAdd = "";
                     if (message) errAdd = "，" + message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, { message, stack, ...errOther });
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, { result: Serialize.Result(result), ...errObj });
                     if (defaultContent === undefined) return;
                 } else
                     chap.Content = cContentResult.text;
@@ -303,7 +310,7 @@ class WebBookMaker {
             if (result?.has("ContentNextPage")) {
                 let nextPageResult = result.get("ContentNextPage")[0];
                 let nextPageUrl = url;
-                while (nextPageResult.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
+                while (nextPageResult?.text?.includes(nextPageResult.Rule.CheckSetting)) {        //TODO: 这应该弄个规则解释器和配套的校验规则表达式
                     if (nextPageUrl == nextPageResult?.url) break;        //防止死循环
                     nextPageUrl = nextPageResult.url;
                     if (!nextPageUrl) break;
@@ -386,7 +393,7 @@ class WebBookMaker {
             }).catch((err) => {
                 console.warn(`更新失败：ID-${id}，原因：${err.message}`);
                 // failNum++;
-                em.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, myBookId, id, err);
+                em.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, myBookId, id, Serialize.Error(err));
             });
             doList.push(id);
         }

@@ -8,6 +8,10 @@
 //# 注意：当前将在线程中执行，直接使用单实例的模块将导致再次创建实例
 
 const { parentPort } = require('worker_threads');
+const Serialize = require("../Utils/Serialize");
+
+
+
 parentPort.on('message', (task) => {
     try {
         let { taskfile, param } = task;
@@ -22,17 +26,11 @@ parentPort.on('message', (task) => {
             }).catch(err => {
                 if (err == null) err = { message: "线程错误：未知错误", param, taskfile };
 
-                let error = structuredClone(err);
-                //当err的属性不能被枚举时，上述方法只能拿到一个空对象
-                // 子线程返回结果对象中含有function方法时，会得到类似的一个错误对象(DataCloneError)
-                // 发到顶层就是一个空对象，所以额外处理几个常见的属性
-                if (err.name) error.name = err.name;
-                if (err.message) error.message = err.message;
-                if (err.stack) error.stack = err.stack
+                let error = Serialize.Error(err);
                 parentPort.postMessage({ type: "error", err: error });
             })
         } else {
-            parentPort.postMessage(JSON.parse(JSON.stringify(result)));//执行完成，往主线程发送结果
+            parentPort.postMessage(Serialize.Result(result));//执行完成，往主线程发送结果 注意：如果result存在不可克隆内容，会导致出错
         }
 
     } catch (err) {

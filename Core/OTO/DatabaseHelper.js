@@ -21,6 +21,7 @@ class DB {
             dialect: 'sqlite',
             storage: DB.myDbPath,
             logging: debugSwitcher.database,            // console.log,//在控制台输出sql
+            //Error: Setting a custom timezone is not supported by SQLite, dates are always returned as UTC. 
             //timezone: '+08:00',
             pool: {
                 max: 5,

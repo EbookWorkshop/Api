@@ -47,7 +47,7 @@ class IndexOptions {
             this.BookCoverRule,
             this.IntroductionRule,
             this.AuthorRule
-        ];
+        ].filter(r => r.Selector !== '');
     }
 }
 

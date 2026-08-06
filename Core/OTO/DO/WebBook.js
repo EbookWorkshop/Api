@@ -367,8 +367,7 @@ class OTO_WebBook {
      */
     static async WebBookSetAutoSync(bookid, autoSyncEnabled) {
         const myModels = Models.GetPO();
-        let [rows] = await myModels.WebBook.update({ AutoSyncEnabled: autoSyncEnabled, },
-            { where: { BookId: bookid } });
+        let [rows] = await myModels.WebBook.update({ AutoSyncEnabled: autoSyncEnabled, }, { where: { BookId: bookid } });
 
         if (rows > 0 && autoSyncEnabled) {
             [rows] = await myModels.EbookIndex.update({ Content: null }, {
@@ -376,7 +375,7 @@ class OTO_WebBook {
                     BookId: bookid,
                     Content: { [Models.Op.eq]: "" }
                 }
-            })
+            });
         }
         return rows > 0;
     }
