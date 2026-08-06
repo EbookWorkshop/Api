@@ -7,6 +7,7 @@ const WebBook = require("../../Entity/WebBook/WebBook");
 const WebChapter = require("../../Entity/WebBook/WebChapter");
 const RuleManager = require("./RuleManager");
 const SiteHelper = require("../Utils/SiteHelper");
+const Serialize = require("../Utils/Serialize");
 const EventManager = require("../EventManager");
 const DO = require("../OTO/DO");
 const WorkerPool = require("../Worker/WorkerPool");
@@ -76,7 +77,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (result == null || err != null) {
-                new EventManager().emit("WebBook.UpdateIndex.Error", err, curUrl, result);
+                new EventManager().emit("WebBook.UpdateIndex.Error", Serialize.Error(err), curUrl, Serialize.Result(result));
                 return;
             }
             let addChapterNum = 0;
@@ -172,7 +173,7 @@ class WebBookMaker {
                     if (isEmbedBookName && !coverImgPath.endsWith(BookMaker.SHOW_BOOKNAME)) coverImgPath += BookMaker.SHOW_BOOKNAME;
                     this.myWebBook.SetCoverImg(coverImgPath);
                 }).catch(err => {
-                    new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", err);
+                    new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", Serialize.Error(err));
                 });
             }
 
@@ -270,6 +271,7 @@ class WebBookMaker {
             maxThreadNum: 10
         }, async (result, err) => {
             if (err) {
+                err = Serialize.Error(err);
                 new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, err, jobId, err);
                 if (defaultContent === undefined) return;
             }
@@ -293,11 +295,12 @@ class WebBookMaker {
                 const contResult = result.get("Content");
                 let [cContentResult, errObj, pageSources] = contResult;
                 if (!cContentResult.text) {
-                    let { message, stack, ...errOther } = errObj || {};
+                    errObj = Serialize.Error(errObj || {});
+                    let { message } = errObj;
                     let errAdd = "";
                     if (message) errAdd = "，" + message;
                     else if (!cContentResult.GetContentAction) errAdd = "，爬站规则-获取正文规则尚未配置或配置错误";
-                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, Object.fromEntries(Object.entries({ result: Object.fromEntries(result), message, stack, ...errOther }).filter(([_, v]) => v)));
+                    new EventManager().emit(`WebBook.UpdateOneChapter.Error`, this.myWebBook?.BookId, cId, "获取章节正文失败" + errAdd, jobId, { result: Serialize.Result(result), ...errObj });
                     if (defaultContent === undefined) return;
                 } else
                     chap.Content = cContentResult.text;
@@ -390,7 +393,7 @@ class WebBookMaker {
             }).catch((err) => {
                 console.warn(`更新失败：ID-${id}，原因：${err.message}`);
                 // failNum++;
-                em.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, myBookId, id, err);
+                em.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, myBookId, id, Serialize.Error(err));
             });
             doList.push(id);
         }

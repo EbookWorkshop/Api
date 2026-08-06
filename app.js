@@ -5,6 +5,7 @@ const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
 const path = require("node:path");
 const { config: myConfig } = require("./Core/services/config");
+const Serialize = require("./Core/Utils/Serialize");
 const system = require("./Core/System");
 const router = require('./Controller/router');
 const EventManager = require("./Core/EventManager");
@@ -31,6 +32,7 @@ app.use(koaSwagger({
 //在Koa框架中，app.on("error")主要用于日志记录，而不会改变HTTP响应。
 app.on("error", (err, ctx) => {
     let em = new EventManager();
+    err = Serialize.Error(err);
     em.emit("Debug.Log", err?.message || err, "KOAERR", err);
 });
 

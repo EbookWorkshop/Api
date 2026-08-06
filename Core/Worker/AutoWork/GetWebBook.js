@@ -7,7 +7,7 @@ const WebBookMaker = require("../../WebBook/WebBookMaker")
  */
 async function Main() {
     let { BookId, id, Title, BookName } = await GetNextWorkInfo();
-    if (!id) return;
+    if (!BookId || !id) return;
     const webBook = new WebBookMaker(BookId);
     await webBook.loadFromDB;
     await webBook.UpdateOneChapter(id, false, undefined, '');
@@ -46,14 +46,15 @@ async function GetNextWorkInfo() {
     });
 
     if (!chapter) {
-        await myModels.EbookIndex.update({
+        let [rows] = await myModels.EbookIndex.update({
             Content: null
         }, {
             where: {
                 Content: { [Models.Op.eq]: '' },
             },
-        })
-        return { id: -1 };
+        });
+        console.log("所有待办任务已处理，将重置列表并重新开始。已重置任务数：", rows);
+        return { id: null };
     }
     let { BookId, id, Title, ["Ebook.BookName"]: BookName } = chapter;
     return { BookId, id, Title, BookName }

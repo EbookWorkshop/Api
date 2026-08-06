@@ -2,7 +2,11 @@ const socketIO = require('socket.io');
 const EventManager = require("./EventManager");
 const WorkerPool = require("./Worker/WorkerPool");
 const Message = require("../Entity/Message.js");
+const Serialize = require("./Utils/Serialize.js")
 const MemoryCache = require("./MemoryCache.js").getInstance();
+
+const { isMainThread } = require('node:worker_threads');
+if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[SocketIO]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
 
 let myIO = null;
 
@@ -93,10 +97,10 @@ class SocketIO {
       if (errObj) {
         const msg = new Message(err?.name || err, "message", { title: "更新章节失败" });
 
-        let { message, stack, name, ...errRest } = errObj
+        errObj = Serialize.Error(errObj);
         MemoryCache.set(msg.id, {
           type: "ErrorMessage",
-          message: msg, err: { name, message, stack, ...errRest }, data: null
+          message: msg, err: errObj, data: null
         });
         msgId = msg.id;
       }

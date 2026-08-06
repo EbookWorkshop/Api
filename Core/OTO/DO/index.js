@@ -6,6 +6,7 @@ const Index = require("../../../Entity/Ebook/Index");
 const Volume = require("../../../Entity/Ebook/Volume");
 const Chapter = require("../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("../../Utils/ReviewString");
+const Serialize = require("../../Utils/Serialize");
 const { config: { dataPath } } = require("../../services/config");
 
 /**
@@ -238,7 +239,7 @@ function AutoInit() {
         DO.HAS_INIT = true;
 
     }).catch(err => {
-        em.emit("Debug.Log", "装载DO方法失败", "DO", err);
+        em.emit("Debug.Log", "装载DO方法失败", "DO", Serialize.Error(err));
     });
 
 }
