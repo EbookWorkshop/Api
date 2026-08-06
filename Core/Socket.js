@@ -1,5 +1,5 @@
 const socketIO = require('socket.io');
-const EventManager = require("./EventManager");
+const {EventManager} = require("./EventManager");
 const WorkerPool = require("./Worker/WorkerPool");
 const Message = require("../Entity/Message.js");
 const MemoryCache = require("./MemoryCache.js").getInstance();

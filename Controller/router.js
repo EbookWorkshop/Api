@@ -1,10 +1,16 @@
-const Router = require('@koa/router');
-// const { loadavg } = require('os');
-const path = require('path')
-const fs = require('fs');
+import fs from "fs";
+import path from "node:path";
+import Router from "@koa/router";
 
-const EventManager = require("../Core/EventManager");
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+const {EventManager} = require("../Core/EventManager");
 const ApiResponse = require("../Entity/ApiResponse");
+
+const __dirname = import.meta.dirname;
+const __filename = import.meta.filename;
 const em = new EventManager();
 const router = new Router();
 
@@ -85,4 +91,4 @@ function loader(filename, fatherRouter, routes) {
 //加载当前文件夹下所有js结尾的文件作为控制器
 load(".", "", loader)
 
-module.exports = router;
+export default router;

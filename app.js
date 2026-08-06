@@ -1,13 +1,21 @@
 ShowLogo();
-const Koa = require('koa');
-const static = require('koa-static');
-const { koaBody } = require('koa-body');
-const { koaSwagger } = require('koa2-swagger-ui');
-const path = require("node:path");
+import Koa from 'koa';
+import staticServer from 'koa-static';
+import { koaBody } from 'koa-body';
+import { koaSwagger } from 'koa2-swagger-ui';
+import path from 'node:path';
+
+import system from "./Core/System.js"
+import Serialize from "./Core/Utils/Serialize.js"
+import router from "./Controller/router.js"
+import EventManager from './Core/EventManager.js';
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const { config: myConfig } = require("./Core/services/config");
-const system = require("./Core/System");
-const router = require('./Controller/router');
-const EventManager = require("./Core/EventManager");
 const ApiResponse = require("./Entity/ApiResponse");
 
 const app = new Koa();
@@ -48,7 +56,7 @@ app.use(async (ctx, next) => {
 app.use(router.routes());
 //启动静态文件服务
 let filePath = path.join(myConfig.dataPath, "");
-app.use(static(filePath));
+app.use(staticServer(filePath));
 
 //app.use(Router.allowedMethods()); TODO: 推荐的处理错误请求方式
 

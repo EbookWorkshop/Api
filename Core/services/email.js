@@ -1,7 +1,7 @@
 //发邮件 邮箱管理
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
-const EventManager = require("../EventManager");
+const {EventManager} = require("../EventManager");
 const path = require('path')
 const { version } = require("../../package.json");
 

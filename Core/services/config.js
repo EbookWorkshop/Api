@@ -1,5 +1,5 @@
 const defaultConfig = require("../../config");
-const EventManager = require("../EventManager");
+const {EventManager} = require("../EventManager");
 const fs = require("node:fs");
 const path = require("node:path");
 

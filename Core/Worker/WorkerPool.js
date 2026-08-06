@@ -2,7 +2,8 @@ const { EventEmitter } = require('events');
 const path = require('node:path');
 const { Worker } = require('worker_threads');
 const CallbackRunner = require("./CallbackRunner");
-const EventManager = require("../EventManager");
+const {EventManager} = require("../EventManager");
+const Serialize = require("../Utils/Serialize");
 const SystemConfigService = require("../services/SystemConfig");
 const em = new EventManager();
 

@@ -1,6 +1,6 @@
 const DO = require("../OTO/DO");
 
-const EventManager = require("../EventManager");
+const {EventManager} = require("../EventManager");
 const path = require("node:path");
 const { config: { dataPath, FOLDER } } = require("../services/config");
 const { GetDefaultReadingFont } = require("../services/font")

@@ -1,5 +1,5 @@
 //主要是辅助除错 开启一些监听
-const EventManager = require("./EventManager");
+const {EventManager} = require("./EventManager");
 const SocketHandler = require("./Socket.js");
 const { config: { debugSwitcher } } = require("./services/config");
 const Message = require("../Entity/Message.js");

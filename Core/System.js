@@ -1,4 +1,8 @@
-const EventManager = require("./EventManager");
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+const {EventManager} = require("./EventManager");
 const db = require("./OTO/DatabaseHelper");
 const WP = require("./Worker/WorkerPool");
 const IO = require("./Socket");
@@ -9,7 +13,7 @@ const packageJson = require("../package.json"); // 指向项目根目录的 pack
 const { config: { debug: isDebug } } = require("./services/config");
 if (isDebug) require("./debug");//载入Debug模块要尽可能早，便于尽早监听错误信息
 
-module.exports = new Promise((resolve, reject) => {
+export default new Promise((resolve, reject) => {
     try {
 
         const em = new EventManager();    //启用消息管理

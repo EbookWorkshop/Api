@@ -1,7 +1,7 @@
 const { readdir } = require('node:fs/promises');
 const path = require("path");
 const Sequelize = require("sequelize");
-const EventManager = require("../../EventManager");
+const {EventManager} = require("../../EventManager");
 const Relational = require("./Relational");
 
 

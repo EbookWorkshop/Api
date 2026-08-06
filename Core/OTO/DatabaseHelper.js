@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
 const { config: { databasePath, debugSwitcher } } = require("../services/config");
-// const EventManager = require("../EventManager");
+// const {EventManager} = require("../EventManager");
 // const em = new EventManager();
 
 class DB {

@@ -1,5 +1,6 @@
 const { AsyncResource } = require('async_hooks');
-const EventManager = require("../EventManager");
+const Serialize = require("../Utils/Serialize")
+const {EventManager} = require("../EventManager");
 const em = new EventManager();
 
 /**

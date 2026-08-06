@@ -1,6 +1,6 @@
 const { readdir } = require('node:fs/promises');
 const path = require("node:path");
-const EventManager = require("../../EventManager");
+const {EventManager} = require("../../EventManager");
 const Models = require("../Models");
 const Index = require("../../../Entity/Ebook/Index");
 const Volume = require("../../../Entity/Ebook/Volume");

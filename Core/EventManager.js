@@ -1,5 +1,18 @@
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'node:events';
+import Serialize from './Utils/Serialize.js';
+
+import { isMainThread } from 'node:worker_threads';
+if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用消息模块！子线程使用独立的单例，与主线程的消息模块并不互通。");
+// TODO：可以尝试将截获到的消息，通过子线程用线程间通讯转发到主线程，再由主线程通过消息模块转发出去
+
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const Message = require("../Entity/Message");
+
 
 let myEventManager = null;
 
@@ -8,7 +21,7 @@ let myEventManager = null;
  * 全局的事件管理器    
  * **注意：相同的事件监听器超过10个可能会导致事件丢失或性能问题**
  */
-class EventManager extends EventEmitter {
+export default class EventManager extends EventEmitter {
     constructor() {
         if (myEventManager != null) return myEventManager;
         super();
@@ -35,4 +48,4 @@ class EventManager extends EventEmitter {
     }
 }
 
-module.exports = EventManager;
+export { EventManager };
