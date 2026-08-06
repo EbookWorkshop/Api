@@ -64,17 +64,10 @@ class WorkerPool extends EventEmitter {
         /**
          * 线程自动释放关闭
          */
-        this.workerWatcher = setInterval(async () => {
-            if (this.autoWorkInterval === AutoWorkIntervalUnread) {
-                this.autoWorkInterval = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval") * 1;
-                this.isRunAutoWorker = this.autoWorkInterval > 0;
-            }
+        this.workerWatcher = setInterval(() => {
             if (this.freeWorkers.length == 0) return;
             let lazyWorker = this.freeWorkers.reduce((prev, current) => { return prev.WaitingTime > current.WaitingTime ? prev : current; });
             if (!lazyWorker) return;
-            
-            let feeTime = Date.now() - lazyWorker.WaitingTime;
-            if (feeTime >= this.autoWorkInterval) this.AutoWorkWatcher();//当有线程闲置超过x小时（360_0000ms）后，才执行自动进程
 
             if (this.workers.length <= 1) return;       //至少保留一个线程
             let workerId = this.workers.indexOf(lazyWorker);
@@ -84,9 +77,27 @@ class WorkerPool extends EventEmitter {
             lazyWorker.terminate().then(() => {
                 em.emit("Debug.Log", `释放资源，关掉长期闲置线程。ID: ${lazyWorker.ID}\t已闲置${feeTime / 1000}秒。`, "WORKERPOOL");
             }).catch((err) => {
-                em.emit("Debug.Log", `尝试关闭闲置线程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", err);
+                em.emit("Debug.Log", `尝试关闭闲置线程出错，可能存在内存泄漏。ID: ${lazyWorker.ID}, error: ${err.message}`, "WORKERPOOL", Serialize.Error(err));
             });
         }, 90 * 1000);
+
+        this._latestAutoWorkTime = Date.now();
+        this.autoWorkWatcher = setInterval(async () => {
+            //初始化任务执行间隔
+            if (this.autoWorkInterval === AutoWorkIntervalUnread) {
+                this.autoWorkInterval = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval") * 1;
+                this.isRunAutoWorker = this.autoWorkInterval > 0;
+            }
+
+            if (this.freeWorkers.length == 0) return;   //没有闲置资源，跳过本次自动任务
+            if (!this.isRunAutoWorker) return;      //没启用自动任务配置，跳过本次
+
+            let feeTime = Date.now() - this._latestAutoWorkTime;
+            if (feeTime >= this.autoWorkInterval) {//当有线程闲置超过x小时（360_0000ms）后，才执行自动进程
+                this._latestAutoWorkTime = Date.now();
+                this.AutoWorkWatcher();
+            }
+        }, 120_000);
 
         let createNum = 2;// Math.max(this.numThreads / 2, 2);      //启动时创建的线程数，默认先创建2个
         for (let i = 0; i < createNum; i++)
@@ -352,6 +363,8 @@ class WorkerPool extends EventEmitter {
      * 关闭线程池，结束所有线程
      */
     Close() {
+        clearInterval(this.workerWatcher);
+        clearInterval(this.autoWorkWatcher);
         for (const worker of this.workers) worker.terminate();
         this.workers = [];
         this.freeWorkers = [];

@@ -1,8 +1,8 @@
-const DO = require("../../Core/OTO/DO");
-const {ApiResponse} = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /library/bookmark:
@@ -98,4 +98,4 @@ module.exports = () => ({
 
         new ApiResponse(await DO.DelBookmark(id)).toCTX(ctx);
     },
-});
+};

@@ -1,12 +1,21 @@
-const { readdir } = require('node:fs/promises');
-const path = require("node:path");
-const {EventManager} = require("../../EventManager");
+import path from "node:path";
+import { readdir } from 'node:fs/promises';
+import EventManager from "../../EventManager.js";
+import Serialize from "../../Utils/Serialize.js";
+import { config } from "../../services/config.js";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 const Models = require("../Models");
 const Index = require("../../../Entity/Ebook/Index");
 const Volume = require("../../../Entity/Ebook/Volume");
 const Chapter = require("../../../Entity/Ebook/Chapter");
 const { Run: Reviewer } = require("../../Utils/ReviewString");
-const { config: { dataPath } } = require("../../services/config");
+
+const __dirname = import.meta.dirname;
+const { dataPath } = config;
 
 /**
  * # 初始化
@@ -18,7 +27,7 @@ const { config: { dataPath } } = require("../../services/config");
  * # PoToDo、DoToPo
  * 将实体类和数据库类互转
  */
-class DO {
+export default class DO {
 
     /**
      * # Po to Do
@@ -238,7 +247,7 @@ function AutoInit() {
         DO.HAS_INIT = true;
 
     }).catch(err => {
-        em.emit("Debug.Log", "装载DO方法失败", "DO", err);
+        em.emit("Debug.Log", "装载DO方法失败", "DO", Serialize.Error(err));
     });
 
 }
@@ -258,4 +267,4 @@ function AutoInit() {
 //     }
 // };
 // const DOProxy = new Proxy(DO, handler);
-module.exports = DO;//如果需要监控调用情况，就导出DOProxy代替
+//如果需要监控调用情况，就导出DOProxy代替

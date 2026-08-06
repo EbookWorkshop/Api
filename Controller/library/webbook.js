@@ -380,7 +380,7 @@ module.exports = () => ({
 
         let lastIndex = await curBook.GetMaxIndexOrder();
 
-        await wbm.UpdateIndex("", lastIndex + 1).then((rsl) => {
+        await wbm.UpdateIndex(null, "", lastIndex + 1).then((rsl) => {
             new ApiResponse().toCTX(ctx);
         }).catch((err) => {
             new ApiResponse(err, "更新目录出错：" + err.message, 50000).toCTX(ctx);

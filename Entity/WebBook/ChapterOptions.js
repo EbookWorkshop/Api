@@ -26,7 +26,7 @@ class ChapterOptions {
             this.CapterTitleRule,
             this.ContentRule,
             this.NextPageRule,
-        ];
+        ].filter(r => r.Selector !== '');
     }
 }
 module.exports = ChapterOptions;

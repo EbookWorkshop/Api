@@ -1,9 +1,13 @@
-const DO = require("../../Core/OTO/DO");
-const BookMaker = require('../../Core/Book/BookMaker');
-const {ApiResponse} = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
-module.exports = () => ({
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+const BookMaker = require('../../Core/Book/BookMaker');
+export default {
     prefix: '/library/book',
     /**
      * @swagger
@@ -370,4 +374,4 @@ module.exports = () => ({
             new ApiResponse(null, `转化章节为书籍简介失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
-});
+};

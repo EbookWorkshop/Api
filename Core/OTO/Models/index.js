@@ -1,9 +1,9 @@
 const { readdir } = require('node:fs/promises');
-const path = require("path");
+const path = require("node:path");
 const Sequelize = require("sequelize");
 const {EventManager} = require("../../EventManager");
 const Relational = require("./Relational");
-
+const Serialize = require("../../Utils/Serialize")
 
 let PO_MODELS = null;//PO对象
 
@@ -93,13 +93,13 @@ function AutoInit(sqlConnect) {
         //同步所有模型
         console.log(`[${new Date().toLocaleString()}]\t正在初始化数据库......`);
         sqlConnect.queryInterface.sequelize.query("PRAGMA foreign_keys = ON");
-        sqlConnect.sync(/*{ alter: true }*/).then(result => {
-            em.emit("DB.Models.Init", sqlConnect.options.storage, result);
+        sqlConnect.sync(/*{ alter: true }*/).then(result => {//result 是个大对象，不要发出去
+            em.emit("DB.Models.Init");
         }).catch(err => {
-            em.emit("Debug.Log", "数据库同步失败！", "DATABASE", err);
+            em.emit("Debug.Log", "数据库同步失败！", "DATABASE", Serialize.Error(err));
         })
     }).catch(err => {
-        em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", err);
+        em.emit("Debug.Log", "数据库初始化失败！", "DATABASE", Serialize.Error(err));
     });
 
 }

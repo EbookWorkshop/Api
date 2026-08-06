@@ -1,15 +1,20 @@
-const path = require("path");
-const fsPromises = require("fs").promises;
+import path from "path";
+import fsPromises from "node:fs/promises";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { SendAMail } from "../../Core/services/email.js";
+import { config } from "../../Core/services/config.js";
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const BookMaker = require("../../Core/Book/BookMaker");
 const PDFMaker = require("../../Core/PDF/PDFMaker");
 const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const {ApiResponse} = require("../../Entity/ApiResponse");
-const { SendAMail } = require("../../Core/services/email");
-const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
 
-module.exports = () => ({
+const { dataPath, FOLDER } = config;
+export default {
     /**
      * @swagger
      * /export/pdf:
@@ -231,4 +236,4 @@ module.exports = () => ({
             new ApiResponse(err, `生成EPUB${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
     },
-});
+};

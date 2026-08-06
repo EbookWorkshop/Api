@@ -51,21 +51,22 @@ class EPUBMaker {
         //处理封面
         let useTempCover = false;
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#") && embedBookName == false) {//读系统的图片作封面(系统封面没嵌入书名)
+            if (ebook.CoverImg.endsWith("#showname")) ebook.CoverImg = ebook.CoverImg.replace("#showname", "");
+
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
-                if (ebook.CoverImg.endsWith("#showname")) ebook.CoverImg = ebook.CoverImg.replace("#showname", "");
-                
-                option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
-                //进行文件格式兼容
-                if (option.cover.endsWith(".webp") || option.cover.endsWith(".jpg")) {
-                    const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
-                    await sharp(option.cover).png().toFile(tempFile);
-                    option.cover = tempFile;
-                    useTempCover = true;
-                }
+                option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));//相对路径的情况下，规格化为绝对路径
             } else {
                 option.cover = ebook.CoverImg;
             }
-        } else if (setting.coverImageData) {
+
+            //转为兼容的PNG格式
+            if (option.cover.endsWith(".webp") || option.cover.endsWith(".jpg")) {
+                const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
+                await sharp(option.cover).png().toFile(tempFile);
+                option.cover = tempFile;
+                useTempCover = true;
+            }
+        } else if (setting.coverImageData) {        //前端提供的封面截图
             const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
             await fs.writeFile(tempFile, setting.coverImageData, "base64");
             option.cover = tempFile;

@@ -1,14 +1,21 @@
 //校阅-书本
+import ReviewRule from "../../Entity/ReviewRule.js";
+
+
+// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
+
 const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
-const ReviewRule = require("../../Entity/ReviewRule");
 // const Do2Po = require("../OTO/DO");
 const Models = require("../OTO/Models");
 const { Test: ExecReview } = require("../Utils/ReviewString");
 const SmartCharacterAnalyzer = require("./SmartCharacterAnalyzer");
 
-class ReviewBook {
+export default class ReviewBook {
     constructor() { }
 
     /**
@@ -103,5 +110,3 @@ class ReviewBook {
         return result;
     }
 }
-
-module.exports = ReviewBook;

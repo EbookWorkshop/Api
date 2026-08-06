@@ -45,7 +45,7 @@ function UseDictReplace(dictData, text) {
     let rows = dictData.split("\n");
 
     for (let r of rows) {
-        let s = r.split(/\s+/);
+        let s = r.trim().split(/\s+/);
         if (s.length != 2) continue;
         let [key, value] = s;
         if (key.startsWith("\\u")) {

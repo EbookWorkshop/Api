@@ -1,3 +1,42 @@
+const { isExec, UseDictReplace } = require("./dictionary")
+const { config: { dataPath, debugSwitcher } } = require("../../../services/config");
+const { puppeteer: isDEBUG } = debugSwitcher;
+
+/**
+ * 从页面对象中，通过规则抓取实际数据
+ * @param {*} page 
+ * @param {*} Rules 
+ * @returns 
+ */
+async function GetDataUseRuleFromPage(page, Rules) {
+    let result = new Map();
+
+    if (isDEBUG) {
+        //接管console 网站在浏览器上发的空调信息转发到服务器控台
+        page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
+        await page.screenshot({ path: `${dataPath}/Debug/Test_${Date.now()}.png` });//截图
+        result.set("source", { text: await page.content() });   //记录页面源代码
+    }
+
+    for (let rule of Rules) {
+        //执行规则
+        let ruleRsl = await ExecRule(page, rule);
+        if (rule.RuleName === "Content") {
+            await Promise.all(
+                rule.Dictionaries.map(async (item) => {
+                    item.isExecute = await isExec(page, item);
+                })
+            );
+
+            const bigDict = rule.Dictionaries.filter(item => item.isExecute).map(d => d.Data).join("\n");
+            for (let rr of ruleRsl) {
+                rr.text = UseDictReplace(bigDict, rr.text);
+            }
+        }
+        result.set(rule.RuleName, ruleRsl);
+    }
+    return result;
+}
 
 
 /**
@@ -89,5 +128,6 @@ async function ExecRule(page, rule, isVis = false) {
 }
 
 module.exports = {
+    GetDataUseRuleFromPage,
     ExecRule
 }

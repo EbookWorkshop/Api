@@ -1,7 +1,7 @@
 //管理站点与爬站规则之间的关系
 
-import { GetHost } from "../Utils/SiteHelper";
-import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from "../../Entity/SystemConfigGroup";
+import { GetHost } from "../Utils/SiteHelper.js";
+import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from "../../Entity/SystemConfigGroup.js";
 
 // 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
 import { createRequire } from 'node:module';

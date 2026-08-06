@@ -15,7 +15,7 @@ export default class Rule {
         this.RuleName = ruleName;
 
         /**
-         * 选择器（css选择器）
+         * 选择器（css选择器）/必填，若空则会被忽略
          */
         this.Selector = "";
         /**
@@ -52,5 +52,23 @@ export default class Rule {
          * （比如部分网站，【下一页】和【下一章】由相同的选择器命中，这就需要进一步的确认是否正确）
          */
         this.CheckSetting = null;
+
+        /**
+         * 转换字典，用于将采集结果进一步通过字典转换为目标文本
+         * 可作为转码/转义等多种用途
+         */
+        this.Dictionaries = [];
+    }
+
+    /**
+     * 覆盖属性配置
+     * @param {Rule} setting 
+     * @returns 
+     */
+    SetRule(setting) {
+        Object.keys(setting).forEach(key => {
+            if (Object.prototype.hasOwnProperty.call(this, key)) this[key] = setting[key];
+        });
+        return this;
     }
 }

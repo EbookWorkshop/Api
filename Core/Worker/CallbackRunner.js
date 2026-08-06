@@ -21,8 +21,7 @@ class CallbackRunner extends AsyncResource {
         try {
             if (this.callback) await this.runInAsyncScope(this.callback, null, result, err);
         } catch (newerr) {
-            let { message, stack } = newerr;
-            em.emit("Debug.Log", `线程退出后执行回调出错：${message || newerr}`, "WORKERPOOL", { message, stack });
+            em.emit("Debug.Log", `线程退出后执行回调出错：${newerr.message}`, "WORKERPOOL", Serialize.Error(newerr));
             throw newerr;
         } finally {
             this.emitDestroy();  // `TaskInfo`s are used only once.
