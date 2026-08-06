@@ -1,12 +1,12 @@
 const { readdir } = require('node:fs/promises');
-const path = require("path");
+const path = require("node:path");
 const EventManager = require("../../EventManager");
 const Models = require("../Models");
-const Index = require("./../../../Entity/Ebook/Index");
-const Volume = require("./../../../Entity/Ebook/Volume");
-const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/ReviewString");
-const { dataPath } = require("../../../config");
+const Index = require("../../../Entity/Ebook/Index");
+const Volume = require("../../../Entity/Ebook/Volume");
+const Chapter = require("../../../Entity/Ebook/Chapter");
+const { Run: Reviewer } = require("../../Utils/ReviewString");
+const { config: { dataPath } } = require("../../services/config");
 
 /**
  * # 初始化
@@ -28,24 +28,19 @@ class DO {
      */
     static async ModelToBookObj(ebookModel, BOOKTYPE) {
         let ebook = new BOOKTYPE({ ...ebookModel.dataValues });
-    
+
         /**
          * [LoadIndex]重新加载所有章节
          */
         ebook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({
-                where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } }, 
-                order: ["OrderNum"]
+            let eIndexs = await myModels.EbookIndex.scope('withHasContent').findAll({
+                where: { BookId: ebook.BookId, OrderNum: { [Models.Op.gte]: 0 } },
+                attributes: { exclude: ['Content', "createdAt", "updatedAt"] },
+                order: ["OrderNum"],
+                raw: true,
             });
-            for (let i of eIndexs) {
-                let index = new Index({ 
-                    ...i.dataValues, 
-                    HasContent: i.HasContent,
-                    VolumeId: i.VolumeId
-                });
-                ebook.Index.push(index);
-            }
+            ebook.Index = eIndexs.map(i => new Index({ ...i }));
         };
 
         /**
@@ -145,16 +140,17 @@ class DO {
          * 加载书籍简介
          */
         ebook.LoadIntroduction = async () => {
+            if (ebook.Introduction) return;
             const myModels = Models.GetPO();
             const intro = await myModels.EbookIndex.findOne({
                 where: {
                     BookId: ebook.BookId,
                     Title: Chapter.IntroductionName
-                }
+                },
+                attributes: ["Content"],
+                raw: true,
             });
-            if (intro) {
-                ebook.Introduction = intro.Content;
-            }
+            ebook.Introduction = intro?.Content;
         }
 
         /**
@@ -163,7 +159,7 @@ class DO {
         ebook.ReloadVolumes = async () => {
             const myModels = new Models();
             let volumes = await myModels.Volume.findAll({
-                where: { BookId: ebook.BookId }, 
+                where: { BookId: ebook.BookId },
                 order: ["OrderNum"]
             });
             for (let v of volumes) {
@@ -192,9 +188,11 @@ class DO {
             if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
                 const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
+                if (thisCoverImg.endsWith("#showname")) thisCoverImg = thisCoverImg.replace("#showname", "");
+
                 await fs.unlink(thisCoverImg);
-                let imgDir = path.dirname(thisCoverImg);
-                await fs.rmdir(imgDir);
+                // let imgDir = path.dirname(thisCoverImg);
+                // await fs.rmdir(imgDir);
             }
         } catch (err) {
             console.error("删除封面出错：", err);
@@ -223,7 +221,6 @@ function AutoInit() {
     if (DO.HAS_INIT) return;
     const em = new EventManager();
     readdir(__dirname).then(fileList => {
-        // console.log(result);
 
         const notIncludeMethod = Object.getOwnPropertyNames(MethodNotInclude);
 

@@ -47,7 +47,7 @@ function parseBodyData(ctx) {
 async function parseJsonFromBodyData(ctx, requireCheck = []) {
     let param = await parseBodyData(ctx);
     try {
-        if (typeof (param) === "string") param = JSON.parse(bodyStr);
+        if (typeof (param) === "string") param = JSON.parse(param);
 
         if (!requireCheck || requireCheck.length == 0) return param;
 

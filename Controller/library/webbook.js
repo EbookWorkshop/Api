@@ -1,7 +1,7 @@
 const DO = require("../../Core/OTO/DO");
-const WebBookMaker = require("./../../Core/WebBook/WebBookMaker");
-const { parseJsonFromBodyData, parseBodyData } = require("./../../Core/Server");
-const ApiResponse = require("./../../Entity/ApiResponse");
+const WebBookMaker = require("../../Core/WebBook/WebBookMaker");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
 
 
 
@@ -80,14 +80,22 @@ module.exports = () => ({
      *     summary: 创建书并建立目录
      *     description: 通过传入网文目录页，建立对应的书籍，并建立目录
      *     parameters:
-     *     - name: bookIndexUrl
-     *       in: body
-     *       required: true
-     *       description: 需获取的书的目录地址
-     *       schema:
-     *         type: string
+     *       - in: body
+     *         name: bookInfo
+     *         description: 需获取的书的目录地址，以及是否在封面中嵌入书名
+     *         schema:
+     *           type: object
+     *           required:
+     *             - url
+     *           properties:
+     *             url:
+     *               type: string
+     *               description: 目录页地址
+     *             isEmbedBookName:
+     *               type: boolean
+     *               description: 是否在封面中嵌入书名
      *     consumes:
-     *       - text/plan
+     *       - application/json
      *     responses:
      *       200:
      *         description: 请求成功
@@ -95,12 +103,57 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "post ": async (ctx) => {
-        let bookUrl = await parseBodyData(ctx);
+        let param = await parseJsonFromBodyData(ctx, ["url"]);
+        if (!param) return;
 
+        const bookUrl = param.url;
         let wbm = new WebBookMaker(bookUrl);
-        await wbm.UpdateIndex()
-            .then(result => {
+
+        await wbm.UpdateIndex(param.isEmbedBookName)
+            .then(() => {
                 new ApiResponse("已启动分析，稍后将生成书本配置。").toCTX(ctx);
+            }).catch((err) => {
+                new ApiResponse(err, err.message, 50000).toCTX(ctx);
+            });
+    },
+    /**
+     * @swagger
+     * /library/webbook/singlechapter:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 抓取单章
+     *     description: 直接抓取单章内容，并存储文件到库存中
+     *     parameters:
+     *       - in: body
+     *         name: chapterInfo
+     *         required: true
+     *         description: 请求参数对象
+     *         schema:
+     *           type: object
+     *           required:
+     *             - url
+     *           properties:
+     *             url:
+     *               type: string
+     *               description: 章节地址
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /singlechapter": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["url"]);
+        if (!param) return;
+
+        const { ScrapingFromUrlOnWatch } = require("../../Core/WebBook/WebChapterMaker");
+
+        await ScrapingFromUrlOnWatch(param.url, -1)
+            .then(() => {
+                new ApiResponse("已启动内容抓取，请稍候。").toCTX(ctx);
             }).catch((err) => {
                 new ApiResponse(err, err.message, 50000).toCTX(ctx);
             });
@@ -143,7 +196,48 @@ module.exports = () => ({
             new ApiResponse(err, "删除出错：" + err.message, 50000).toCTX(ctx);
         })
     },
+    /**
+     * @swagger
+     * /library/webbook/autosync:
+     *   post:
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *     summary: 设置网文是否允许自动更新
+     *     description: 自动更新将在系统闲时，后台静默更新。若设置为启用，将同时将该书的空章节在更新队列安排到队首
+     *     parameters:
+     *       - in: body
+     *         name: bookInfo
+     *         description: 获取需要更新的书ID，和是否启用自动更新的设置
+     *         schema:
+     *           type: object
+     *           required:
+     *             - bookid
+     *           properties:
+     *             bookid:
+     *               type: integer
+     *               description: 需要修改的书籍ID
+     *             autoSyncEnabled:
+     *               type: boolean
+     *               description: 是否允许自动更新/同步
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /autosync": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["bookid"]);
+        if (!param) return;
+        let { bookid, autoSyncEnabled } = param;
 
+        await WebBookMaker.SetAutoSync(bookid, autoSyncEnabled).then((rsl) => {
+            new ApiResponse().toCTX(ctx);
+        }).catch((err) => {
+            new ApiResponse(err, "更新【自动更新】设置出错：" + err.message, 50000).toCTX(ctx);
+        });
+    },
     /**
      * @swagger
      * /library/webbook/updatechapter:
@@ -398,8 +492,8 @@ module.exports = () => ({
      *   post:
      *     tags:
      *       - Library - WebBook —— 网文图书馆
-     *     summary: 拿到指定章节的来源地址
-     *     description: 拿到指定章节的网页来源的地址
+     *     summary: 修改章节的网页来源的地址
+     *     description: 修改章节的网页来源的地址
      *     parameters:
      *     - name: chapterid
      *       in: query

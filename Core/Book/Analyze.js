@@ -5,7 +5,7 @@ const SystemConfigService = require("../services/SystemConfig"); // 假设服务
 
 
 /**
- * 
+ * 分析统计书本内容
  * @param {Int16} bookId 书籍ID
  */
 async function AnalyzeBookText(bookId) {
@@ -47,7 +47,7 @@ async function AnalyzeBookText(bookId) {
         totalParagraphs += p;
 
         //去掉干扰字符
-        let text = chapter.Content?.replace(/[\r\n\s\t,\.!?<>'"，。“”《》！？…—~\*]/g, '') || '';
+        let text = chapter.Content?.replace(/[\r\n\s\t,\.!?<>'"，。\[\]『』「」:：“”《》！？…—~\*]/g, '') || '';
         totalWords += text.length;
         chapResults.push({
             chapterId: chapter.id,
@@ -58,6 +58,7 @@ async function AnalyzeBookText(bookId) {
         });
     });
 
+    myModels.Ebook.update({ TotalWord: totalWords }, { where: { id: bookId } });
 
     return {
         totalChapters: chapters.length + emptyChapters.length,

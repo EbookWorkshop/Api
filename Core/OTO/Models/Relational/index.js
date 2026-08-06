@@ -1,3 +1,4 @@
+const Scope = require("./scope");
 /**
  * 设置模型之间的关系
  * 临时的做法 以后看要怎么优化
@@ -54,4 +55,6 @@ module.exports = function (models) {
     // EbookIndex <-- --> Bookmark
     models.EbookIndex.hasOne(models.Bookmark, { foreignKey: { name: 'IndexId', unique: true }, sourceKey: 'id', as: "EbookIndex", onDelete: 'CASCADE' });
     models.Bookmark.belongsTo(models.EbookIndex, { foreignKey: "IndexId" });
+
+    Scope(models);
 }

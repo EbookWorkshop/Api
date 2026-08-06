@@ -15,7 +15,7 @@ class MemoryCache {
 
         this._cache.set(key, value);
         // setTimeout(() => this.delete(key), ttlMs || DEF_TTL_MS);
-        console.log(`设置缓存 ${key} 过期时间 ${ttlMs || DEF_TTL_MS}ms`);
+        console.log(`[${new Date().toLocaleString()}]\t设置缓存 ${key} 过期时间 ${ttlMs || DEF_TTL_MS}ms`);
     }
 
     get(key) {

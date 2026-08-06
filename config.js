@@ -12,11 +12,6 @@ module.exports = {
     databasePath: "./../MyLibrary/Data/latest.sqlite",
 
     /**
-     * 字体存放路径
-     */
-    fontPath: "./../MyLibrary/font",
-
-    /**
      * 输出调试信息，监听debug消息
      */
     debug: false,
@@ -50,10 +45,10 @@ module.exports = {
          * 是否开启PDF制作调试
          */
         pdf: false,
-        /**
-         * 是否开启书籍目录更新调试
-         */
-        bookIndex: false,
+        // /**
+        //  * 是否开启书籍目录更新调试
+        //  */
+        // bookIndex: false,
         /**
          * 是否开启书籍章节更新调试
          */

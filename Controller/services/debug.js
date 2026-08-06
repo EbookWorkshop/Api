@@ -1,6 +1,6 @@
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
-const SocketIO = require("./../../Core/Socket.js");
+const SocketIO = require("../../Core/Socket.js");
 const Message = require("../../Entity/Message");
 
 module.exports = () => ({
@@ -17,24 +17,42 @@ module.exports = () => ({
      *         name: message
      *         description: 消息
      *         schema:
-     *             type: object
-     *             properties:
-     *               title:
-     *                 type: string
-     *               subTitle:
-     *                 type: string
-     *               content:
-     *                 type: string
-     *               type:
-     *                 type: string
-     *               time:
-     *                 type: string
-     *               avatar:
-     *                 type: string
-     *               id:
-     *                 type: number
-     *               status:
-     *                 type: number
+     *           type: object
+     *           required:
+     *             - content          // 仅 content 为必填
+     *           properties:
+     *             title:
+     *               type: string
+     *               default: "调试消息"
+     *               description: 消息标题
+     *             subTitle:
+     *               type: string
+     *               default: "子标题示例"
+     *               description: 子标题
+     *             content:
+     *               type: string
+     *               default: "这是一条测试消息内容"
+     *               description: 消息正文（必填）
+     *             type:
+     *               type: string
+     *               default: "notice"
+     *               description: 消息类型：message | notice | history。其中notice会在前端显示一个弹出消息引起注意。
+     *             time:
+     *               type: string
+     *               default: "2026-08-03 12:00:00"
+     *               description: 时间，格式如 "YYYY-MM-DD HH:mm:ss"缺省为当前时间
+     *             avatar:
+     *               type: string
+     *               default: "/logo.svg?msg_logo_mark=1"
+     *               description: 为图片时直接显示图片，为error/info时是对应图标，为index时则为当前队列的排序号
+     *             id:
+     *               type: number
+     *               default: -123456
+     *               description: 消息ID，不传则随机生成，负数为仅前端数据。正数ID将尝试从后台获取消息其它信息（Data、Error等）
+     *             status:
+     *               type: number
+     *               default: 0
+     *               description: 状态：0未读、1已读
      *     consumes:
      *       - application/json
      *     responses:
@@ -113,7 +131,7 @@ module.exports = () => ({
     //             { title: "第二章", data: "<div>这是第二章内容</div>" }
     //         ]
     //     };
-        
+
     //     new EPUB(options, "output.epub").promise.then(
     //         () => new ApiResponse("Ebook Generated Successfully!").toCTX(ctx),
     //         err => new ApiResponse(err,"Failed to generate Ebook",50000).toCTX(ctx)

@@ -5,6 +5,7 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import path from "path";
 import { Stream } from "stream";
+import { config } from "./config.js";
 
 /**
  * 列出指定路径下的文件
@@ -19,16 +20,17 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         const dir = await fsPromises.opendir(sourcePath);
         for await (const dirent of dir) {
             if (!dirent.isFile()) continue;
+            let { ext, name } = path.parse(dirent.name);
+            ext = ext.replace(/^\./, "").toLowerCase();
             let item = {
                 file: dirent.name,
                 path: dirent.parentPath,
+                name: name,
+                ext: ext,
             }
             if (!options?.filetype) {
                 result.push(item);
             } else {
-                let { ext, name } = path.parse(dirent.name);
-                item.name = name;
-                ext = ext.replace(/^\./, "").toLowerCase();
                 if (options?.filetype.includes(ext)) result.push(item);
             }
         }
@@ -36,8 +38,11 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
         if (!options?.detail) return result.map(item => item.name);
 
         for (let item of result) {
-            item.size = (await fsPromises.stat(path.join(item.path, item.file))).size;
-            delete item.path;
+            const fileStat = await fsPromises.stat(path.join(item.path, item.file));
+            item.size = fileStat.size;
+            item.createTime = fileStat.birthtime.toLocaleString();
+            item.path = path.relative(config.dataPath, item.path);
+            item.filePath = path.join(item.path, item.file);
         }
 
         return result;
@@ -109,6 +114,48 @@ export async function FindFile(path, fileName) {
     }
 
     return null;
+}
+
+/**
+ * 保存数据到指定位置
+ * @param {string} filePath 文件路径（相对路径）
+ * @param {string|Buffer|Uint8Array|Object|Readable} data 要保存的数据
+ * @returns {Promise<void>}
+ */
+export async function SaveFile(filePath, data) {
+    // 规范化路径
+    const savePath = path.normalize(filePath);
+    const dirName = path.dirname(savePath);
+
+    // 确保目录存在
+    if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName, { recursive: true });
+    }
+
+    // 返回一个 Promise，在写入完成或出错时 resolve/reject
+    return new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(savePath);
+
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+
+        // 根据数据类型选择写入方式
+        if (data instanceof Buffer || typeof data === 'string' || data instanceof Uint8Array) {
+            // 直接写入并结束流
+            writer.write(data);
+            writer.end();
+        } else if (data && typeof data.pipe === 'function') {
+            // 如果是可读流，通过 pipe 传输
+            data.pipe(writer);
+            // 监听源的结束和错误
+            data.on('end', resolve);
+            data.on('error', reject);
+        } else {
+            // 其他类型（如对象、数组）转为 JSON 字符串写入
+            writer.write(JSON.stringify(data, null, 2));
+            writer.end();
+        }
+    });
 }
 
 /** * 重命名指定的文件

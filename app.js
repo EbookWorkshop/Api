@@ -1,9 +1,10 @@
+ShowLogo();
 const Koa = require('koa');
 const static = require('koa-static');
 const { koaBody } = require('koa-body');
 const { koaSwagger } = require('koa2-swagger-ui');
-const myConfig = require("./config");
-const path = require("path");
+const path = require("node:path");
+const { config: myConfig } = require("./Core/services/config");
 const system = require("./Core/System");
 const router = require('./Controller/router');
 const EventManager = require("./Core/EventManager");
@@ -47,16 +48,18 @@ app.use(async (ctx, next) => {
 app.use(router.routes());
 //启动静态文件服务
 let filePath = path.join(myConfig.dataPath, "");
-// console.log("静态文件服务路径:\t\t", path.resolve(filePath));
 app.use(static(filePath));
 
 //app.use(Router.allowedMethods()); TODO: 推荐的处理错误请求方式
 
 system.then((service) => {
-    console.log("开始监听：8777");
+    console.log(`[${new Date().toLocaleString()}]\t开始监听：8777`);
     let server = app.listen(8777);
     new service.io(server);
     service.next();
+}).catch((error) => {
+    console.warn(`[${new Date().toLocaleString()}]\t系统启动失败:`);
+    console.error(error);
 });
 
 
@@ -72,4 +75,13 @@ function CtxSetAllowHead(ctx) {
     if (ctx.request.method === 'OPTIONS') { // 直接响应数据 应对axios的跨域探测
         ctx.status = 200;
     }
+}
+
+function ShowLogo() {
+    console.log(`
+██████ ██████  █████  █████ █   █         █    █  █████ ██████ █   █   █████ █    █  █████ ██████
+█      █    █ █    █ █    █ █  █          █    █ █    █ █    █ █  █   █      █    █ █    █ █    █
+█████  ██████ █    █ █    █ ███           █ ██ █ █    █ ██████ ███     █████ ██████ █    █ ██████
+█      █    █ █    █ █    █ █  █          ██  ██ █    █ █   █  █  █        █ █    █ █    █ █     
+██████ ██████  █████  █████ █   █         █    █  █████ █    █ █   █  █████  █    █  █████ █     `)
 }

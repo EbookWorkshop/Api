@@ -5,15 +5,18 @@ const Ebook = require("../../Entity/Ebook/Ebook");
 const Index = require("../../Entity/Ebook/Index");
 const Chapter = require("../../Entity/Ebook/Chapter");
 const Volume = require("../../Entity/Ebook/Volume");
+const path = require("node:path");
+const fs = require('node:fs');
+const { finished } = require('stream/promises');
+const { config: { dataPath, FOLDER } } = require("../services/config");
 const Do2Po = require("../OTO/DO");
-const path = require("path");
-const { dataPath } = require("../../config");
-const fs = require('fs');
+const Models = require("../OTO/Models");
 const { CheckAndMakeDir } = require("../Server")
 const similarity = require('string-similarity'); // 新增相似度计算库
 const SystemConfigService = require("../services/SystemConfig");
-const Models = require("../OTO/Models");
 const FindMyChapters = require("./FindMyChapters");
+
+const SHOW_BOOKNAME = "#showname";
 
 class BookMaker {
     /**
@@ -33,8 +36,6 @@ class BookMaker {
             Author: author,
             CoverImg: conver,
         });
-
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
 
         for (let c of chapters) {
             ebook.Index.push(new Index({
@@ -64,7 +65,6 @@ class BookMaker {
             Author: author,
             CoverImg: conver || "#212f30",//灰色封面
         });
-        ebook.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
         return await Do2Po.EBookObjToModel(ebook);
     }
 
@@ -87,62 +87,57 @@ class BookMaker {
 
         await ebook.LoadIntroduction();
 
-        return new Promise((resolve, reject) => {
-            const fileInfo = {
-                filename: ebook.BookName + ".txt",
-                path: path.join(dataPath, "Output", ebook.BookName + '.txt'),
-                chapterCount: ebook.showIndexId.length,           //含有多少章
-                chapterIds: showIndexId
-            };
+        const fileInfo = {
+            filename: ebook.BookName + ".txt",
+            path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.txt'),
+            chapterCount: ebook.showIndexId.length,           //含有多少章
+            chapterIds: showIndexId
+        };
 
-            CheckAndMakeDir(fileInfo.path);
-            const writeStream = fs.createWriteStream(fileInfo.path);
-            writeStream.on('error', function (err) {
-                reject(err);
-            });
-            writeStream.on('finish', function () {
-                resolve(fileInfo);
-            });
-            const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
-            writeStream.write(`${ebook.BookName}\n${author}\n`);
+        CheckAndMakeDir(fileInfo.path);
+        const writeStream = fs.createWriteStream(fileInfo.path);
 
-            if (ebook.Introduction) {
-                writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+        const author = ebook.Author ? `作者：${ebook.Author}\n` : '佚名';
+        writeStream.write(`${ebook.BookName}\n${author}\n`);
+
+        if (ebook.Introduction) {
+            writeStream.write(`简介：\n${ebook.Introduction}\n\n`);
+        }
+
+        let vM = new Map();
+        // 按卷分类章节
+        for (let i of ebook.showIndexId) {
+            let c = ebook.GetChapter(i);
+            if (!vM.has(c.VolumeId)) {
+                vM.set(c.VolumeId, new Array());
             }
-
-            let vM = new Map();
-            // 按卷分类章节
-            for (let i of ebook.showIndexId) {
-                let c = ebook.GetChapter(i);
-                if (!vM.has(c.VolumeId)) {
-                    vM.set(c.VolumeId, new Array());
+            vM.get(c.VolumeId).push(c);
+        }
+        if (vM.has(null)) {
+            ebook.Volumes.push(new Volume({
+                id: null,
+                Title: "未分卷章节",
+                Introduction: ""
+            }));
+        }
+        for (let e of ebook.Volumes) {
+            if (!vM.has(e.VolumeId)) continue;
+            if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
+            for (let c of vM.get(e.VolumeId)) {
+                let content = c.Content || "-=章节内容缺失=-";
+                if (enableIndent) {
+                    let multiLine = content.split("\n");
+                    multiLine = multiLine.map(t => `\t${t.trimStart()}`);    //去除行首空格
+                    content = multiLine.join("\n");
                 }
-                vM.get(c.VolumeId).push(c);
+                if (embedTitle) writeStream.write(`${c.Title}\n${content}\n\n`);
+                else if (content) writeStream.write(`${content}\n`);
+                else writeStream.write(`--当前章节内容缺失--\n\n`);
             }
-            if (vM.has(null)) {
-                ebook.Volumes.push(new Volume({
-                    id: null,
-                    Title: "未分卷章节",
-                    Introduction: ""
-                }));
-            }
-            for (let e of ebook.Volumes) {
-                if (!vM.has(e.VolumeId)) continue;
-                if (e.VolumeId) writeStream.write(`\n=== ${e.Title} ===\n\n${e.Introduction}\n\n\n\n`);
-                for (let c of vM.get(e.VolumeId)) {
-                    let content = c.Content || "-=章节内容缺失=-";
-                    if (enableIndent) {
-                        let multiLine = content.split("\n");
-                        multiLine = multiLine.map(t => t.trimStart());    //去除行首空格
-                        content = multiLine.join("\n");
-                    }
-                    if (embedTitle) writeStream.write(`${c.Title}\n${content}\n\n`);
-                    else if (content) writeStream.write(`${content}\n`);
-                    else writeStream.write(`--当前章节内容缺失--\n\n`);
-                }
-            }
-            writeStream.end();
-        });
+        }
+        writeStream.end();
+        await finished(writeStream);
+        return fileInfo;
     }
 
     /**
@@ -176,6 +171,9 @@ class BookMaker {
                 duplicates: []
             }
             for (let j = i + 1; j < chapters.length; j++) {
+                const ratio = chapterInfos[i].length / (chapterInfos[j].length || 1);
+                if (ratio < 0.7 || ratio > 1.3) continue;// 长度相差太大，跳过
+
                 const sim = similarity.compareTwoStrings(
                     chapters[i].Content || "",
                     chapters[j].Content || ""
@@ -209,6 +207,7 @@ class BookMaker {
             if (baseCp.title) chapterSetting.Title = baseCp.title;
             if (baseCp.content) chapterSetting.Content = baseCp.content;
             if (baseCp.orderNum) chapterSetting.OrderNum = baseCp.orderNum;
+            if (baseCp.volumeId) chapterSetting.VolumeId = baseCp.volumeId;
             return chapterSetting;
         }
 
@@ -232,9 +231,12 @@ class BookMaker {
                     await t.commit();
                     return;
                 }
+                //计算总章节偏移量：
+                let moveLength = operations.filter(item => item.operationType !== "delete").reduce((sum, item) => sum + item.chapters.length, 0);
+
                 //基准章节后续章节后移
                 await myModels.EbookIndex.update({
-                    OrderNum: myModels.sequelize.literal('OrderNum + ' + operations.length)
+                    OrderNum: myModels.sequelize.literal('OrderNum + ' + moveLength)
                 }, {
                     where: {
                         BookId: bookId,
@@ -248,7 +250,7 @@ class BookMaker {
 
             for (let chap of settings?.operations) {
                 for (let cp of chap.chapters) {
-                    const curChapSetting = _setChapter(cp);
+                    const curChapSetting = chap.operationType !== "delete" ? _setChapter(cp) : {};
                     switch (chap.operationType) {        //[update, delete, create]
                         case "delete":
                             await myModels.EbookIndex.destroy({
@@ -276,7 +278,7 @@ class BookMaker {
 
             await t.commit();
         } catch (err) {
-            t.rollback();
+            await t.rollback();
             throw err;
         }
     }
@@ -438,23 +440,33 @@ class BookMaker {
                 delete metadata.Introduction; //删除简介字段 后续用metadata直接更新数据库
             }
 
-            if (metadata.converFile || metadata.CoverImg) {    //更新了封面——图片格式或‘线装本’配色格式
-                const { AddFile, DeleteFile } = await import("../../Core/services/file.mjs");
-                //删除旧封面文件
+            if (metadata.converFile || typeof (metadata.CoverImg) !== "undefined") {    //更新了封面——图片格式或‘线装本’配色格式
+                const { AddFile, DeleteFile } = await import("../services/file.mjs");
                 const book = await myModels.Ebook.findByPk(id);
-                if (book.CoverImg && await fs.promises.stat(path.join(dataPath, book.CoverImg)).catch(() => false)) {
-                    await DeleteFile(path.join(dataPath, book.CoverImg));
-                    console.log("已删除旧封面文件：" + path.join(dataPath, book.CoverImg));
-                }
+                const oldCoverImg = book.CoverImg?.replace(SHOW_BOOKNAME, "");
 
                 if (metadata.converFile) {//图片格式封面
                     const newCoverName = metadata.converFile.originalFilename.includes(book.BookName) ?
                         metadata.converFile.originalFilename :
                         `${book.BookName}_${metadata.converFile.originalFilename}`;
-                    const coverPath = `/Cover/${newCoverName}`;
+                    const coverPath = path.join(FOLDER.BookCover, newCoverName);
                     await AddFile(metadata.converFile, path.join(dataPath, coverPath));
+                    let isEmbelName = metadata.CoverImg === SHOW_BOOKNAME;          //如果是新上传的文件，需要在CoverImg字段记录嵌入标记
                     delete metadata.converFile;
-                    metadata.CoverImg = coverPath;
+                    metadata.CoverImg = coverPath + (isEmbelName ? SHOW_BOOKNAME : "");
+                    if (!metadata.CoverImg.startsWith("/")) metadata.CoverImg = "/" + metadata.CoverImg;//确保以/做地址开头
+                }
+
+                if (metadata.CoverImg === null) {
+                    const webBook = await myModels.WebBook.findOne({ where: { BookId: id } });
+                    if (!webBook) metadata.CoverImg = "#f2e3a4";
+                }
+
+                //删除旧封面文件
+                const newCoverImg = metadata.CoverImg?.replace(SHOW_BOOKNAME, "");
+                if (newCoverImg != oldCoverImg && oldCoverImg && await fs.promises.stat(path.join(dataPath, oldCoverImg)).catch(() => false)) {
+                    await DeleteFile(path.join(dataPath, oldCoverImg));
+                    console.log(`[${new Date().toLocaleString()}]\t已删除旧封面文件：${path.join(dataPath, oldCoverImg)}`);
                 }
             }
 
@@ -705,4 +717,5 @@ class BookMaker {
         }
     }
 }
+BookMaker.SHOW_BOOKNAME = SHOW_BOOKNAME;
 module.exports = BookMaker;

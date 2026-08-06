@@ -1,14 +1,15 @@
 {
   "name": "ebookworkshop",
-  "version": "3.11.0",
+  "version": "3.12.0",
   "description": "电子书工具",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node --inspect app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "ebook",
+    "epub",
     "pdf",
     "txt",
     "kindle"
@@ -16,24 +17,25 @@
   "author": "c0618c",
   "license": "MIT",
   "dependencies": {
-    "@koa/router": "^15.3.0",
+    "@koa/router": "^15.7.0",
     "async_hooks": "^1.0.0",
     "epub-gen": "^0.1.0",
-    "koa": "^3.0.0",
-    "koa-body": "^6.0.1",
+    "iconv-lite": "^0.7.3",
+    "koa": "^3.2.1",
+    "koa-body": "^8.0.0",
     "koa-send": "^5.0.1",
     "koa-static": "^5.0.0",
-    "koa2-swagger-ui": "^5.11.0",
-    "nodemailer": "^7.0.3",
+    "koa2-swagger-ui": "^5.12.0",
+    "nodemailer": "^9.0.3",
     "nodemailer-smtp-transport": "^2.7.4",
-    "pdfkit": "^0.17.0",
-    "puppeteer": "^24.10.2",
-    "sequelize": "^6.37.5",
-    "sharp": "^0.34.1",
-    "socket.io": "^4.8.1",
-    "sqlite3": "^5.1.7",
+    "pdfkit": "^0.19.1",
+    "puppeteer": "^25.3.0",
+    "sequelize": "^6.37.8",
+    "sharp": "^0.35.3",
+    "socket.io": "^4.8.3",
+    "sqlite3": "^6.0.1",
     "string-similarity": "^4.0.4",
-    "swagger-jsdoc": "^6.2.8"
+    "swagger-jsdoc": "^6.3.0"
   },
   "engines": {
     "node": ">=22.0.0"

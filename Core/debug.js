@@ -1,7 +1,7 @@
 //主要是辅助除错 开启一些监听
-const EventManager = require("../Core/EventManager.js");
-const SocketHandler = require("../Core/Socket.js");
-const { debugSwitcher } = require("./../config");
+const EventManager = require("./EventManager");
+const SocketHandler = require("./Socket.js");
+const { config: { debugSwitcher } } = require("./services/config");
 const Message = require("../Entity/Message.js");
 
 
@@ -25,17 +25,11 @@ module.exports = (() => {
         })
     }
 
-    if (debugSwitcher.bookIndex) {
-        em.on("WebBook.UpdateIndex.Finish", (bookid) => {
-            console.log("目录更新完毕！！");
-        })
-    }
-
     if (debugSwitcher.bookChapter) {
-        em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err) => {
+        em.on("WebBook.UpdateOneChapter.Error", (bookid, cId, err, jobId, errObj) => {
             console.log(`更新章节失败：${bookid}-${cId}:`);
             console.error(err);
-        })
+        });
 
         em.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
             console.log(`正在更新中[${bookid}-${chapterId}]，当前进度${(rate * 100).toFixed(2)}%\n\t\t完成：${ok}\t失败：${fail}\t总数：${all}`);
@@ -96,7 +90,7 @@ module.exports = (() => {
     em.on("Debug.Log", (message, funName, ..._) => {
         switch (funName) {
             case "ROUTER": if (!debugSwitcher.router) return; break;
-            case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
+            // case "BOOKINDEX": if (!debugSwitcher.bookIndex) return; break;
             case "BOOKCHAPTER": if (!debugSwitcher.bookChapter) return; break;
             case "WEBBOOKCOVER": if (!debugSwitcher.saveBookCover) return; break;
             case "WORKERPOOL": if (!debugSwitcher.workerPool) return; break;

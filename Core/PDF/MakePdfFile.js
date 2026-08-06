@@ -11,6 +11,7 @@ async function MakePdfFile(fileInfo) {
             let { FontFamily, FontSize } = thePdf;
             const pdfSetting = { fontFamily: FontFamily, fontSize: FontSize, defaultFont: fileInfo.defaultFont, enableIndent: fileInfo.enableIndent, embedTitle: fileInfo.embedTitle };
             thePdf.coverImageData = fileInfo.coverImageData;
+            thePdf.embedBookName = fileInfo.embedBookName;
 
             const { doc: pdfDoc, stream: fileStream } = await PDFToolkit.CreateNewDocFile(fileInfo.path, pdfSetting);
             await PDFToolkit.AddBookCoverToPdf(thePdf, pdfDoc);//制作封面

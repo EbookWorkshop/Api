@@ -1,6 +1,6 @@
 const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 
 module.exports = () => ({
     prefix: '/library/book',

@@ -1,6 +1,6 @@
 //全书校阅
 
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 
 const ReviewBook = require("../../Core/Review/Book");

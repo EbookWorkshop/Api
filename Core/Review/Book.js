@@ -5,7 +5,7 @@ const Chapter = require("../../Entity/Ebook/Chapter");
 const ReviewRule = require("../../Entity/ReviewRule");
 // const Do2Po = require("../OTO/DO");
 const Models = require("../OTO/Models");
-const { Test: ExecReview } = require("./../../Core/Utils/ReviewString");
+const { Test: ExecReview } = require("../Utils/ReviewString");
 const SmartCharacterAnalyzer = require("./SmartCharacterAnalyzer");
 
 class ReviewBook {

@@ -3,6 +3,8 @@ const { DataTypes } = require("sequelize");
 
 module.exports = function (sqlConnect) {
     return sqlConnect.define("PDFBook", {
+        FontFamily: { type: DataTypes.STRING(10), allowNull: true, },
+        FontSize: { type: DataTypes.INTEGER, defaultValue: 22 },
         PaddingX: { type: DataTypes.INTEGER, allowNull: false },
         PaddingY: { type: DataTypes.INTEGER, allowNull: false },
         PageWidth: { type: DataTypes.INTEGER, allowNull: false },

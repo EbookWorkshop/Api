@@ -1,8 +1,8 @@
 const DO = require("./index");
 const Ebook = require("../../../Entity/Ebook/Ebook");
-const Models = require("./../Models");
-const Chapter = require("./../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("./../../Utils/ReviewString");
+const Models = require("../Models");
+const Chapter = require("../../../Entity/Ebook/Chapter");
+const { Run: Reviewer } = require("../../Utils/ReviewString");
 
 class OTO_Ebook {
 
@@ -74,7 +74,6 @@ class OTO_Ebook {
             await t.commit();
             return true;
         } catch (e) {
-            // console.log("存储书失败：", book, e);
             await t.rollback();
             return false;
         }
@@ -100,7 +99,7 @@ class OTO_Ebook {
     static async GetEBookInfoById(bookId) {
         const myModels = Models.GetPO();
         const book = await myModels.Ebook.findByPk(bookId, {
-            attributes: ['id', 'BookName', 'Author', 'CoverImg', 'FontFamily']
+            attributes: ['id', 'BookName', 'Author', 'CoverImg']
         });
         if (book == null) return null;
         //简介：
@@ -318,6 +317,11 @@ class OTO_Ebook {
                 model: myModels.Ebook,
                 as: "Ebook",
                 attributes: ["BookName"]
+            }, {
+                model: myModels.Volume,
+                required: false, //left join
+                as: "Volume",
+                attributes: ["Title"]
             }],
             where: where,
             attributes: ["id", "Title", "BookId", "Content"],
@@ -330,11 +334,12 @@ class OTO_Ebook {
             const matchesTitle = item.Title?.match(regex);
             const matchesContent = item.Content?.match(regex);
 
-            const { Ebook, ...rest } = item.dataValues;
+            const { Ebook, Volume, ...rest } = item.dataValues;
             return {
                 ...rest,
                 HitCount: (matchesTitle?.length ?? 0) + (matchesContent?.length ?? 0),
-                BookName: Ebook.BookName
+                BookName: Ebook.BookName,
+                VolumeTitle: Volume?.Title,
             };
         });
 

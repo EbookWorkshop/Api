@@ -1,6 +1,6 @@
 //规则可视化
 const puppeteer = require('puppeteer');
-const Rule = require("./../../Entity/WebBook/Rule");
+const Rule = require("../../Entity/WebBook/Rule");
 
 const { ExecRule } = require("./ExecRule");
 
@@ -22,16 +22,15 @@ async function VisualizationOfRule(url, rule) {
         lastPage = page;
     }
 
-    if(!page.url() !== url) await page.goto(url); //相同的页面不再刷新
+    if (!page.url() !== url) await page.goto(url); //相同的页面不再刷新
 
     let rsl = await ExecRule(page, rule, true);
-    // console.log(`[耗时${new Date().getTime()-curTime}ms]规则获得结果内容：`, ...rsl);
     return rsl;
 }
 
 async function GetBrowser() {
-    if (curBrowser == null || !curBrowser?.isConnected()) {
-        if (curBrowser && !curBrowser.isConnected()) curBrowser.close();
+    if (curBrowser == null || !curBrowser?.connected) {         //已断开的浏览器对象，就重新创建
+        if (curBrowser && !curBrowser.connected) curBrowser.close();
         let options = {
             //设置视窗的宽高
             defaultViewport: null,//不设置具体视口大小，可以用最大化调整窗口大小

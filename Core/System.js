@@ -6,7 +6,7 @@ const MemoryCache = require("./MemoryCache"); // 引入内存缓存服务
 const SystemConfigService = require("./services/SystemConfig"); // 假设服务类位于 Services 目录
 const packageJson = require("../package.json"); // 指向项目根目录的 package.json
 
-const { debug: isDebug } = require("./../config");
+const { config: { debug: isDebug } } = require("./services/config");
 if (isDebug) require("./debug");//载入Debug模块要尽可能早，便于尽早监听错误信息
 
 module.exports = new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ module.exports = new Promise((resolve, reject) => {
             resolve({
                 wp, db, em, io,
                 next: () => {
-                    wp.RunTask({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
+                    wp.RunTaskAsync({ taskfile: "@/Core/Utils/CreateOutdatedInfo.js" });//创建过时的包信息
                 }
             });
 

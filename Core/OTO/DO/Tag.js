@@ -1,6 +1,6 @@
-const Models = require("./../Models");
+const Models = require("../Models");
 // const DO = require("./index");
-// const PDFBook = require("./../../../Entity/PDFBook/PDFBook");
+// const PDFBook = require("../../../Entity/PDFBook/PDFBook");
 
 
 class OTO_TAG {

@@ -1,13 +1,13 @@
 //爬站规则
 
 const RuleManager = require("../../Core/WebBook/RuleManager");
-const Models = require("./../../Core/OTO/Models");
-const Rule = require("./../../Entity/WebBook/Rule");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { VisualizationOfRule } = require("./../../Core/WebBook/RuleVis")
+const Models = require("../../Core/OTO/Models");
+const Rule = require("../../Entity/WebBook/Rule");
+const { parseJsonFromBodyData } = require("../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { VisualizationOfRule } = require("../../Core/WebBook/RuleVis")
 const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
-const fs = require('fs').promises;
+const fs = require('node:fs/promises');
 
 
 module.exports = () => ({
@@ -44,6 +44,8 @@ module.exports = () => ({
      *                   - CapterTitle
      *                   - Content
      *                   - Timeout
+     *                   - UserAgent
+     *                   - Scraping
      *                   - Introduction
      *                   - IndexNextPage
      *                   - ContentNextPage
@@ -136,12 +138,7 @@ module.exports = () => ({
     "delete ": async (ctx) => {
         let host = ctx.query.host;
 
-        const myModels = new Models();
-        await myModels.RuleForWeb.destroy({
-            where: {
-                Host: host
-            }
-        });
+        await RuleManager.DeleteRule(host);
 
         new ApiResponse().toCTX(ctx);
     },
@@ -376,5 +373,98 @@ module.exports = () => ({
 
         let { data, message, success } = await RuleManager.ChangeHostname(param.oldHostname, param.newHostname);
         new ApiResponse(data, message, success).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/botrule/dictionaries:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 拿到指定站点的字典
+     *     description: 拿到指定站点的翻译字典
+     *     parameters:
+     *     - name: host
+     *       in: query
+     *       required: true
+     *       description: 站点的host标识
+     *       schema:
+     *         type: string
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "get /dictionaries": async (ctx) => {
+        let host = ctx.query.host;
+        const DO = require("../../Core/OTO/DO");
+        new ApiResponse(await DO.GetDictionaryByURL(host)).toCTX(ctx);
+    },
+
+    /**
+     * @swagger
+     * /services/botrule/dictionaries:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *     summary: 存储指定站点的字典
+     *     description: 存储指定站点的翻译字典
+     *     parameters:
+     *       - in: body
+     *         name: data
+     *         description: 站点字典数据
+     *         required: true
+     *         schema:
+     *           type: object
+     *           required:
+     *             - host
+     *             - data
+     *           properties:
+     *             host:
+     *               type: string
+     *               description: 站点host标识
+     *             data:
+     *               type: array
+     *               description: 字典条目列表
+     *               items:
+     *                 type: object
+     *                 required:
+     *                   - ExecuteType
+     *                   - Execute
+     *                   - Data
+     *                 properties:
+     *                   ExecuteType:
+     *                     type: string
+     *                     description: 执行类型
+     *                   Execute:
+     *                     type: string
+     *                     description: 执行内容
+     *                   Data:
+     *                     type: string
+     *                     description: 字典数据
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    "post /dictionaries": async (ctx) => {
+        let param = await parseJsonFromBodyData(ctx, ["host", "data"]);
+        if (param == null) return;
+
+        const DO = require("../../Core/OTO/DO");
+        let { host, data } = param;
+        const myModels = new Models();
+        const trans = await myModels.BeginTrans();
+        await DO.DeleteReviewDictionary(host, trans)
+        let result = await DO.SaveDictionaries(host, data, trans);
+        trans.commit();
+
+        new ApiResponse(result, null, result ? 20000 : 50000).toCTX(ctx);
     },
 });

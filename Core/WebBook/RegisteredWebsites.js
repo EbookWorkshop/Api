@@ -1,4 +1,4 @@
-const Models = require("./../../Core/OTO/Models");
+const Models = require("../OTO/Models");
 
 
 /**

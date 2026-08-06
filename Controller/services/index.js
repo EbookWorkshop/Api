@@ -1,9 +1,9 @@
-const fs = require("fs");
-const path = require("path")
-const myPackage = require("./../../package.json");
+const fs = require("node:fs");
+const path = require("node:path")
+const myPackage = require("../../package.json");
 const ApiResponse = require("../../Entity/ApiResponse");
-const { isSiteAccessible } = require("./../../Core/Utils/IsSiteAccesssible");
-const { dataPath, databasePath } = require("../../config");
+const { isSiteAccessible } = require("../../Core/Utils/IsSiteAccesssible");
+const { config: { dataPath, databasePath } } = require("../../Core/services/config");
 
 //获取静态资源文件
 module.exports = () => ({
@@ -24,23 +24,29 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "get /version": async (ctx) => {
-        let outdated = {};
+        let version = {};
         try {
-            let fPath = path.resolve("./Entity/outdated.json");
+            let fPath = path.resolve("./Entity/version.json");
             if (fs.existsSync(fPath)) {
-                outdated = JSON.parse(fs.readFileSync(fPath, "utf8"));
+                version = JSON.parse(fs.readFileSync(fPath, "utf8"));
             }
+            const os = require('node:os');
+
+            let result = {
+                version: myPackage.version,
+                packageVersion: version,
+                dataPath: path.resolve(dataPath),
+                databaseSize: fs.statSync(databasePath).size,
+                nodeVersion: process.version, // 添加这一行来获取Node.js版本
+                osType: os.type(),
+                osRelease: os.release(),
+                cpu: os.cpus(),
+                memFree: (os.freemem() / 1024 / 1024 / 1024).toFixed(2),
+                memTotal: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2),
+            }
+            new ApiResponse(result).toCTX(ctx);
         } catch (_) { }
 
-        let result = {
-            version: myPackage.version,
-            dependencies: myPackage.dependencies,
-            nodeVersion: process.version, // 添加这一行来获取Node.js版本
-            dataPath: path.resolve(dataPath),
-            databaseSize: fs.statSync(databasePath).size,
-            outdatedPackages: outdated
-        }
-        new ApiResponse(result).toCTX(ctx);
     },
     /**
      * @swagger
@@ -68,7 +74,7 @@ module.exports = () => ({
     "get /checkSiteAccessibility": async (ctx) => {
         let host = ctx.query.host;
         await isSiteAccessible(host).then((result) => {
-            new ApiResponse(result.result, result.error, 20000, result.status).toCTX(ctx);
+            new ApiResponse(result, "", 20000, result.status).toCTX(ctx);
         });
     },
 
@@ -105,4 +111,26 @@ module.exports = () => ({
             new ApiResponse(null, "消息不存在或已过期", 60000).toCTX(ctx);
         }
     },
+
+    /**
+     * @swagger
+     * /services/compress_db:
+     *   post:
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *     summary: 压缩数据库
+     *     description: 压缩数据库
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "post /compress_db": async (ctx) => {
+        const DB = require("../../Core/OTO/DatabaseHelper");
+        let result = await DB.Compress();
+        new ApiResponse(result).toCTX(ctx);
+    }
 });

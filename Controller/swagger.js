@@ -1,4 +1,4 @@
-const { version } = require("./../package.json");
+const { version } = require("../package.json");
 const jsdoc = require('swagger-jsdoc')
 
 const swaggerDefinition = {
@@ -22,8 +22,8 @@ const options = {
 };
 const swaggerSpec = jsdoc(options)
 
+const CDN = "https://cdn.jsdelivr.net/npm";
 // const CDN = "https://unpkg.com";
-const CDN = "https://s4.zstatic.net/npm"; //国内自动缓存国外CDN的一个CDN服务 https://www.zstatic.net/docs/getting-started.html
 
 module.exports = () => ({
     /**
@@ -62,9 +62,7 @@ module.exports = () => ({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body>
-    <script
-      id="api-reference"
-      data-url="/swagger.json"></script>
+    <script id="api-reference" data-url="/swagger.json"></script>
     <script src="${myCDN}/@scalar/api-reference@latest/dist/browser/standalone.js">/*${myCDN}/@scalar/api-reference*/</script>
   </body>
 </html>`;
@@ -110,7 +108,6 @@ module.exports = () => ({
   <body>
 <div id="openapi-ui-container" spec-url="/swagger.json" theme="light"></div>
 <script src="${myCDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
-
   </body>
 </html>`;
     },

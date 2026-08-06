@@ -1,12 +1,12 @@
-const DO = require("./../../Core/OTO/DO");
+const DO = require("../OTO/DO");
 
-const EventManager = require("./../EventManager");
-const path = require("path");
-const { dataPath } = require("../../config");
-const { GetDefaultReadingFont } = require("./../services/font")
-const WorkerPool = require("./../Worker/WorkerPool");
+const EventManager = require("../EventManager");
+const path = require("node:path");
+const { config: { dataPath, FOLDER } } = require("../services/config");
+const { GetDefaultReadingFont } = require("../services/font")
+const WorkerPool = require("../Worker/WorkerPool");
 const wPool = WorkerPool.GetWorkerPool();
-const FindMyChapters = require("./../Book/FindMyChapters");
+const FindMyChapters = require("../Book/FindMyChapters");
 
 class PDFMaker {
     /**
@@ -18,10 +18,10 @@ class PDFMaker {
      * @param {*} setting 其他设置
      */
     static async MakePdfFile(bookId, volumes, showChapters, setting) {
-        let { fontFamily, embedTitle = true, enableIndent, coverImageData } = setting;
+        let { fontFamily, embedTitle = true, enableIndent, coverImageData, embedBookName } = setting;
         let ebook = await DO.GetPDFById(bookId);
         if (fontFamily) ebook.FontFamily = fontFamily;
-        
+
         const showIndexId = FindMyChapters(ebook, volumes, showChapters);
         await ebook.SetShowChapters(showIndexId);
         await ebook.LoadIntroduction();
@@ -34,9 +34,10 @@ class PDFMaker {
             }, {});
         const fileInfo = {
             filename: ebook.BookName + ".pdf",
-            path: path.join(dataPath, "Output", ebook.BookName + '.pdf'),
+            path: path.join(dataPath, FOLDER.TempBookOutput, ebook.BookName + '.pdf'),
             pdf,
             embedTitle,
+            embedBookName,
             enableIndent,
             chapterCount: ebook.showIndexId.length,           //含有多少章
             defaultFont: await GetDefaultReadingFont(),

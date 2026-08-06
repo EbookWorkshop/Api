@@ -1,3 +1,5 @@
+const path = require("path");
+const fsPromises = require("fs").promises;
 
 const BookMaker = require("../../Core/Book/BookMaker");
 const PDFMaker = require("../../Core/PDF/PDFMaker");
@@ -5,8 +7,7 @@ const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
 const { parseJsonFromBodyData } = require("../../Core/Server");
 const ApiResponse = require("../../Entity/ApiResponse");
 const { SendAMail } = require("../../Core/services/email");
-const { dataPath } = require("../../config");
-const path = require("path");
+const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
 
 module.exports = () => ({
     /**
@@ -31,7 +32,11 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             isExportToInventory:
+     *               type: boolean
      *             embedTitle:
+     *               type: boolean
+     *             embedBookName:
      *               type: boolean
      *             enableIndent:
      *               type: boolean
@@ -60,7 +65,7 @@ module.exports = () => ({
     "post /pdf": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
-        const { sendByEmail, bookId, volumeIds, chapterIds, ...setting } = param;
+        const { sendByEmail, bookId, volumeIds, chapterIds, isExportToInventory, ...setting } = param;
         await PDFMaker.MakePdfFile(bookId, volumeIds, chapterIds, setting).then(async (rsl) => {
             if (sendByEmail) {
                 await SendAMail({
@@ -68,6 +73,10 @@ module.exports = () => ({
                     content: rsl.filename,
                     files: [rsl.path]
                 });
+            }
+            if (isExportToInventory) {
+                const bookDir = path.join(dataPath, FOLDER.BookStorage);
+                await fsPromises.copyFile(rsl.path, path.join(bookDir, rsl.filename));
             }
             const relativePath = path.relative(dataPath, rsl.path);
             new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
@@ -98,6 +107,8 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             isExportToInventory:
+     *               type: boolean
      *             embedTitle:
      *               type: boolean
      *             fontFamily:
@@ -124,7 +135,7 @@ module.exports = () => ({
      */
     "post /txt": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
-        const { sendByEmail, bookId, volumeIds, chapterIds, embedTitle, enableIndent } = param;
+        const { sendByEmail, bookId, volumeIds, chapterIds, embedTitle, enableIndent, isExportToInventory } = param;
         if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
 
         await BookMaker.MakeTxtFile(bookId, volumeIds, chapterIds, embedTitle, enableIndent).then(async (rsl) => {
@@ -134,6 +145,10 @@ module.exports = () => ({
                     content: rsl.filename,
                     files: [rsl.path]
                 });
+            }
+            if (isExportToInventory) {
+                const bookDir = path.join(dataPath, FOLDER.BookStorage);
+                await fsPromises.copyFile(rsl.path, path.join(bookDir, rsl.filename));
             }
             const relativePath = path.relative(dataPath, rsl.path);
             new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
@@ -165,7 +180,11 @@ module.exports = () => ({
      *               format: int32
      *             sendByEmail:
      *               type: boolean
+     *             isExportToInventory:
+     *               type: boolean
      *             embedTitle:
+     *               type: boolean
+     *             embedBookName:
      *               type: boolean
      *             fontFamily:
      *               type: string
@@ -192,8 +211,8 @@ module.exports = () => ({
     "post /epub": async (ctx) => {
         let param = await parseJsonFromBodyData(ctx, ["bookId"]);
         if (!param) return new ApiResponse(false, "参数错误，参数类型错误", 60000).toCTX(ctx);
-        
-        const { sendByEmail, bookId, volumeIds, chapterIds, ...setting } = param;
+
+        const { sendByEmail, bookId, volumeIds, chapterIds, isExportToInventory, ...setting } = param;
         await EPUBMaker.MakeEPUBFile(bookId, volumeIds, chapterIds, setting).then(async (rsl) => {
             if (sendByEmail) {
                 await SendAMail({
@@ -201,6 +220,10 @@ module.exports = () => ({
                     content: rsl.filename,
                     files: [rsl.path]
                 });
+            }
+            if (isExportToInventory) {
+                const bookDir = path.join(dataPath, FOLDER.BookStorage);
+                await fsPromises.copyFile(rsl.path, path.join(bookDir, rsl.filename));
             }
             const relativePath = path.relative(dataPath, rsl.path);
             new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);

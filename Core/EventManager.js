@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events');
+const Message = require("../Entity/Message");
 
 let myEventManager = null;
 
@@ -12,6 +13,25 @@ class EventManager extends EventEmitter {
         if (myEventManager != null) return myEventManager;
         super();
         myEventManager = this;
+    }
+
+
+    /**
+     * 向前端发一个后台消息
+     * @param {Message} message 
+     */
+    SendMessageToUI(message, data, error) {
+        myEventManager.emit("MessageToUI", message, data, error);
+    }
+
+    /**
+     * 向后台发送一个错误类型的消息
+     * @param {*} message 
+     * @param {*} data 
+     * @param {*} error 
+     */
+    SendErrorToUI(message, data, error) {
+        myEventManager.emit("MessageToUI", message, data, error, true);
     }
 }
 

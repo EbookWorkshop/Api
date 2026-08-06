@@ -16,23 +16,29 @@ EbookWorkshop-API 是一个功能强大的电子书处理工具，提供 Web API
 - **运行环境**: Node.js
 - **Web 框架**: Koa.js
 - **数据库**: SQLite + Sequelize
+- **内容抓取**: Puppeteer
 - **API 文档**: Swagger
 - **实时通信**: Socket.IO
 - **图片处理**: Sharp
 - **邮件服务**: Nodemailer
 - **多线程**: Node.js Worker Threads
+- **图书制作**: pdfkit、epub-gen
 
 ## 系统架构
 
 ```mermaid
 graph TD
-    A[客户端] --> B[Web API 层]
-    B --> C[控制器层]
-    C --> D[核心服务层]
-    D --> E[数据库]
-    D --> F[文件系统]
-    G[WebSocket] --> A
-    H[Worker Pool] --> D
+   A[客户端] --> B[Web API （Koa / app.js / Core/Server.js）]
+   B --> C[控制器层 （Controller/router.js）]
+   C --> D[核心服务层 （Core/System.js 等）]
+   D --> E[数据库 （SQLite + Sequelize）]
+   D --> F[文件系统 （dataPath, fontPath）]
+   A <--> G[WebSocket （Core/Socket.js）]
+   G <--> C
+   G <--> D
+   D <--> J[EventManager （Core/EventManager.js）]
+   H[Worker Pool （Core/Worker/WorkerPool.js）] <--> D
+   I(Worker Runner - Core/Worker/WorkerRunner.js) --> H
 ```
 
 ## 目录结构
@@ -177,6 +183,29 @@ SET PUPPETEER_SKIP_DOWNLOAD=true
 * 确保chrome.exe在正确路径：`C:\Users\当前用户登陆名\.cache\puppeteer\chrome\win64-XXX.XXX.XXX.XXX\chrome-win64\chrome.exe`
 * 到目录`./node_modules/puppeteer`中执行`node install.mjs`若不再出现其它版本报错，则完成了设置。（如果在之前设置环境变量的同一个对话框，还得先将变量设置回来`SET PUPPETEER_SKIP_DOWNLOAD=false`）不然会跳过下载。
 
-运行项目，使用爬书相关的功能。无报错即可。
+### 报错关键字 Failed to launch the browser process: Code: null
+错误信息类似：
+```txt
+Failed to launch the browser process: Code: null
+...
+No usable sandbox! If you are running on Ubuntu 23.10+ or another Linux distro that has disabled unprivileged user namespaces with AppArmor
+...
+SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
+...
+```
+
+出现上述原因是因为 puppeteer 启动浏览器时，默认启用了沙箱模式，但在某些环境中（如某些 Linux 发行版或特定的安全设置）可能会导致启动失败。解决方法是禁用沙箱模式。
+#### 执行下列命令即可：
+```bash
+# 创建 sysctl 配置文件
+echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee -a /etc/sysctl.d/99-puppeteer.conf
+echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/99-puppeteer.conf
+
+# 立即从所有配置文件重新加载
+sudo sysctl --system
+```
+
+
+### 运行项目，使用爬书相关的功能。无报错即可。
 
 > 注：部分内容通过AI生成。

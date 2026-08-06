@@ -21,6 +21,7 @@ async function ExecRule(page, rule, isVis = false) {
             }, isVis);
         } catch (err) { }//尝试删除干扰元素，失败不管
 
+    if (rule.Selector === "") return [];
     let querySelector = page.$eval;
     if (rule.Type === "List") querySelector = page.$$eval;
 
@@ -83,7 +84,7 @@ async function ExecRule(page, rule, isVis = false) {
         return rsl;
     } catch (err) {
         //没抓到数据
-        return [null];
+        return [err.message, err, await page.content()];
     }
 }
 

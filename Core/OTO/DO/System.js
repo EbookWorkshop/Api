@@ -1,4 +1,4 @@
-const Models = require("./../Models");
+const Models = require("../Models");
 
 /**
  * 处理系统通用的逻辑

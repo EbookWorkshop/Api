@@ -1,12 +1,12 @@
 const PDFDocument = require('pdfkit');  //http://pdfkit.org
-const fs = require('fs');
-const path = require('path');
-const config = require("./../../config");
+const fs = require('node:fs');
+const path = require('node:path');
+const { config } = require("../services/config");
 const Volume = require("../../Entity/Ebook/Volume");
 const sharp = require("sharp");     //提供图像格式转换
-const { CheckAndMakeDir } = require("./../Server");
+const { CheckAndMakeDir } = require("../Server");
 
-
+const FONT_PATH = path.join(config.dataPath, config.FOLDER.font);
 /**
  * 生成一个PDF文件
  * @param {string} filepath 生成的文件路径
@@ -31,19 +31,16 @@ async function CreateNewDoc(setting, defaultText = null) {
     const doc = new PDFDocument();
 
     //嵌入字体
-    if (setting.fontFamily) {
+    let fontPath = path.join(FONT_PATH, setting.fontFamily || setting.defaultFont);
+    try {
+        await fs.promises.access(fontPath)
+    } catch (err) {
         const { FindFile } = await import("./../services/file.mjs");
-        let fontent = await FindFile(config.fontPath, setting.fontFamily);
-        //PDFKit 支持嵌入 TrueType（.ttf）、OpenType（.otf）、WOFF、WOFF2、TrueType 集合（.ttc）和 Datafork TrueType（.dfont）字体。
-        if (fontent) doc.font(path.join(fontent.parentPath, fontent.name));
-        else {
-            fontent = await FindFile(config.fontPath, setting.defaultFont);//使用默认字体
-            if (!fontent) console.warn("PDF嵌入字体跳过，找不到字体：", setting.fontFamily, "生成的文件可能会乱码。");
-            else doc.font(path.join(fontent.parentPath, fontent.name));
-        }
+        let fontent = await FindFile(FONT_PATH, setting.fontFamily);
+        if (fontent) fontPath = path.join(fontent.parentPath, fontent.name);
     }
-
-    doc.fontSize(setting.fontSize);
+    doc.font(fontPath);
+    doc.fontSize(setting.fontSize || 24);
 
     if (defaultText) {      //如果有文本则直接加入
         doc.text(defaultText,
@@ -132,14 +129,14 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
 async function AddBookCoverToPdf(pdfBook, pdfDoc) {
     let imgFile = null;
     let realDir = null;
-    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#")) {     //#开头的为线装本封面底色
+    if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#") && !pdfBook.embedBookName) {//读取本地配置的图片为封面
         realDir = path.join(config.dataPath, pdfBook.CoverImg);
         imgFile = realDir;
         if (realDir.endsWith(".webp")) {
             imgFile = realDir.replace(/webp$/, "png");
             await sharp(realDir).png().toFile(imgFile);
         }
-    } else if (pdfBook.coverImageData) {        //做一个线装本封面
+    } else if (pdfBook.coverImageData) {        //前端截图传入的Base64数据为封面
         imgFile = Buffer.from(pdfBook.coverImageData, 'base64');
     }
 

@@ -1,28 +1,26 @@
 const Sequelize = require("sequelize");
 const Models = require("./Models");
-const { databasePath } = require("./../../config");
-// const EventManager = require("./../EventManager");
+const { config: { databasePath, debugSwitcher } } = require("../services/config");
+// const EventManager = require("../EventManager");
 // const em = new EventManager();
 
 class DB {
     constructor() {
         if (!DB.instance) {
-            this.myDbPath = null;
             this.myDBConnnect = DB.Connect(databasePath);
             this.myModels = new Models(this.myDBConnnect);
             // em.emit("Debug.Model.Init.Finish", "DatabaseHelper");
             DB.instance = this;
         }
-        return DB.instance;
     }
 
     static Connect(path) {
-        this.myDbPath = path || databasePath;
+        DB.myDbPath = path || databasePath;
 
         return new Sequelize({
             dialect: 'sqlite',
-            storage: this.myDbPath,
-            logging: false,            // console.log,//在控制台输出sql
+            storage: DB.myDbPath,
+            logging: debugSwitcher.database,            // console.log,//在控制台输出sql
             //timezone: '+08:00',
             pool: {
                 max: 5,
@@ -34,6 +32,21 @@ class DB {
                 foreignKeys: true       //启用外键约束——级联删除等需要
             }
         });
+    }
+
+    /**
+     * 压缩数据库
+     */
+    async Compress() {
+        const fs = require("fs");
+        let OldSize = fs.statSync(DB.myDbPath).size;
+        let result = await this.myDBConnnect.query('VACUUM;');
+        let NewSize = fs.statSync(DB.myDbPath).size;
+
+        return {
+            OldSize,
+            NewSize
+        }
     }
 }
 

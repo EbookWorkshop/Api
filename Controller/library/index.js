@@ -1,7 +1,7 @@
 const DO = require("../../Core/OTO/DO");
 const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("./../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("./../../Core/Server");
+const ApiResponse = require("../../Entity/ApiResponse");
+const { parseJsonFromBodyData } = require("../../Core/Server");
 
 module.exports = () => ({
     /**
@@ -215,8 +215,10 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-
-        new ApiResponse(await DO.GetEBookInfoById(bookId * 1)).toCTX(ctx);
+        const SystemConfigService = require("../../Core/services/SystemConfig");
+        let bookMeta = await DO.GetEBookInfoById(bookId * 1);
+        bookMeta.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
+        new ApiResponse(bookMeta).toCTX(ctx);
     },
 
     /**
@@ -247,10 +249,10 @@ module.exports = () => ({
         let metadata = {}
         if (bookInfo.name) metadata.BookName = bookInfo.name;
         if (bookInfo.author) metadata.Author = bookInfo.author;
-        if (bookInfo.font) metadata.FontFamily = bookInfo.font;
         if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
         if (bookInfo.coverFile) { metadata.converFile = bookInfo.coverFile[0]; }
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
+        if (bookInfo.coverType === "默认") metadata.CoverImg = null;
 
         try {
             let rsl = await BookMaker.EditEBookInfo(bookInfo.id, metadata);
@@ -429,7 +431,7 @@ module.exports = () => ({
         try {
             const bookId = ctx.query.bookid * 1;
             const chapterids = ctx.query.chapterids;
-            const { checkPairedPunctuation } = require("./../../Core/Book/CheckPairedPunctuation");
+            const { checkPairedPunctuation } = require("../../Core/Book/CheckPairedPunctuation");
 
             let cpIds = null;
             try {
@@ -471,7 +473,7 @@ module.exports = () => ({
                 new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
                 return;
             }
-            const { AnalyzeBookText } = require("./../../Core/Book/Analyze");
+            const { AnalyzeBookText } = require("../../Core/Book/Analyze");
 
             const results = await AnalyzeBookText(bookId * 1);
             new ApiResponse(results).toCTX(ctx);

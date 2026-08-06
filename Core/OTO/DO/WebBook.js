@@ -1,14 +1,14 @@
 const DO = require("./index");
-const Models = require("./../Models");
-const Ebook = require("./../../../Entity/Ebook/Ebook");
-const Volume = require("./../../../Entity/Ebook/Volume");
-const WebBook = require("./../../../Entity/WebBook/WebBook");
-const WebIndex = require("./../../../Entity/WebBook/WebIndex");
-const WebChapter = require("./../../../Entity/WebBook/WebChapter");
+const Models = require("../Models");
+const Ebook = require("../../../Entity/Ebook/Ebook");
+const Volume = require("../../../Entity/Ebook/Volume");
+const WebBook = require("../../../Entity/WebBook/WebBook");
+const WebIndex = require("../../../Entity/WebBook/WebIndex");
+const WebChapter = require("../../../Entity/WebBook/WebChapter");
 const SystemConfigService = require("../../services/SystemConfig");
-const { Run: Reviewer } = require("./../../Utils/ReviewString");
-// const ChapterOptions = require("./../../../Entity/WebBook/ChapterOptions");
-// const IndexOptions = require("./../../../Entity/WebBook/IndexOptions");
+const { Run: Reviewer } = require("../../Utils/ReviewString");
+// const ChapterOptions = require("../../../Entity/WebBook/ChapterOptions");
+// const IndexOptions = require("../../../Entity/WebBook/IndexOptions");
 
 
 class OTO_WebBook {
@@ -81,15 +81,21 @@ class OTO_WebBook {
      * @param {*} chapterId 章节ID
      */
     static async GetWebBookChapterSourcesById(chapterId) {
+        if (!chapterId) return [];
         const myModels = new Models();
-        let webBook = await myModels.WebBookIndex.findOne({
-            include: myModels.WebBookIndexURL,
-            where: { IndexId: chapterId }
+        // console.log("GetWebBookChapterSourcesById::", chapterId);
+        // 直接查 URL 表
+        const urls = await myModels.WebBookIndexURL.findAll({
+            include: [{
+                model: myModels.WebBookIndex, // 关联章节表
+                where: { IndexId: chapterId },
+                attributes: [], // 不需要查章节字段，只用来做过滤
+                required: true  // 转为 INNER JOIN，确保关联存在才返回
+            }],
+            raw: true,
         });
-        if (webBook == null) return null;
-        let webBookIndex = await webBook;
 
-        return webBookIndex.WebBookIndexURLs;
+        return urls; // 直接返回纯净的 URL 数组
     }
 
     static async SetWebBookChapterSources(id, url) {
@@ -121,11 +127,9 @@ class OTO_WebBook {
 
         let created = false;
         if (book == null) {//没找到对应的WebBook，进行创建
-            let FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont") || "未设置默认字体";
             const trans = await myModels.BeginTrans();
             let [ebook, ecreated] = await myModels.Ebook.findOrCreate({
                 where: { BookName: bookName },
-                defaults: { FontFamily: FontFamily },
                 transaction: trans
             });
 
@@ -136,6 +140,10 @@ class OTO_WebBook {
                 }, { transaction: trans });
                 trans.commit();
                 created = true;
+            } else if (ebook) {
+                //创建电子书失败，已存在同名书籍。
+                await trans.rollback();
+                return null;
             }
         }
 
@@ -152,10 +160,13 @@ class OTO_WebBook {
     static async ModelToWebBook(webModel) {
         let ebook = await webModel?.getEbook();
         let ebookObj = await DO.ModelToBookObj(ebook, Ebook);
-        await ebookObj.LoadIntroduction();
-        let webBook = new WebBook({ ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
-        let urls = await webModel.getWebBookIndexSourceURLs();
-        for (let u of urls) webBook.IndexUrl.push(u.Path);
+        // await ebookObj.LoadIntroduction();
+        let webBook = new WebBook({ WebBookId: webModel.id, ...webModel.dataValues, ...ebook.dataValues, Introduction: ebookObj.Introduction });
+        let urls = await webModel.getWebBookIndexSourceURLs({
+            attributes: ['Path'],
+            raw: true
+        });
+        webBook.IndexUrl = urls?.map(u => u.Path);
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
         webBook.LoadIntroduction = async () => { return await ebookObj.LoadIntroduction(); }
@@ -186,35 +197,45 @@ class OTO_WebBook {
          */
         webBook.ReloadIndex = async () => {
             const myModels = new Models();
-            let eIndexs = await myModels.EbookIndex.findAll({
-                where: {
-                    BookId: webBook.BookId,
-                    OrderNum: { [Models.Op.gte]: 0 } //大于0的章节
-                },
-                order: ["OrderNum"]
-            });
             await ebookObj.InitReviewRules();       //注意：InitReviewRules定义在 DO.ModelToBookObj 创建的实体上
 
-            let sourceUrls = await webModel.getWebBookIndexSourceURLs();
+            //通过默认目录地址推断出站点
+            let sourceUrls = await webModel.getWebBookIndexSourceURLs({
+                attributes: ["Path"],
+                raw: true,
+            });
             let defaultIndex = webBook.defaultIndex;
             if (defaultIndex > sourceUrls.length) defaultIndex = 0;
             const defaultHost = sourceUrls.length > 0 ? new URL(sourceUrls[defaultIndex].Path).host : null;
 
-            //加载每章的网址
-            for (let i of eIndexs) {
-                const eI = await myModels.WebBookIndex.findOne({
-                    where: { IndexId: i.id },
-                    include: {
+            let eIndexs = await myModels.EbookIndex.scope('withHasContent').findAll({
+                where: {
+                    BookId: webBook.BookId,
+                    OrderNum: { [Models.Op.gte]: 0 } //大于0的章节
+                },
+                attributes: {
+                    //["Title", "OrderNum", "id", "VolumeId"],
+                    exclude: ['Content', "createdAt", "updatedAt"]   //不需要的列 避免大字段Content查询的开销
+                },
+                include: [{
+                    model: myModels.WebBookIndex,
+                    as: "WebBookIndex",
+                    include: [{
                         model: myModels.WebBookIndexURL,
-                        as: "WebBookIndexURLs"
-                    }
-                });
-                let tIdx = new WebIndex({ ...i.dataValues, ...eI?.dataValues, curHost: defaultHost, HasContent: i.HasContent });
-                [tIdx.Title] = Reviewer(ebookObj.ReviewRules, [tIdx.Title])
-                webBook.Index.push(tIdx);
+                        as: "WebBookIndexURLs",
+                        attributes: ["id", "Path"],
+                    }],
+                    attributes: ["WebTitle"]
+                }],
+                order: ["OrderNum"],
+            });
 
-                if (eI == null) continue; //没有对应的章节时跳过
-                for (let u of eI.WebBookIndexURLs) tIdx.URL.push({ id: u.id, Path: u.Path });
+            for (let i of eIndexs) {
+                let bIdx = i.toJSON();
+                [bIdx.Title] = Reviewer(ebookObj.ReviewRules, [bIdx.Title])
+                let WebTitle = bIdx?.WebBookIndex?.WebTitle;
+                let tIdx = new WebIndex({ WebTitle, URL: bIdx?.WebBookIndex?.WebBookIndexURLs, curHost: defaultHost, ...bIdx });
+                webBook.Index.push(tIdx);
             }
         }
 
@@ -224,10 +245,11 @@ class OTO_WebBook {
          */
         webBook.ReloadChapter = async (cId) => {
             let ebookIndex = await new Models().EbookIndex.findOne({ where: { id: cId, BookId: webBook.BookId } });
-            if (ebookIndex == null) return;
+            if (ebookIndex == null || !ebookIndex.Content) return;
             let wbookIndex = await ebookIndex.getWebBookIndex();
+            if (wbookIndex == null) return;
             let cp = new WebChapter({ ...wbookIndex.dataValues, ...ebookIndex.dataValues });
-            if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);
+            if (cp.Content) webBook.Chapters.set(cp.WebTitle, cp);          //TODO: 这里限制了章节名称不能相同
         }
 
         /**
@@ -265,12 +287,14 @@ class OTO_WebBook {
          * 拿到章节名，查找是否已经添加，是则跳过，否则插入一个新记录
          * @param {*} param0 
          * @param {*} orderNum 
+         * @returns 是否添加了新章节
          */
         webBook.MergeIndex = async ({ title, url }, orderNum) => {
             const myModels = new Models();
+            let hasAddChapter = false;
+            if (webBook.tempMergeIndex == null) webBook.tempMergeIndex = new Map();
 
             if (webBook.tempMergeIndex.has(title)) {    //发现重复章节，需要合并
-                // console.log("存在重复章节：", title, orderNum, webBook.Index);
                 webBook.tempMergeIndex.get(title).urls.push(url);//没啥用，没存入数据库的
                 await myModels.EbookIndex.update({ OrderNum: orderNum }, { where: { BookId: webBook.BookId, Title: title } });//如果相同的章节重复出现，按最新的排序更新
                 return;
@@ -289,6 +313,7 @@ class OTO_WebBook {
             if (wbIndex == null) {  //目录不存在章节时，添加新章节
                 let ret = await myModels.EbookIndex.create({ Title: title, BookId: webBook.BookId, OrderNum: orderNum });
                 wbIndex = await myModels.WebBookIndex.create({ WebTitle: title, IndexId: ret.id });
+                hasAddChapter = true;
             }
 
             let urls = await wbIndex.getWebBookIndexURLs();
@@ -307,6 +332,7 @@ class OTO_WebBook {
             tIdx.URL.push(...cUrl);
 
             webBook.Index.push(tIdx);
+            return hasAddChapter;
         }
 
 
@@ -330,6 +356,29 @@ class OTO_WebBook {
         webBook.GetMaxIndexOrder = ebookObj.GetMaxIndexOrder;
         await webBook.ReloadIndex();
         return webBook;
+    }
+
+
+    /**
+     * 设置网文是否允许自动更新
+     * 自动更新将在系统闲时，后台静默更新。若设置为启用，将同时将该书的空章节在更新队列安排到队首
+     * @param {number} bookid 
+     * @param {boolean} autoSyncEnabled 
+     */
+    static async WebBookSetAutoSync(bookid, autoSyncEnabled) {
+        const myModels = Models.GetPO();
+        let [rows] = await myModels.WebBook.update({ AutoSyncEnabled: autoSyncEnabled, },
+            { where: { BookId: bookid } });
+
+        if (rows > 0 && autoSyncEnabled) {
+            [rows] = await myModels.EbookIndex.update({ Content: null }, {
+                where: {
+                    BookId: bookid,
+                    Content: { [Models.Op.eq]: "" }
+                }
+            })
+        }
+        return rows > 0;
     }
 
 

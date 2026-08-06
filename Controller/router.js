@@ -3,8 +3,8 @@ const Router = require('@koa/router');
 const path = require('path')
 const fs = require('fs');
 
-const EventManager = require("./../Core/EventManager");
-const ApiResponse = require("./../Entity/ApiResponse");
+const EventManager = require("../Core/EventManager");
+const ApiResponse = require("../Entity/ApiResponse");
 const em = new EventManager();
 const router = new Router();
 
@@ -28,10 +28,10 @@ async function load(dir, fatherRouter, cb_loader) {
 
         let isESM = filename.endsWith("mjs");
         let curfilename = filename.replace('.js', '');
-        let routerPath = `${url}/${curfilename}`;
+        const routerPath = path.join(url, curfilename);
         try {
             if (isESM) {
-                import(`${dir}/${curfilename}`).then(routes => {//ESM模块只能用相对路径加载
+                import(routerPath).then(routes => {//ESM模块只能用相对路径加载
                     cb_loader(curfilename.replace(".mjs", ""), fatherRouter, routes.default);
                 })
             } else {    //isCJS
@@ -39,7 +39,7 @@ async function load(dir, fatherRouter, cb_loader) {
                 cb_loader(curfilename, fatherRouter, routes);
             }
         } catch (err) {
-            console.warn(`加载路由失败：${routerPath}\n${err.message}`);//有可能是目录情况但当前目录没有index.js
+            console.warn(`加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
             // return;
         }
 

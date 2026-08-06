@@ -3,7 +3,7 @@ const Do2Po = require("../OTO/DO");
 const path = require("path");
 const fs = require("fs/promises");
 const sharp = require("sharp");     //提供图像格式转换
-const { dataPath } = require("../../config");
+const { config: { dataPath, FOLDER } } = require("../services/config");
 const { version } = require("../../package.json");
 const Volume = require("../../Entity/Ebook/Volume");
 const FindMyChapters = require("../Book/FindMyChapters");
@@ -24,7 +24,7 @@ class EPUBMaker {
         if (ebook == null) return null;
 
         if (!setting) setting = {};//邮件批量生成文件发送时，所有配置为空。
-        let { fontFamily, embedTitle = true, enableIndent } = setting;
+        let { embedTitle = true, enableIndent, embedBookName } = setting;
 
         let chapters = FindMyChapters(ebook, volumes, showChapters);
         await ebook.SetShowChapters(chapters);
@@ -39,20 +39,22 @@ class EPUBMaker {
             publisher: `EBook Workshop v${version}`, // 可选
             // cover: "https://www.alice-in-wonderland.net/wp-content/uploads/1book1.jpg", // URL 或文件路径，均可。
             content: [],
-            tempDir: path.join(dataPath, "temp/EPUB"),//非标配置，指定打包EPUB文件用的临时目录
+            tempDir: path.join(dataPath, FOLDER.TempFile, "EPUB"),//指定打包EPUB文件用的临时目录
         }
         //临时目录不存在则创建
         try {
             await fs.access(option.tempDir);
         } catch {
-            await fs.mkdir(option.tempDir, { recursive: true });
+            await fs.mkdir(option.tempDir, { recursive: true }, () => { });
         }
 
+        //处理封面
         let useTempCover = false;
-        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#")) {
+        if (ebook.CoverImg && !ebook.CoverImg.startsWith("#") && embedBookName == false) {//读系统的图片作封面(系统封面没嵌入书名)
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
+                if (ebook.CoverImg.endsWith("#showname")) ebook.CoverImg = ebook.CoverImg.replace("#showname", "");
+                
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));
-
                 //进行文件格式兼容
                 if (option.cover.endsWith(".webp") || option.cover.endsWith(".jpg")) {
                     const tempFile = path.join(option.tempDir, ebook.BookName + ".png");
@@ -116,18 +118,25 @@ class EPUBMaker {
             for (let c of vM.get(e.VolumeId)) {
                 let p = c.Content || "-=章节内容缺失=-";
                 let multiLine = p.split("\n");
-                if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //配置了缩进时，去除行首空格的缩进
-                p = multiLine.join("</p>\n<p>");
+                if (setting.isCompact) {//紧凑模式，段落之间与平常换行间距一致
+                    multiLine = multiLine.map(t => t.trim()).filter(t => t.length > 0);//去除空行
+                    if (enableIndent) multiLine = multiLine.map(t => '　　' + t.trimStart());    //缩进的处置
+                    p = multiLine.join("<br/>\n");
+                } else {//普通段落模式，段落之间间距更大
+                    if (enableIndent) multiLine = multiLine.map(t => t.trimStart());    //缩进的处置
+                    p = `<p>${multiLine.join("</p>\n<p>")}</p>`;
+                }
                 option.content.push({
                     title: c.Title,
-                    data: `<p>${p}</p>`,
+                    data: p,
                 });
             }
         }
 
-        if (enableIndent) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
+        if (enableIndent && !setting.isCompact) option.css += `\np{ text-indent: 2em;} `;//统一加入段落缩进
 
-        let output = path.join(dataPath, "Output", ebook.BookName + '.epub');
+        const filename = ebook.BookName + ".epub";
+        const output = path.join(dataPath, FOLDER.TempBookOutput, filename);
         return new Promise((resolve, reject) => {
             new EPUB(option, output).promise
                 .then(
@@ -138,7 +147,7 @@ class EPUBMaker {
                     }, err => reject(err)
                 )
                 .then(
-                    () => resolve({ path: output, chapterIds: chapters }),
+                    () => resolve({ path: output, chapterIds: chapters, filename }),
                     err => reject(err)
                 );
         })

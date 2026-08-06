@@ -29,11 +29,12 @@ class SocketIO {
     myIO.on("connection", (socket) => {
       this.initWorkerPool(socket);//设置监听消息
       socket.on("message", (msg) => {
-        console.log("收到消息：", msg);
+        console.log(`[${new Date().toLocaleString()}]\t收到消息：${msg}`);
       })
     });
 
     this.initEM_WebBook();
+    this.initMessageBox();
 
     this.myEM.emit("Debug.Model.Init.Finish", "SocketIO");
     return myIO;
@@ -42,6 +43,22 @@ class SocketIO {
   static GetIO(callerFile) {
     if (myIO == null) return { emit: (...x) => console.warn(callerFile + "\nSocket 尚未建立连接，未能发送消息：\n", ...x) };
     return myIO;
+  }
+
+  static SendMessage(message, data, error) {
+    SocketIO.GetIO().emit(`Message.Box.Send`, message);
+    MemoryCache.set(message.id, {
+      type: error ? "ErrorMessage" : "",   //
+      message: message, err: error, data: data
+    });
+  }
+
+  static SendError(message, data, error) {
+    SocketIO.GetIO().emit(`Message.Box.Send`, message);
+    MemoryCache.set(message.id, {
+      type: "ErrorMessage",
+      message: message, err: error, data: data
+    });
   }
 
   /**
@@ -54,6 +71,14 @@ class SocketIO {
       myIO.emit(`WebBook.Create.Finish`, { bookid, bookName });
     });
 
+    this.myEM.on("WebBook.UpdateIndex.Finish", (bookid, bookName, data) => {
+      myIO.emit(`Message.Box.Send`, new Message(`更新《${bookName}》目录完成，共新增${data.addChapterNum}章。`, "message", {
+        id: -1 * Math.floor(Math.random() * 1000000),
+        title: "更新目录完成",
+        subTitle: `共新增${data.addChapterNum}章`,
+      }));
+    });
+
     this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
       myIO.emit(`WebBook.Chapter.Update.${bookid}`, {
         status: true,
@@ -63,9 +88,24 @@ class SocketIO {
       });
     });
 
-    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId) => {
-      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err } });
-      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err);//分发给当前任务线程
+    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId, errObj) => {
+      let msgId = -1;
+      if (errObj) {
+        const msg = new Message(err?.name || err, "message", {
+          title: "更新章节失败"
+        });
+
+        let { message, stack, name, ...errRest } = errObj
+        MemoryCache.set(msg.id, {
+          type: "ErrorMessage",
+          message: msg, err: { name, message, stack, ...errRest }, data: null
+        });
+        msgId = msg.id;
+      }
+
+      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { name: err.name, message: err.message || err }, msgId });
+      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, err, msgId);//分发给当前任务线程
+
     })
 
     this.myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
@@ -83,11 +123,8 @@ class SocketIO {
       });
       let showErr = err;
       if (JSON.stringify(err) === "{}") showErr = { message: err.message, stack: err.stack };//数据库抛出的错误序列化后为空，所以要手动添加
-      myIO.emit(`Message.Box.Send`, msg);
-      MemoryCache.set(msg.id, {
-        type: "ErrorMessage",
-        message: msg, err: showErr, data: Object.fromEntries(result)
-      });
+
+      SocketIO.SendMessage(msg, result ? Object.fromEntries(result) : result, showErr);
     });
   }
 
@@ -142,6 +179,16 @@ class SocketIO {
     //监听线程池关闭
     socket.on("WorkerPool.Status.Off", (socket) => {
       disConnect();
+    });
+  }
+
+  /**
+   * 初始化消息
+   */
+  initMessageBox() {
+    this.myEM.on("MessageToUI", (message, data, error, isError) => {
+      if (isError) SocketIO.SendError(message, data, error);
+      else SocketIO.SendMessage(message, data, error);
     });
   }
 }

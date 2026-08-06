@@ -1,4 +1,4 @@
-const { CreateNewDoc } = require("./../../Core/PDF/PDFToolkit");
+const { CreateNewDoc } = require("../../Core/PDF/PDFToolkit");
 const DO = require("../../Core/OTO/DO");
 
 
