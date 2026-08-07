@@ -1,9 +1,9 @@
-const Index = require("../Ebook/Index");
+import Index from "../Ebook/Index.js";
 
 /**
  * 章节目录——网文版，多了WebTitle，用于合并不同源的章节合并
  */
-class WebIndex extends Index {
+export default class WebIndex extends Index {
     constructor({ WebTitle, URL, curHost, ...x }) {
         super(x);
         /**
@@ -23,5 +23,3 @@ class WebIndex extends Index {
         this.curHost = curHost;
     }
 }
-
-module.exports = WebIndex;

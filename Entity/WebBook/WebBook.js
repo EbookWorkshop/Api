@@ -1,9 +1,9 @@
-let Ebook = require("../Ebook/Ebook");
+import Ebook from "../Ebook/Ebook.js";
 
 /**
  * 网页上扒的书
  */
-class WebBook extends Ebook {
+export default class WebBook extends Ebook {
     /**
      * 网文电子书
      */
@@ -78,5 +78,3 @@ class WebBook extends Ebook {
      */
     GetMaxIndexOrder() { console.warn("WebBook::GetMaxIndexOrder 尚未初始化，未有实现。"); console.trace(); return 0; }
 }
-
-module.exports = WebBook;

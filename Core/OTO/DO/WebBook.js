@@ -7,8 +7,6 @@ import WebIndex from "../../../Entity/WebBook/WebIndex.js";
 import WebChapter from "../../../Entity/WebBook/WebChapter.js";
 import SystemConfigService from "../../services/SystemConfig.js";
 import { Run as Reviewer } from "../../Utils/ReviewString.js";
-// const ChapterOptions = require("../../../Entity/WebBook/ChapterOptions");
-// const IndexOptions = require("../../../Entity/WebBook/IndexOptions");
 
 
 export default class OTO_WebBook {

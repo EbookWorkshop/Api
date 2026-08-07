@@ -9,8 +9,7 @@ import packageJson from "../package.json" with {type: "json"}; // 指向项目�
 import { config } from "./services/config.js";
 
 const { debug: isDebug } = config;
-// if (isDebug) 
-    import("./debug.js");//载入Debug模块要尽可能早，便于尽早监听错误信息
+if (isDebug) import("./debug.js");//载入Debug模块要尽可能早，便于尽早监听错误信息
 
 export default new Promise((resolve, reject) => {
     try {

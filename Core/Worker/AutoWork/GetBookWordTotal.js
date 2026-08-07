@@ -1,5 +1,5 @@
-const Models = require("../../OTO/Models");
-
+import Models from "../../OTO/Models/index.js";
+import { AnalyzeBookText } from "../../Book/Analyze.js";
 
 /**
  * 后台拉网文空章节
@@ -7,7 +7,6 @@ const Models = require("../../OTO/Models");
 async function Main() {
     let { id, BookName } = await GetNextBook();
     if (id < 0) return;
-    const { AnalyzeBookText } = require("../../Book/Analyze");
     AnalyzeBookText(id);
     console.warn("已统计字数：", BookName)
 }

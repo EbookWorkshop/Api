@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import { config } from "../../../services/config.js";
-//const {EventManager} = require("../../../EventManager");        //单例模块，在子线程使用时会新开实例导致消息丢失，不应使用
+//import EventManager from"../../../EventManager.js";        //单例模块，在子线程使用时会新开实例导致消息丢失，不应使用
 import { GetDataUseRuleFromPage } from "../Engines/rule.js"
 
 const { debugSwitcher: { puppeteer: isDEBUG } } = config;
