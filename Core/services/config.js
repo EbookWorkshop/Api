@@ -1,11 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import EventManager from "../EventManager.js";
 import defaultConfig from "../../config.js";
 
 const UserConfigFilePath = "./UserConfig.json";
-const em = new EventManager();
 
 /**
  * 加载用户的配置文件
@@ -20,7 +18,12 @@ function loadUserConfig() {
     try {
         return JSON.parse(fs.readFileSync(UserConfigFile, "utf-8") || "{}");
     } catch (error) {
-        em.emit("Debug.Log", "加载用户配置失败:", error.message)
+        //动态导入，因为本模块会被子线程引入，EventManager会检测子线程并提出警告。
+        //当真正需要使用时才导入，避免大部分子线程的警告
+        import("../EventManager.js").then(EventManager => {
+            const em = new EventManager();
+            em.emit("Debug.Log", "加载用户配置失败:", error.message)
+        });
         return {};
     }
 }

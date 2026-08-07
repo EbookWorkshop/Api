@@ -5,7 +5,7 @@ import * as SiteHelper from "../../Utils/SiteHelper.js";
 /**
  * ReviewDictionary 的读写操作
  */
-export class OTO_ReviewDictionary {
+export default class OTO_ReviewDictionary {
     static async GetDictionaryByURL(url) {
         const host = SiteHelper.GetHost(url);
         const myModels = Models.GetPO();

@@ -8,6 +8,7 @@ import Volume from "../../Entity/Ebook/Volume.js";
 import Do2Po from "../OTO/DO/index.js";
 import { config } from "../services/config.js";
 import packJson from "../../package.json" with {type: "json"};
+import { SHOW_BOOKNAME } from "../Book/BookMaker.js"
 import { FindMyChapters } from "../Book/FindMyChapters.js";
 
 const { dataPath, FOLDER } = config;
@@ -55,7 +56,7 @@ export default class EPUBMaker {
         //处理封面
         let useTempCover = false;
         if (ebook.CoverImg && !ebook.CoverImg.startsWith("#") && embedBookName == false) {//读系统的图片作封面(系统封面没嵌入书名)
-            if (ebook.CoverImg.endsWith("#showname")) ebook.CoverImg = ebook.CoverImg.replace("#showname", "");
+            if (ebook.CoverImg.endsWith(SHOW_BOOKNAME)) ebook.CoverImg = ebook.CoverImg.replace(SHOW_BOOKNAME, "");
 
             if (ebook.CoverImg.startsWith("/") || ebook.CoverImg.startsWith("\\")) {
                 option.cover = path.resolve(path.join(dataPath, ebook.CoverImg));//相对路径的情况下，规格化为绝对路径

@@ -167,7 +167,7 @@ async function ScrapingFromUrlOnWatch(url, maxRetry = -1, setting = null) {
 async function ScrapingOnePage(url, setting) {
     console.assert(setting !== null)
     return await wPool.RunTaskAsync({
-        taskfile: "@/Core/Utils/GetDataFromUrl",
+        taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
         param: {
             url,
             setting: setting,

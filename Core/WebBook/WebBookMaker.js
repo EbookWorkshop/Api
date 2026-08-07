@@ -11,7 +11,7 @@ import Serialize from "../Utils/Serialize.js";
 import EventManager from "../EventManager.js";
 import DO from "../OTO/DO/index.js";
 import WorkerPool from "../Worker/WorkerPool.js";
-import BookMaker from "../Book/BookMaker.js";
+import BookMaker, { SHOW_BOOKNAME } from "../Book/BookMaker.js";
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
@@ -68,7 +68,7 @@ export default class WebBookMaker {
         option.RuleList = index.GetRuleList();
 
         wPool.RunTask({
-            taskfile: "@/Core/Utils/GetDataFromUrl",
+            taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
             param: {
                 url: curUrl,
                 setting: option
@@ -151,7 +151,7 @@ export default class WebBookMaker {
 
             if (result.has("BookCover")) {  //保存封面
                 if (isEmbedBookName === null) {
-                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(BookMaker.SHOW_BOOKNAME);
+                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(SHOW_BOOKNAME);
                 }
 
                 let cv = result.get("BookCover")[0];
@@ -162,7 +162,7 @@ export default class WebBookMaker {
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTaskAsync({
-                    taskfile: "@/Core/Utils/CacheFile",
+                    taskfile: "@/Core/Utils/CacheFile.js",
                     param: {
                         url: imgPath,
                         savePath: saveImageFilePath
@@ -170,7 +170,7 @@ export default class WebBookMaker {
                     highPriority: true
                 }).then((result) => {
                     new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
-                    if (isEmbedBookName && !coverImgPath.endsWith(BookMaker.SHOW_BOOKNAME)) coverImgPath += BookMaker.SHOW_BOOKNAME;
+                    if (isEmbedBookName && !coverImgPath.endsWith(SHOW_BOOKNAME)) coverImgPath += SHOW_BOOKNAME;
                     this.myWebBook.SetCoverImg(coverImgPath);
                 }).catch(err => {
                     new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", Serialize.Error(err));
@@ -262,7 +262,7 @@ export default class WebBookMaker {
         option.RuleList = chapter.GetRuleList();
 
         wPool.RunTask({
-            taskfile: "@/Core/Utils/GetDataFromUrl",
+            taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
             param: {
                 url: url,
                 setting: option
@@ -316,7 +316,7 @@ export default class WebBookMaker {
                     if (!nextPageUrl) break;
 
                     let tempResult = await wPool.RunTaskAsync({
-                        taskfile: "@/Core/Utils/GetDataFromUrl",
+                        taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
                         param: {
                             url: nextPageUrl,
                             setting: option

@@ -34,9 +34,9 @@ graph TD
    D --> E[数据库 （SQLite + Sequelize）]
    D --> F[文件系统 （dataPath, fontPath）]
    A <--> G[WebSocket （Core/Socket.js）]
-   G <--> C
-   G <--> D
    D <--> J[EventManager （Core/EventManager.js）]
+   G <--> C
+   G <--> J
    H[Worker Pool （Core/Worker/WorkerPool.js）] <--> D
    I(Worker Runner - Core/Worker/WorkerRunner.js) --> H
 ```
@@ -141,7 +141,6 @@ wt --maximized -d %cd%\\EBWFrontEnd cmd /K npm run dev;split-pane -d %cd%\\Ebook
         puppeteer: false,  // 爬虫调试
         router: false,     // 路由调试
         pdf: false,        // PDF制作调试
-        bookIndex: false,  // 书籍目录更新调试
         bookChapter: false,// 书籍章节更新调试
         saveBookCover: false // 书籍封面抓取调试
     }
@@ -178,10 +177,14 @@ SET PUPPETEER_SKIP_DOWNLOAD=true
 ##### 然后，手工下载设置浏览器
 默认下载地址在`https://storage.googleapis.com/chrome-for-testing-public`，找个可用的镜像，比如：`https://registry.npmmirror.com/binary.html?path=chrome-for-testing/`。
 * 在之前的报错格式里找到提示出错的版本，比如`chrome vXXX.XXX.XXX.XXX`。在打开的下载页面找到对应的浏览器、版本、平台，下载备用。
-* 找到浏览器缓存的目录，一般是`C:\Users\当前用户登陆名\.cache\puppeteer\浏览器名\平台-版本号`。对应刚才的例子则是：`C:\Users\当前用户登陆名\.cache\puppeteer\chrome\win64-XXX.XXX.XXX.XXX`
-* 将之前下载的浏览器文件解压到上述文件夹内，如刚才例子则是：`C:\Users\当前用户登陆名\.cache\puppeteer\chrome\win64-XXX.XXX.XXX.XXX\chrome-win64`，其中`chrome-win64`一般是压缩包的根文件夹。
-* 确保chrome.exe在正确路径：`C:\Users\当前用户登陆名\.cache\puppeteer\chrome\win64-XXX.XXX.XXX.XXX\chrome-win64\chrome.exe`
+* 找到浏览器缓存的目录，将之前下载的浏览器文件解压到上述文件夹内。
 * 到目录`./node_modules/puppeteer`中执行`node install.mjs`若不再出现其它版本报错，则完成了设置。（如果在之前设置环境变量的同一个对话框，还得先将变量设置回来`SET PUPPETEER_SKIP_DOWNLOAD=false`）不然会跳过下载。
+>缓存目录一般在：当前用户目录➡️.cache➡️puppeteer➡️chrome。若不确定可以在项目根目录下,执行命令确认：
+```bat
+node -e "require('puppeteer').executablePath().then(p=>console.log(p))"
+```
+
+
 
 ### 报错关键字 Failed to launch the browser process: Code: null
 错误信息类似：

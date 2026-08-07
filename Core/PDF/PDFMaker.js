@@ -48,7 +48,7 @@ export default class PDFMaker {
 
         return new Promise(async (resolve, reject) => {
             wPool.RunTask({
-                taskfile: "@/Core/PDF/MakePdfFile",
+                taskfile: "@/Core/PDF/MakePdfFile.js",
                 param: { fileInfo },
                 taskType: "MakePdfFile",
             }, async (result, err) => {

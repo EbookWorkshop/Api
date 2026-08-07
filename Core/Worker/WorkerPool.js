@@ -278,7 +278,7 @@ export default class WorkerPool extends EventEmitter {
         worker[kTaskParam] = taskParam;
         worker[kTaskCallback] = new CallbackRunner(callback);//将异步的callback封装到WorkerPoolTaskInfo中，赋值给worker.kTaskInfo.
 
-        worker.postMessage(taskParam);      //发到线程上运行
+        worker.postMessage(taskParam);      //发到线程上运行 //子线程开始执行
     }
 
     /**

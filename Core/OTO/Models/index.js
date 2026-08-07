@@ -92,7 +92,7 @@ function AutoInit(sqlConnect) {
 
         //同步所有模型
         console.log(`[${new Date().toLocaleString()}]\t正在初始化数据库......`);
-        sqlConnect.queryInterface.sequelize.query("PRAGMA foreign_keys = ON");
+        // sqlConnect.queryInterface.sequelize.query("");
         sqlConnect.sync(/*{ alter: true }*/).then(result => {//result 是个大对象，不要发出去
             em.emit("DB.Models.Init");
         }).catch(err => {

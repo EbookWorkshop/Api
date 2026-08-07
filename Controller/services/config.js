@@ -27,7 +27,7 @@ export default {
      *         description: 请求失败
      */
     "get /datasetting": async (ctx) => {
-        const { dataPath, databasePath } = myConfig;
+        const { dataPath, databasePath } = latestConfig();
         new ApiResponse({
             dataPath,
             dataPathAbsolute: path.resolve(dataPath),
