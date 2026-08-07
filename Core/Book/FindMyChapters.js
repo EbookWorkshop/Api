@@ -6,7 +6,7 @@
  * @param {Array<number>?} showChapters 要显示的章节ID数组
  * @returns {Promise<Array<Chapter>>} 章节数组
  */
-function FindMyChapters(ebook, volumes, showChapters) {
+export function FindMyChapters(ebook, volumes, showChapters) {
     if (volumes && volumes.length > 0) {
         return ebook.Index.filter(item => volumes.includes(item.VolumeId)).map(item => item.IndexId);
     }
@@ -16,4 +16,3 @@ function FindMyChapters(ebook, volumes, showChapters) {
     return ebook.Index.map(item => item.IndexId);
 }
 
-module.exports = FindMyChapters;

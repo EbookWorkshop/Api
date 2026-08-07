@@ -1,12 +1,9 @@
 import DO from "../../Core/OTO/DO/index.js";
 import ApiResponse from "../../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
+import SystemConfigService from "../../Core/services/SystemConfig.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const BookMaker = require('../../Core/Book/BookMaker');
 export default {
     prefix: '/library/book',
     /**
@@ -40,7 +37,6 @@ export default {
             return;
         }
         let chp = await DO.GetEBookChapterById(chapterId * 1);
-        const SystemConfigService = require("../../Core/services/SystemConfig");
         chp.Book.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
         new ApiResponse(chp).toCTX(ctx);
     },

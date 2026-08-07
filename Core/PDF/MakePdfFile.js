@@ -1,4 +1,4 @@
-const PDFToolkit = require("./PDFToolkit")
+import PDFToolkit from "./PDFToolkit.js"
 /**
  * 创建一个PDF文件
  * @param {*} fileInfo 
@@ -36,7 +36,7 @@ async function MakePdfFile(fileInfo) {
  * @param {*} param 
  * @returns 
  */
-async function RunTask(param) {
+export async function RunTask(param) {
     if (!param.fileInfo.pdf.GetChapter)
         param.fileInfo.pdf.GetChapter = function (cId) {
             let iObj = this.Index.filter(i => i.IndexId === cId);
@@ -45,8 +45,4 @@ async function RunTask(param) {
         }
 
     return await MakePdfFile(param.fileInfo)
-}
-
-module.exports = {
-    RunTask
 }

@@ -1,10 +1,10 @@
 /**
  * 通用的文件上传、下载、列出等逻辑
  */
-import fs from "fs";
-import fsPromises from "fs/promises";
-import path from "path";
-import { Stream } from "stream";
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
+import path from "node:path";
+import { Stream } from "node:stream";
 import { config } from "./config.js";
 
 /**

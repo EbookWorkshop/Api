@@ -1,6 +1,6 @@
-let Rule = require("../WebBook/Rule");
+import Rule from "../WebBook/Rule.js";
 
-class ChapterOptions {
+export default class ChapterOptions {
     /**
      * 创建爬章节的规则
      */
@@ -29,4 +29,3 @@ class ChapterOptions {
         ].filter(r => r.Selector !== '');
     }
 }
-module.exports = ChapterOptions;

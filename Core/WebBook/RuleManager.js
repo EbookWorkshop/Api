@@ -2,17 +2,14 @@
 
 import { GetHost } from "../Utils/SiteHelper.js";
 import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from "../../Entity/SystemConfigGroup.js";
+import Models from "../OTO/Models/index.js";
+import DO from "../OTO/DO/index.js";
+import IndexOptions from "../../Entity/WebBook/IndexOptions.js";
+import ChapterOptions from "../../Entity/WebBook/ChapterOptions.js";
+import SystemConfigService from "../services/SystemConfig.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
 
 
-const Models = require("../OTO/Models");
-const DO = require("../OTO/DO");
-const IndexOptions = require("../../Entity/WebBook/IndexOptions");
-const ChapterOptions = require("../../Entity/WebBook/ChapterOptions");
-const SystemConfigService = require("../services/SystemConfig");
 const DEFAULT_TIME_OUT = 40_000;
 const DEFAULT_SCRAPING = "puppeteer";
 

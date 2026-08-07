@@ -1,17 +1,11 @@
+import { isMainThread } from'node:worker_threads';
+if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[SocketIO]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
+
 import { Server as socketIO } from "socket.io";
 import EventManager from "./EventManager.js";
 import Message from "../Entity/Message.js"
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-
-const WorkerPool = require("./Worker/WorkerPool");
-const MemoryCache = require("./MemoryCache.js").getInstance();
-
-const { isMainThread } = require('node:worker_threads');
-if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[SocketIO]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
+import WorkerPool from "./Worker/WorkerPool.js";
+import MemoryCache from "./MemoryCache.js";
 
 let myIO = null;
 

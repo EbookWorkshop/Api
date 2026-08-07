@@ -7,17 +7,17 @@
 
 //# 注意：当前将在线程中执行，直接使用单实例的模块将导致再次创建实例
 
-const { parentPort } = require('worker_threads');
-const Serialize = require("../Utils/Serialize");
+import { parentPort } from 'worker_threads';
+import Serialize from "../Utils/Serialize.js";
 
+const __dirname = import.meta.dirname;
 
-
-parentPort.on('message', (task) => {
+parentPort.on('message', async (task) => {
     try {
         let { taskfile, param } = task;
         let result = null;
 
-        let { RunTask } = require(GetRealFilePath(taskfile));        //取得需要在线程运行的文件
+        const { RunTask } = await import(GetRealFilePath(taskfile));        //取得需要在线程运行的文件
         result = RunTask(param);
 
         if (result instanceof Promise) {

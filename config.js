@@ -1,5 +1,5 @@
 //用的JS文件，不是JSON文件，为了可以写注释
-module.exports = {
+export default {
     /**
      * 书库-产物的存储目录    
      * 路径结尾不含斜线`/`

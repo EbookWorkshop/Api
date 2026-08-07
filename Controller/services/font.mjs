@@ -2,7 +2,7 @@
  * 管理字体 
  * 试用ESM模式，注意：ESM的模块异步加载，无状态
  */
-import path from "path";
+import path from "node:path";
 import ApiResponse from "../../Entity/ApiResponse.js"
 import { ListFile, AddFile, DeleteFile, RenameFile } from "../../Core/services/file.mjs";
 import { config } from "../../Core/services/config.js";

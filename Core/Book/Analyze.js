@@ -1,14 +1,12 @@
 /** 分析书籍 */
-
-const Models = require("../OTO/Models");
-const SystemConfigService = require("../services/SystemConfig"); // 假设服务类位于 Services 目录
-
+import Models from "../OTO/Models/index.js";
+import SystemConfigService from "../services/SystemConfig.js";
 
 /**
  * 分析统计书本内容
  * @param {Int16} bookId 书籍ID
  */
-async function AnalyzeBookText(bookId) {
+export async function AnalyzeBookText(bookId) {
     const myModels = Models.GetPO();
 
     //获取章节信息
@@ -73,10 +71,3 @@ async function AnalyzeBookText(bookId) {
     };
 }
 
-
-
-
-
-module.exports = {
-    AnalyzeBookText
-};

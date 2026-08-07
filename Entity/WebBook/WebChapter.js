@@ -1,9 +1,9 @@
-const Chapter = require("../Ebook/Chapter");
+import Chapter from "../Ebook/Chapter.js";
 
 /**
  * 章节
  */
-class WebChapter extends Chapter {
+export default class WebChapter extends Chapter {
     constructor({ WebTitle, ...x }) {
         super(x);
 
@@ -14,5 +14,3 @@ class WebChapter extends Chapter {
         this.WebTitle = WebTitle;
     }
 }
-
-module.exports = WebChapter;

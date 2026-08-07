@@ -1,11 +1,8 @@
 import ApiResponse from "../../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
 
-const BookMaker = require('../../Core/Book/BookMaker');
 export default {
     prefix: '/library/book',
     /**

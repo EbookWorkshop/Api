@@ -1,19 +1,16 @@
-import path from "path";
+import path from "node:path";
 import fsPromises from "node:fs/promises";
 import { parseJsonFromBodyData } from "../../Core/Server.js";
 import ApiResponse from "../../Entity/ApiResponse.js";
 import { SendAMail } from "../../Core/services/email.js";
 import { config } from "../../Core/services/config.js";
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const BookMaker = require("../../Core/Book/BookMaker");
-const PDFMaker = require("../../Core/PDF/PDFMaker");
-const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
+import BookMaker from "../../Core/Book/BookMaker.js";
+import EPUBMaker from "../../Core/EPUB/EPUBMaker.js";
+import PDFMaker from "../../Core/PDF/PDFMaker.js";
+import Serialize from "../../Core/Utils/Serialize.js";
 
 const { dataPath, FOLDER } = config;
+
 export default {
     /**
      * @swagger
@@ -158,7 +155,7 @@ export default {
             const relativePath = path.relative(dataPath, rsl.path);
             new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(err, `生成Txt${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+            new ApiResponse(Serialize.Error(err), `生成Txt${sendByEmail ? "并发送邮件" : ""}出错：` + err.message, 50000).toCTX(ctx);
         });
 
     },

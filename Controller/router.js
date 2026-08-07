@@ -4,11 +4,7 @@ import Router from "@koa/router";
 import EventManager from "../Core/EventManager.js";
 import { ApiResponse } from "../Entity/ApiResponse.js";
 import Serialize from "../Core/Utils/Serialize.js";
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
+import { error } from "node:console";
 
 const __dirname = import.meta.dirname;
 const __filename = import.meta.filename;
@@ -20,54 +16,35 @@ const router = new Router();
  * 如 func1.js 含对应路由规则：`get /test`，映射的路由为：/func1/test
  * @param {string} dir 装载的当前目录
  * @param {string} fatherRouter 父级路由
- * @param {function} cb_loader 配置器
+ * @param {function} cb_loader 配置器 loader
  */
 async function load(dir, fatherRouter, cb_loader) {
     // 获取dir的路径
-    const url = path.resolve(__dirname, dir);
+    const fullPath = path.resolve(__dirname, dir);
     // 获取dir文件夹下的文件内容
-    const files = fs.readdirSync(url);  //加载指定目录
+    const files = fs.readdirSync(fullPath);  //加载指定目录
     // 遍历文件
-    files.forEach((filename) => {
+    files.forEach(async (filename) => {
         if (__filename.endsWith(filename)) return;    //防止加载当前文件
-        if (filename === "index.js") return;        //index通过目录形式加载
-        if (!filename.endsWith('js') && /[^\.]+\.[^\/]+$/.test(filename)) return;      //不加载有后缀但不是js的文件
+        const { name, ext } = path.parse(filename);
+        const isFloder = ext === "";
 
-        let isESM = filename.endsWith("mjs");
-        let curfilename = filename.replace('.js', '');
-        const routerPath = path.join(url, curfilename);
-        try {
-            if (isESM) {
-                import(routerPath).then(routes => {//ESM模块只能用相对路径加载
-                    cb_loader(curfilename.replace(".mjs", ""), fatherRouter, routes.default);
-                })
-            } else {    //isCJS
-                const routes = require(routerPath);        //实际加载模块
-                cb_loader(curfilename, fatherRouter, routes);
-            }
-        } catch (err) {
-            console.warn(`${isESM ? '[ESM]' : '[CJS]'} 加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
-            // return;
+        //子目录-递归加载
+        if (isFloder) return load(`${dir}/${filename}`, filename, cb_loader);
+        if (!ext.endsWith('js')) return;      //不加载有后缀但不是js的文件
 
-            try {
-                import(routerPath + ".js").then(routes => {//ESM模块只能用相对路径加载
-                    cb_loader(curfilename, fatherRouter, routes.default);
-                })
-                console.log("已改为ESM", routerPath)
-            } catch (err2) {
-                console.warn(`${isESM ? '[ESM]' : '[CJS]'} 加载路由失败：${routerPath}\n${err.message}\n${err.stack}`);//有可能是目录情况但当前目录没有index.js
-            }
-        }
-
-        //递归加载子目录
-        if (!filename.endsWith("js"))
-            load(`${dir}/${curfilename}`, curfilename, cb_loader);
+        const packagePath = path.join(fullPath, filename);
+        import(packagePath).then(router => {
+            cb_loader(name, fatherRouter, router.default);
+        }).catch(error => {
+            console.warn(`加载路由失败：${packagePath}\n${error.message}\n${error.stack}`);
+        })
     });
 }
 
 /**
  * 路由配置器
- * @param {string} filename 加载的文件/目录名
+ * @param {string} filename 加载的文件名，不要带后缀
  * @param {string} fatherRouter 父级路由（文件夹名）
  * @param {function|object} routes require之后的模块内容
  */
@@ -75,9 +52,7 @@ function loader(filename, fatherRouter, routes) {
     if (typeof (routes) === "function") //模块文件导出为function形式的处理
         routes = routes();
 
-    //ESM模块用了CJS方式导入，ESM迁移中的过渡情况，合并到主干时要删除
-    if (routes.__esModule) { routes = routes.default; }
-
+    if (filename === "index") filename = "";
     const prefix = routes.prefix ? path.posix.join(routes.prefix, filename) : path.posix.join('/', fatherRouter, filename);      //控制器文件名为一级路由
 
     Object.keys(routes).forEach(key => {
@@ -86,8 +61,8 @@ function loader(filename, fatherRouter, routes) {
         const [method, rPath] = key.split(' ');
         // 注册路由
         let mType = `[${method.toUpperCase()}]`.padStart(10, " ");
-        let realPath = path.posix.join(prefix, rPath)
-        em.emit("Debug.Log", `已加载路由：\t${mType}\t${(realPath).padEnd(40, " ")}\t/Controller/${fatherRouter ? fatherRouter + "/" : ""}${filename}`, "ROUTER");
+        let realPath = path.posix.join(prefix, rPath)//路由地址
+        em.emit("Debug.Log", `将加载路由：\t${mType}\t${(realPath).padEnd(40, " ")}\t/Controller/${fatherRouter ? fatherRouter + "/" : ""}${filename}`, "ROUTER");
         router[method.toLowerCase()](realPath, async (ctx) => {
             ctx.set('Content-Type', 'application/json');    //统一所有路由默认json返回格式
 

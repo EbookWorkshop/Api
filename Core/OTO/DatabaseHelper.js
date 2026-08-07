@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import Sequelize from "sequelize";
 import Models from "./Models/index.js";
 import { config } from "../services/config.js";
@@ -39,7 +40,6 @@ class DB {
      * 压缩数据库
      */
     async Compress() {
-        const fs = require("fs");
         let OldSize = fs.statSync(DB.myDbPath).size;
         let result = await this.myDBConnnect.query('VACUUM;');
         let NewSize = fs.statSync(DB.myDbPath).size;

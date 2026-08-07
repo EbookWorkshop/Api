@@ -1,12 +1,7 @@
 //规则可视化
 import puppeteer from 'puppeteer';
 import Rule from "../../Entity/WebBook/Rule.js";
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const { ExecRule } = require("../Utils/GetDataFromUrl/Engines/rule");
+import { ExecRule } from "../Utils/GetDataFromUrl/Engines/rule.js";
 
 //浏览器
 let curBrowser = null;

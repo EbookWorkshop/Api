@@ -1,16 +1,17 @@
 //主要是辅助除错 开启一些监听
-const {EventManager} = require("./EventManager");
-const SocketHandler = require("./Socket.js");
-const { config: { debugSwitcher } } = require("./services/config");
-const Message = require("../Entity/Message.js");
+import path from "node:path";
+import EventManager from "./EventManager.js";
+import SocketHandler from "./Socket.js";
+import { config } from "./services/config.js";
+import Message from "../Entity/Message.js";
 
+const { debugSwitcher } = config;
 
-module.exports = (() => {
+function initDebug() {
     const em = new EventManager();
 
     if (debugSwitcher.database) {
         em.on("DB.Models.Init", (dbPath) => {
-            let path = require("path");
             console.log("数据库模型初始化完成！！数据库存储路径：", path.resolve(dbPath));
         });
     }
@@ -99,7 +100,9 @@ module.exports = (() => {
                 break;
         }
         console.info(`[${funName}]${message}`, ..._);
-        SocketHandler.GetIO(__filename)?.emit("Message.Box.Send", new Message(message, "message", { title: funName, subTitle: "自动转发" }))
+        SocketHandler.GetIO(import.meta.filename)?.emit("Message.Box.Send", new Message(message, "message", { title: funName, subTitle: "自动转发" }))
     });
     em.emit("Debug.Log", "🪲🐞🐛已载入Debug模块！！")
-})();
+};
+
+export default initDebug(); 

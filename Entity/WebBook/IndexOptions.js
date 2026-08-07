@@ -1,6 +1,6 @@
-let Rule = require("../WebBook/Rule");
+import Rule from "../WebBook/Rule.js";
 
-class IndexOptions {
+export default class IndexOptions {
     /**
      * 创建爬目录的规则配置
      */
@@ -50,5 +50,3 @@ class IndexOptions {
         ].filter(r => r.Selector !== '');
     }
 }
-
-module.exports = IndexOptions;

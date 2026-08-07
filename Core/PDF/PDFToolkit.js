@@ -1,19 +1,21 @@
-const PDFDocument = require('pdfkit');  //http://pdfkit.org
-const fs = require('node:fs');
-const path = require('node:path');
-const { config } = require("../services/config");
-const Volume = require("../../Entity/Ebook/Volume");
-const sharp = require("sharp");     //提供图像格式转换
-const { CheckAndMakeDir } = require("../Server");
+import fs from "node:fs";
+import path from "node:path";
+import sharp from "sharp";     //提供图像格式转换
+import PDFDocument from 'pdfkit';  //http://pdfkit.org
+
+import Volume from "../../Entity/Ebook/Volume.js";
+import { config } from "../services/config.js";
+import { CheckAndMakeDir } from "../Server.js";
 
 const FONT_PATH = path.join(config.dataPath, config.FOLDER.font);
+
 /**
  * 生成一个PDF文件
  * @param {string} filepath 生成的文件路径
  * @param {{fontFamily,fontSize,defaultFont}} setting 设置
  * @returns {{PDFDocument,stream.Writable}} { doc="pdf文档对象", stream="文件写入流" }
  */
-async function CreateNewDocFile(filepath, setting) {
+export async function CreateNewDocFile(filepath, setting) {
     CheckAndMakeDir(filepath);
     const stream = fs.createWriteStream(filepath);
     const doc = await CreateNewDoc(setting);
@@ -27,7 +29,7 @@ async function CreateNewDocFile(filepath, setting) {
  * @param {string} defaultText 默认用于显示的文档
  * @returns {PDFDocument} PDF文档对象
  */
-async function CreateNewDoc(setting, defaultText = null) {
+export async function CreateNewDoc(setting, defaultText = null) {
     const doc = new PDFDocument();
 
     //嵌入字体
@@ -59,7 +61,7 @@ async function CreateNewDoc(setting, defaultText = null) {
  * @param {*} pdfDoc 
  * @returns 
  */
-async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
+export async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
     //加入简介
     if (!pdfBook.Introduction) return;
 
@@ -75,7 +77,7 @@ async function AddIntrocutionToPdf(pdfBook, pdfDoc) {
  * @param {PDFDocument} pdfDoc pdf文档对象
  * @param {*} setting 文件生成设置
  */
-async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
+export async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
     let { embedTitle = false, enableIndent = false } = setting;
 
     let vM = new Map();
@@ -126,7 +128,7 @@ async function AddChaptersToPdf(pdfBook, pdfDoc, setting) {
  * @param {PDFBook} pdfBook 电子书
  * @param {PDFDocument} pdfDoc pdf对象
  */
-async function AddBookCoverToPdf(pdfBook, pdfDoc) {
+export async function AddBookCoverToPdf(pdfBook, pdfDoc) {
     let imgFile = null;
     let realDir = null;
     if (pdfBook.CoverImg && !pdfBook.CoverImg.startsWith("#") && !pdfBook.embedBookName) {//读取本地配置的图片为封面
@@ -145,40 +147,4 @@ async function AddBookCoverToPdf(pdfBook, pdfDoc) {
     if (imgFile && realDir && imgFile != realDir) {
         fs.unlink(imgFile, () => { });
     }
-}
-
-module.exports = {
-    /**
-     * 创建一个PDF文档
-     * @param {{fontFamily,fontSize}} setting 设置
-     * @param {string} defaultText 默认用于显示的文档
-     * @returns {PDFDocument} PDF文档对象
-     */
-    CreateNewDoc,
-    /**
-     * 生成一个PDF文件
-     * @param {string} filepath 生成的文件路径
-     * @param {{fontFamily,fontSize}} setting 设置
-     * @returns {{PDFDocument,stream.Writable}} { doc="pdf文档对象", stream="文件写入流" }
-     */
-    CreateNewDocFile,
-    /**
-     * 制作封面
-     * @param {PDFBook} pdfBook 电子书
-     * @param {PDFDocument} pdfDoc pdf对象
-     */
-    AddBookCoverToPdf,
-    /**
-     * 将范围内的章节加入到pdf文档文件中
-     * @param {PDFBook} pdfBook PDFBook 电子书对象
-     * @param {PDFDocument} pdfDoc pdf文档对象
-     */
-    AddChaptersToPdf,
-
-    /**
-     * 在开始前加入简介章节
-     * @param {PDFBook} pdfBook PDFBook 电子书对象
-     * @param {PDFDocument} pdfDoc pdf文档对象
-     */
-    AddIntrocutionToPdf,
 }

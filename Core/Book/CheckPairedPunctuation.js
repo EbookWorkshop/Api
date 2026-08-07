@@ -1,4 +1,4 @@
-const Models = require("../OTO/Models");
+import Models from "../OTO/Models/index.js";
 
 /**
  * 检查成对标点符号
@@ -6,7 +6,7 @@ const Models = require("../OTO/Models");
  * @param {number[]|null} chapterIds 只查指定章节
  * @returns 
  */
-async function checkPairedPunctuation(bookId, chapterIds = null) {
+export async function checkPairedPunctuation(bookId, chapterIds = null) {
     let where = {
         BookId: bookId,
         OrderNum: { [Models.Op.gte]: 0 },  // 只查找正序章节
@@ -110,7 +110,3 @@ function DistillationContent(punctuation, content) {
 
     return result;
 }
-
-module.exports = {
-    checkPairedPunctuation
-};

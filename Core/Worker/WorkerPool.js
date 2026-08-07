@@ -1,12 +1,14 @@
-const { EventEmitter } = require('events');
-const path = require('node:path');
-const { Worker } = require('worker_threads');
-const CallbackRunner = require("./CallbackRunner");
-const {EventManager} = require("../EventManager");
-const Serialize = require("../Utils/Serialize");
-const SystemConfigService = require("../services/SystemConfig");
+import os from "node:os";
+import { EventEmitter } from 'events';
+import path from 'node:path';
+import { Worker } from 'worker_threads';
+import fsPromises from "node:fs/promises";
+import CallbackRunner from "./CallbackRunner.js";
+import EventManager from "../EventManager.js";
+import Serialize from "../Utils/Serialize.js";
+import SystemConfigService from "../services/SystemConfig.js";
+const __dirname = import.meta.dirname;
 const em = new EventManager();
-
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskParam = Symbol('kTaskParam');
 const AutoWorkIntervalUnread = Symbol('AutoWorkIntervalUnread');
@@ -22,7 +24,7 @@ let isAWRunning = false;        //正在运行自动作业
 /**
  * 线程池
  */
-class WorkerPool extends EventEmitter {
+export default class WorkerPool extends EventEmitter {
     /**
      * 创建简易线程池
      * @param {int} numThreads 最大线程数 默认为运行环境cpu内核数少2个，最少2个。
@@ -33,7 +35,6 @@ class WorkerPool extends EventEmitter {
         super();
 
         if (numThreads == 0) {
-            const os = require('node:os');
             const cpuNum = os.cpus().length;
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
@@ -336,26 +337,26 @@ class WorkerPool extends EventEmitter {
         if (!this.isRunAutoWorker) return;
         if (isAWRunning) return;
         isAWRunning = true;
+        const startTime = new Date();
         try {
-            const fsPromises = require("node:fs/promises");
             const awPath = path.join(__dirname, "AutoWork");
-            const startTime = new Date();
             console.log(`[${startTime.toLocaleString()}]\t自动作业已启动。`);
 
             const files = await fsPromises.readdir(awPath);
             for (const filename of files) {
                 if (!filename.endsWith(".js")) continue;
                 let file = path.join(awPath, filename);
-                const aw = require(file);
-                await aw.Run();
+                import(file).then(job => {
+                    job.Run();
+                }).catch(err => { throw err });
             }
-            const timeNow = new Date();
-            console.log(`[${timeNow.toLocaleString()}]\t自动作业已完成，耗时：${(timeNow - startTime) / 1000}s。`)
         } catch (err) {
             console.error(`[${startTime.toLocaleString()}]\t自动作业运行失败：`, err)
         }
         finally {
             isAWRunning = false;
+            const timeNow = new Date();
+            console.log(`[${timeNow.toLocaleString()}]\t自动作业已完成，耗时：${(timeNow - startTime) / 1000}s。`)
         }
     }
 
@@ -424,4 +425,3 @@ class WorkerPool extends EventEmitter {
  * 线程池唯一实例
  */
 let _Singleton_WorkerPool = null;
-module.exports = WorkerPool;

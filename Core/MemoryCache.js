@@ -1,4 +1,4 @@
-const { isMainThread } = require('node:worker_threads');
+import { isMainThread } from 'node:worker_threads';
 if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[MemoryCache]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
 
 const DEF_TTL_MS = 30 * 60 * 1000;
@@ -41,9 +41,8 @@ class MemoryCache {
 
 // 单例模式
 let _instance = null;
-module.exports = {
-    getInstance: () => {
-        if (!_instance) _instance = new MemoryCache();
-        return _instance;
-    }
+export function getInstance() {
+    if (!_instance) _instance = new MemoryCache();
+    return _instance;
 };
+export default getInstance();

@@ -1,7 +1,10 @@
-const puppeteer = require('puppeteer')
-const Iconv = require('iconv-lite');
+import puppeteer from 'puppeteer'
+import Iconv from 'iconv-lite';
+import { URL } from 'node:url';
+import http from "node:http"
+import https from "node:https"
 
-const { GetDataUseRuleFromPage } = require("../Engines/rule")
+import { GetDataUseRuleFromPage } from "../Engines/rule.js";
 
 
 /**
@@ -10,7 +13,7 @@ const { GetDataUseRuleFromPage } = require("../Engines/rule")
  * @param {string} url 
  * @param {object} setting
  */
-async function FetchTextByHttp(url, setting) {
+export async function FetchTextByHttp(url, setting) {
     const htmlSourceString = await requestTextByHttp(url, setting);
     return await parseHtmlString(htmlSourceString, url, setting);
 }
@@ -25,7 +28,6 @@ async function FetchTextByHttp(url, setting) {
  */
 async function requestTextByHttp(url, setting) {
     try {
-        const { URL } = require("url");
         let tUrl = new URL(url);
         const isHttps = tUrl.protocol === "https:";
 
@@ -42,7 +44,7 @@ async function requestTextByHttp(url, setting) {
             ...(isHttps ? { rejectUnauthorized: false } : {}),
         };
 
-        let client = isHttps ? require("node:https") : require("node:http");
+        let client = isHttps ? https : http;
 
         return await new Promise((resolve, reject) => {
             client.request(options, (res) => {
@@ -63,8 +65,7 @@ async function requestTextByHttp(url, setting) {
                         if (charset === 'utf-8' || charset === 'utf8') {
                             result = htmlString;
                         } else {
-                            const iconv = require('iconv-lite');
-                            result = iconv.decode(buffer, charset);
+                            result = Iconv.decode(buffer, charset);
                         }
 
                         resolve(result);
@@ -135,8 +136,4 @@ function detectCharset(headers, html) {
     }
 
     return 'utf-8';
-}
-
-module.exports = {
-    FetchTextByHttp
 }

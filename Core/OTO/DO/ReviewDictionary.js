@@ -1,11 +1,11 @@
-const Models = require("../Models");
-const SiteHelper = require("../../Utils/SiteHelper");
+import Models from "../Models/index.js";
+import * as SiteHelper from "../../Utils/SiteHelper.js";
 
 
 /**
  * ReviewDictionary 的读写操作
  */
-class OTO_ReviewDictionary {
+export class OTO_ReviewDictionary {
     static async GetDictionaryByURL(url) {
         const host = SiteHelper.GetHost(url);
         const myModels = Models.GetPO();
@@ -45,6 +45,3 @@ class OTO_ReviewDictionary {
         } catch (err) { return false; }
     }
 }
-
-
-module.exports = OTO_ReviewDictionary;

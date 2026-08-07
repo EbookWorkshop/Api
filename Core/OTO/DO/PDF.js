@@ -1,9 +1,7 @@
-const DO = require("./index");
-// const Models = require("../Models");
-// const PDFBook = require("../../../Entity/PDFBook/PDFBook");
+import DO from "./index.js";
 
 
-class OTO_PDF {
+export default class OTO_PDF {
 
     /**
      * 创建一个PDF对象
@@ -14,6 +12,3 @@ class OTO_PDF {
     }
 
 }
-
-
-module.exports = OTO_PDF;

@@ -1,12 +1,9 @@
 import DO from "../../Core/OTO/DO/index.js";
 import ApiResponse from "../../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
+import SystemConfigService from "../../Core/services/SystemConfig.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const BookMaker = require('../../Core/Book/BookMaker');
 export default {
     /**
      * @swagger
@@ -219,7 +216,6 @@ export default {
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-        const SystemConfigService = require("../../Core/services/SystemConfig");
         let bookMeta = await DO.GetEBookInfoById(bookId * 1);
         bookMeta.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
         new ApiResponse(bookMeta).toCTX(ctx);
@@ -435,7 +431,7 @@ export default {
         try {
             const bookId = ctx.query.bookid * 1;
             const chapterids = ctx.query.chapterids;
-            const { checkPairedPunctuation } = require("../../Core/Book/CheckPairedPunctuation");
+            const { checkPairedPunctuation } = await import("../../Core/Book/CheckPairedPunctuation.js");
 
             let cpIds = null;
             try {
@@ -477,7 +473,7 @@ export default {
                 new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
                 return;
             }
-            const { AnalyzeBookText } = require("../../Core/Book/Analyze");
+            const { AnalyzeBookText } = await import("../../Core/Book/Analyze.js");
 
             const results = await AnalyzeBookText(bookId * 1);
             new ApiResponse(results).toCTX(ctx);

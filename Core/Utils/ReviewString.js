@@ -6,7 +6,7 @@
  * @param {String[]} sourceText 
  * @returns 
  */
-function Run(rules, sourceText) {
+export function Run(rules, sourceText) {
     let result = Array.from(sourceText);
     for (let r of rules) {
         let tempArray = [];
@@ -28,7 +28,7 @@ function Run(rules, sourceText) {
  * @param { ReviewRule } rule 需测试的规则
  * @param { string } testText 测试用的文本
  */
-function Test(rule, testText) {
+export function Test(rule, testText) {
     if (!rule || !testText) return { match: false, source: testText, result: null };
     let testRegExp = new RegExp(rule.Rule, "gm");
 
@@ -44,9 +44,4 @@ function Test(rule, testText) {
         source: testText,
         result
     }
-}
-
-module.exports = {
-    Run,
-    Test
 }

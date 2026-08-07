@@ -1,6 +1,4 @@
 import Models from "../Models/index.js";
-// const DO = require("./index");
-// const PDFBook = require("../../../Entity/PDFBook/PDFBook");
 
 
 export default class OTO_TAG {

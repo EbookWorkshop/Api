@@ -1,17 +1,11 @@
 import DO from "./index.js";
 import Models from "../Models/index.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const Ebook = require("../../../Entity/Ebook/Ebook");
-const Chapter = require("../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("../../Utils/ReviewString");
+import Ebook from "../../../Entity/Ebook/Ebook.js";
+import Chapter from "../../../Entity/Ebook/Chapter.js";
+import { Run as Reviewer } from "../../Utils/ReviewString.js";
 
 export default class OTO_Ebook {
-
-
     /**
      * 获取电子书列表
      * @param {number} tagid 筛选的标签

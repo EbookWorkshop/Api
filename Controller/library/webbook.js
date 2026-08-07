@@ -1,11 +1,11 @@
-const DO = require("../../Core/OTO/DO");
-const WebBookMaker = require("../../Core/WebBook/WebBookMaker");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const {ApiResponse} = require("../../Entity/ApiResponse");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import WebBookMaker from "../../Core/WebBook/WebBookMaker.js";
 
 
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /library/webbook/list:
@@ -149,7 +149,7 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["url"]);
         if (!param) return;
 
-        const { ScrapingFromUrlOnWatch } = require("../../Core/WebBook/WebChapterMaker");
+        const { ScrapingFromUrlOnWatch } = await import("../../Core/WebBook/WebChapterMaker.js");
 
         await ScrapingFromUrlOnWatch(param.url, -1)
             .then(() => {
@@ -515,4 +515,4 @@ module.exports = () => ({
         new ApiResponse(await DO.SetWebBookChapterSources(param.id, param.url)).toCTX(ctx);
     },
 
-});
+};

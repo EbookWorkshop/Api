@@ -1,23 +1,23 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
-const path = require("node:path");
-const { config } = require("../services/config");
-const Message = require("../../Entity/Message");
-const WebBook = require("../../Entity/WebBook/WebBook");
-// const WebIndex = require("../../Entity/WebBook/WebIndex");
-const WebChapter = require("../../Entity/WebBook/WebChapter");
-const RuleManager = require("./RuleManager");
-const SiteHelper = require("../Utils/SiteHelper");
-const Serialize = require("../Utils/Serialize");
-const {EventManager} = require("../EventManager");
-const DO = require("../OTO/DO");
-const WorkerPool = require("../Worker/WorkerPool");
-const BookMaker = require("../Book/BookMaker");
+import path from "node:path";
+import { config } from "../services/config.js";
+import Message from "../../Entity/Message.js";
+import WebBook from "../../Entity/WebBook/WebBook.js";
+// import WebIndex from "../../Entity/WebBook/WebIndex.js";
+import WebChapter from "../../Entity/WebBook/WebChapter.js";
+import RuleManager from "./RuleManager.js";
+import * as SiteHelper from "../Utils/SiteHelper.js";
+import Serialize from "../Utils/Serialize.js";
+import EventManager from "../EventManager.js";
+import DO from "../OTO/DO/index.js";
+import WorkerPool from "../Worker/WorkerPool.js";
+import BookMaker from "../Book/BookMaker.js";
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
  * WebBook - DTO
  */
-class WebBookMaker {
+export default class WebBookMaker {
     /**
      * 创建一个Web电子书操作器
      * @param { WebBook | string | number | undefined} 
@@ -459,6 +459,3 @@ class WebBookMaker {
     }
 
 }
-
-
-module.exports = WebBookMaker;

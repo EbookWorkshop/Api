@@ -2,14 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import EventManager from "../EventManager.js";
-
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-
-const defaultConfig = require("../../config");
-
+import defaultConfig from "../../config.js";
 
 const UserConfigFilePath = "./UserConfig.json";
 const em = new EventManager();
@@ -36,7 +29,7 @@ function loadUserConfig() {
  * 保存用户的配置文件
  * @param {*} config 
  */
-function saveUserConfig(config) {
+export function saveUserConfig(config) {
     let userConfig = loadUserConfig();
 
     for (const key in config) {
@@ -56,7 +49,7 @@ function saveUserConfig(config) {
  * 获取最新的配置文件
  * @returns 
  */
-function latestConfig() {
+export function latestConfig() {
     const cf = Object.assign({
         "FOLDER": {
             "BookStorage": "Books",
@@ -87,4 +80,4 @@ function latestConfig() {
 
 
 export const config = latestConfig();
-export { defaultConfig, latestConfig, saveUserConfig };
+export { defaultConfig };

@@ -1,4 +1,5 @@
-const { exec } = require('child_process');
+import { exec } from 'child_process';
+import fsp from "node:fs/promises";
 const execAsync = (cmd) => new Promise((resolve, rejects) => {
     exec(cmd, (error, stdout, stderr) => {
         if (stdout) resolve(stdout);
@@ -18,15 +19,14 @@ function CreateOutdatedInfo() {
         execAsync("npm outdated -json"),        //注意：这个命令并不能正确退出，会导致exec的回调参数error不为空，直接采用stdout的结果即可
         execAsync("npm list -json")
     ]).then(async (result) => {
-        const [ odf,plist ]=result.map((s)=>JSON.parse(s));
-        
-        const versionInfo = Object.assign({},plist.dependencies);
-        for(var k in odf) versionInfo[k]=Object.assign({},versionInfo[k],odf[k]);
-        const fsp = require("fs/promises");
+        const [odf, plist] = result.map((s) => JSON.parse(s));
+
+        const versionInfo = Object.assign({}, plist.dependencies);
+        for (var k in odf) versionInfo[k] = Object.assign({}, versionInfo[k], odf[k]);
         await fsp.writeFile("./Entity/version.json", JSON.stringify(versionInfo, null, 2));
         return true;
     }).catch((err) => {
-        console.log(`[${new Date().toLocaleString()}]\tCreateOutdatedInfo\n${err}`);
+        console.log(`[${new Date().toLocaleString()}]\t出错： CreateOutdatedInfo\n${err}`);
         throw err;
     });
 }
@@ -37,10 +37,6 @@ function CreateOutdatedInfo() {
  * @param {{url:string, savePath:string}} param 参数
  * @returns {Promise<bool>}
  */
-async function RunTask(param) {
+export async function RunTask(param) {
     return CreateOutdatedInfo(param);
-}
-
-module.exports = {
-    RunTask
 }

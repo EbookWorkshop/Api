@@ -1,7 +1,7 @@
 /**
  * 字符分析统计
  */
-class SmartCharacterAnalyzer {
+export class SmartCharacterAnalyzer {
     constructor() {
         // 定义常见字符区块（这些区块的字符通常不会被认为是"异常"）
         this.commonBlocks = new Set([
@@ -226,5 +226,3 @@ class SmartCharacterAnalyzer {
         };
     }
 }
-
-module.exports = SmartCharacterAnalyzer;

@@ -1,8 +1,8 @@
-const { CreateNewDoc } = require("../../Core/PDF/PDFToolkit");
-const DO = require("../../Core/OTO/DO");
+import { CreateNewDoc } from "../../Core/PDF/PDFToolkit.js";
+import DO from "../../Core/OTO/DO/index.js";
+// import ApiResponse from "../../Entity/ApiResponse.js";
 
-
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /services/pdf/view:
@@ -63,4 +63,4 @@ module.exports = () => ({
             ctx.body = `<h1 style="color:red">创建PDF出错</h1><p>${err.message}</p><p>${err.stack}</p><p>字体：${param.fontfamily}</p>`;
         }
     },
-});
+};

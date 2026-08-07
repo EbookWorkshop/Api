@@ -1,18 +1,14 @@
 import path from "node:path";
-import { readdir } from 'node:fs/promises';
+import fs, { readdir } from 'node:fs/promises';
 import EventManager from "../../EventManager.js";
 import Serialize from "../../Utils/Serialize.js";
 import { config } from "../../services/config.js";
 import Models from "../Models/index.js";
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
-const Index = require("../../../Entity/Ebook/Index");
-const Volume = require("../../../Entity/Ebook/Volume");
-const Chapter = require("../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("../../Utils/ReviewString");
+import Index from "../../../Entity/Ebook/Index.js";
+import Volume from "../../../Entity/Ebook/Volume.js";
+import Chapter from "../../../Entity/Ebook/Chapter.js";
+import { Run as Reviewer } from "../../Utils/ReviewString.js";
 
 const __dirname = import.meta.dirname;
 const { dataPath } = config;
@@ -195,7 +191,6 @@ export default class DO {
         try {
             let CoverImg = ebook.CoverImg;
             if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
-                const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
                 if (thisCoverImg.endsWith("#showname")) thisCoverImg = thisCoverImg.replace("#showname", "");
 
@@ -236,12 +231,15 @@ function AutoInit() {
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
             // const FILE_NAME = file.replace(".js", "");
-            let CLASS = require(path.join(__dirname, file));        //按文件装模型
-            CLASS = CLASS.__esModule ? CLASS.default : CLASS;
-
-            Object.getOwnPropertyNames(CLASS).forEach(methodName => {
-                if (notIncludeMethod.includes(methodName)) return;
-                DO[methodName] = CLASS[methodName];
+            const fullPath = path.join(__dirname, file);
+            import(fullPath).then(modules => {
+                const CLASS = modules?.default || modules;
+                Object.getOwnPropertyNames(CLASS).forEach(methodName => {
+                    if (notIncludeMethod.includes(methodName)) return;
+                    DO[methodName] = CLASS[methodName];
+                });
+            }).catch(error => {
+                console.log("自动装载DO对象失败：", fullPath, error)
             });
         }
 

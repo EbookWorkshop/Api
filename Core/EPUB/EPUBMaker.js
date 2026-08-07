@@ -1,15 +1,19 @@
-const EPUB = require("epub-gen");
-const Do2Po = require("../OTO/DO");
-const path = require("path");
-const fs = require("fs/promises");
-const sharp = require("sharp");     //提供图像格式转换
-const { config: { dataPath, FOLDER } } = require("../services/config");
-const { version } = require("../../package.json");
-const Volume = require("../../Entity/Ebook/Volume");
-const FindMyChapters = require("../Book/FindMyChapters");
+import fs from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";     //提供图像格式转换
+import EPUB from "epub-gen";
 
+import Volume from "../../Entity/Ebook/Volume.js";
 
-class EPUBMaker {
+import Do2Po from "../OTO/DO/index.js";
+import { config } from "../services/config.js";
+import packJson from "../../package.json" with {type: "json"};
+import { FindMyChapters } from "../Book/FindMyChapters.js";
+
+const { dataPath, FOLDER } = config;
+const { version } = packJson;
+
+export default class EPUBMaker {
     /**
      * 生成EPUB文件
      * 先判断volumes，不为空则按卷生成书；若空则按showChapters生成指定章节；若showChapters为空则按生成全书
@@ -154,5 +158,3 @@ class EPUBMaker {
         })
     }
 }
-
-module.exports = EPUBMaker;

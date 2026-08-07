@@ -1,12 +1,15 @@
-const fs = require("node:fs");
-const path = require("node:path")
-const myPackage = require("../../package.json");
-const {ApiResponse} = require("../../Entity/ApiResponse");
-const { isSiteAccessible } = require("../../Core/Utils/IsSiteAccesssible");
-const { config: { dataPath, databasePath } } = require("../../Core/services/config");
+import fs from "node:fs";
+import os from 'node:os';
+import path from "node:path";
+import myPackage from "../../package.json" with {type: "json"};
+import ApiResponse from "../../Entity/ApiResponse.js"
+import { isSiteAccessible } from "../../Core/Utils/IsSiteAccesssible.js";
+import { config } from "../../Core/services/config.js";
+import MemoryCache from "../../Core/MemoryCache.js";
+import DB from "../../Core/OTO/DatabaseHelper.js";
 
-//获取静态资源文件
-module.exports = () => ({
+const { dataPath, databasePath } = config;
+export default {
     /**
      * @swagger
      * /services/version:
@@ -30,7 +33,6 @@ module.exports = () => ({
             if (fs.existsSync(fPath)) {
                 version = JSON.parse(fs.readFileSync(fPath, "utf8"));
             }
-            const os = require('node:os');
 
             let result = {
                 version: myPackage.version,
@@ -44,7 +46,7 @@ module.exports = () => ({
                 memFree: (os.freemem() / 1024 / 1024 / 1024).toFixed(2),
                 memTotal: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2),
             }
-             new ApiResponse(result).toCTX(ctx);
+            new ApiResponse(result).toCTX(ctx);
         } catch (_) { }
 
     },
@@ -102,7 +104,6 @@ module.exports = () => ({
      *         description: 参数错误，参数类型错误
      */
     "get /message": (ctx) => {
-        let MemoryCache = require("../../Core/MemoryCache").getInstance();
         let msgid = ctx.query.msgid * 1;
         let msg = MemoryCache.get(msgid);
         if (msg) {
@@ -129,8 +130,7 @@ module.exports = () => ({
      *         description: 请求失败
      */
     "post /compress_db": async (ctx) => {
-        const DB = require("../../Core/OTO/DatabaseHelper");
         let result = await DB.Compress();
         new ApiResponse(result).toCTX(ctx);
     }
-});
+};

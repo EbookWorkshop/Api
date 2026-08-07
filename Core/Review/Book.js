@@ -2,18 +2,14 @@
 import ReviewRule from "../../Entity/ReviewRule.js";
 
 
-// 迁移 CJS 到 ESM 的过渡实现，合并到主干前要删除
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+import Ebook from "../../Entity/Ebook/Ebook.js";
+import Index from "../../Entity/Ebook/Index.js";
+import Chapter from "../../Entity/Ebook/Chapter.js";
 
+import Models from "../OTO/Models/index.js";
 
-const Ebook = require("../../Entity/Ebook/Ebook");
-const Index = require("../../Entity/Ebook/Index");
-const Chapter = require("../../Entity/Ebook/Chapter");
-// const Do2Po = require("../OTO/DO");
-const Models = require("../OTO/Models");
-const { Test: ExecReview } = require("../Utils/ReviewString");
-const SmartCharacterAnalyzer = require("./SmartCharacterAnalyzer");
+import { Test as ExecReview } from "../Utils/ReviewString.js";
+import { SmartCharacterAnalyzer } from "./SmartCharacterAnalyzer.js";
 
 export default class ReviewBook {
     constructor() { }

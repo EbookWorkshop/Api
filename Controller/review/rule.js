@@ -1,12 +1,12 @@
 //爬站规则
+import Models from "../../Core/OTO/Models/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
-const Models = require("../../Core/OTO/Models");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const { Test } = require("../../Core/Utils/ReviewString");
-const {ApiResponse} = require("../../Entity/ApiResponse");
+import { Test } from "../../Core/Utils/ReviewString.js";
 
 
-module.exports = () => ({
+export default {
     /**
     * @swagger
     * /review/rule/list:
@@ -191,4 +191,4 @@ module.exports = () => ({
         let result = Test(rule, chapter.Content);
         new ApiResponse(result).toCTX(ctx);
     },
-});
+};

@@ -3,10 +3,13 @@ import path from "node:path";
 import ApiResponse from "../../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../../Core/Server.js";
 import { saveUserConfig } from "../../Core/services/config.js";
+import { latestConfig } from "../../Core/services/config.js";
+import SystemConfigService from "../../Core/services/SystemConfig.js";
+import { GetNextWorkInfo } from "../../Core/Worker/AutoWork/GetWebBook.js";
+import WorkerPool from "../../Core/Worker/WorkerPool.js";
 
 //获取静态资源文件
 export default {
-
     /**
      * @swagger
      * /services/config/datasetting:
@@ -24,7 +27,6 @@ export default {
      *         description: 请求失败
      */
     "get /datasetting": async (ctx) => {
-        const { config: myConfig } = require("../../Core/services/config");
         const { dataPath, databasePath } = myConfig;
         new ApiResponse({
             dataPath,
@@ -52,8 +54,7 @@ export default {
      *         description: 请求失败
      */
     "get /inventory": async (ctx) => {
-        const { config: myConfig } = require("../../Core/services/config");
-        const { dataPath, FOLDER } = myConfig;
+        const { dataPath, FOLDER } = latestConfig();
         new ApiResponse({
             path: path.join(dataPath, FOLDER.BookStorage),
             pathAbsolute: path.resolve(path.join(dataPath, FOLDER.BookStorage)),
@@ -77,8 +78,7 @@ export default {
      *         description: 请求失败
      */
     "get /cover": async (ctx) => {
-        const { config: myConfig } = require("../../Core/services/config");
-        const { dataPath, FOLDER } = myConfig;
+        const { dataPath, FOLDER } = latestConfig();
         new ApiResponse({
             path: path.join(dataPath, FOLDER.BookCover),
             pathAbsolute: path.resolve(path.join(dataPath, FOLDER.BookCover)),
@@ -102,8 +102,7 @@ export default {
      *         description: 请求失败
      */
     "get /temp": async (ctx) => {
-        const { config: myConfig } = require("../../Core/services/config");
-        const { dataPath, FOLDER } = myConfig;
+        const { dataPath, FOLDER } = latestConfig();
         new ApiResponse({
             tempPath: path.join(dataPath, FOLDER.TempFile),
             tempPathAbsolute: path.resolve(path.join(dataPath, FOLDER.TempFile)),
@@ -131,7 +130,6 @@ export default {
      *         description: 请求失败
      */
     "get /debug": async (ctx) => {
-        const { latestConfig } = require("../../Core/services/config");
         const myConfig = latestConfig();
         new ApiResponse({ debug: myConfig.debug, debugSwitcher: myConfig.debugSwitcher }).toCTX(ctx);
     },
@@ -183,8 +181,6 @@ export default {
      *         description: 请求失败
      */
     "get /autoworker": async (ctx) => {
-        const SystemConfigService = require("../../Core/services/SystemConfig");
-        const { GetNextWorkInfo } = require("../../Core/Worker/AutoWork/GetWebBook");
         new ApiResponse({
             runInterval: await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval") * 1 || 0,
             nextWork: await GetNextWorkInfo(),
@@ -210,12 +206,10 @@ export default {
     "patch /autoworker": async (ctx) => {
         let setting = await parseJsonFromBodyData(ctx);
         if (!setting) return;
-        const SystemConfigService = require("../../Core/services/SystemConfig")
 
         if (typeof setting.runInterval !== "undefined") {
             let { runInterval } = setting;
             SystemConfigService.setConfig(SystemConfigService.Group.SYSTEM_AUTO_WORKER, "run_interval", runInterval);
-            const WorkerPool = require("../../Core/Worker/WorkerPool");
             const wp = new WorkerPool()
             wp.autoWorkInterval = runInterval;
             wp.isRunAutoWorker = runInterval > 0;
