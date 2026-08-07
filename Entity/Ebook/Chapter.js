@@ -1,7 +1,7 @@
 /**
  * 章节
  */
-class Chapter {
+export default class Chapter {
     constructor({ Title, Content, IndexId, id, OrderNum, VolumeId = null }) {
         this.Title = Title?.trim();
         /**
@@ -27,5 +27,3 @@ class Chapter {
         return `Sys_Introduction_Chapter`;
     }
 }
-
-module.exports = Chapter;

@@ -15,7 +15,7 @@ async function Main() {
  * 获取下一个将执行的章节
  * @returns 
  */
-async function GetNextBook() {
+export async function GetNextBook() {
     const myModels = await new Models();
 
     const lastBook = await myModels.Ebook.findOne({
@@ -48,16 +48,11 @@ async function GetNextBook() {
  * @param {object} param 参数
  * @returns {Promise<bool>}
  */
-async function Run(param) {
+export async function Run(param) {
     try {
         // return await Main();
         Main();
     } catch (error) {
         console.error(`[${new Date().toLocaleString()}]\t出错：`, error)
     }
-}
-
-module.exports = {
-    Run,
-    GetNextBook,
 }
