@@ -1,6 +1,6 @@
-let Ebook = require("../Ebook/Ebook");
+import Ebook from "../Ebook/Ebook.js";
 
-class PDFBook extends Ebook {
+export class PDFBook extends Ebook {
     constructor({ PaddingX, PaddingY, PageWidth, IsShowTitleOnChapter, ...x }) {
         super(x);
 
@@ -26,5 +26,3 @@ class PDFBook extends Ebook {
         this.isShowTitleOnChapter = IsShowTitleOnChapter || false;
     }
 }
-
-module.exports = PDFBook;

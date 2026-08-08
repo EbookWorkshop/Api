@@ -1,12 +1,11 @@
-const DO = require("./index");
-const Ebook = require("../../../Entity/Ebook/Ebook");
-const Models = require("../Models");
-const Chapter = require("../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("../../Utils/ReviewString");
+import DO from "./index.js";
+import Models from "../Models/index.js";
 
-class OTO_Ebook {
+import Ebook from "../../../Entity/Ebook/Ebook.js";
+import Chapter from "../../../Entity/Ebook/Chapter.js";
+import { Run as Reviewer } from "../../Utils/ReviewString.js";
 
-
+export default class OTO_Ebook {
     /**
      * 获取电子书列表
      * @param {number} tagid 筛选的标签
@@ -350,5 +349,3 @@ class OTO_Ebook {
     }
 }
 
-
-module.exports = OTO_Ebook;

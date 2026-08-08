@@ -1,7 +1,7 @@
 /**
  * 电子书
  */
-class Ebook {
+export default class Ebook {
     constructor({ id, BookId, BookName, Author, CoverImg, Introduction }) {
         /**
          * @prop {Map<{string,string}>} 章节，标题-文章内容 对照表
@@ -44,5 +44,3 @@ class Ebook {
         this.showIndexId = new Set();
     }
 }
-
-module.exports = Ebook;

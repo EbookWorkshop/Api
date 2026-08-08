@@ -1,7 +1,7 @@
 /**
  * 卷
  */
-class Volume {
+export default class Volume {
     constructor({ id, VolumeId, BookId, Title, Introduction, OrderNum }) {
         this.VolumeId = VolumeId || id;
         this.BookId = BookId;
@@ -19,5 +19,3 @@ class Volume {
         this.OrderNum = OrderNum;
     }
 }
-
-module.exports = Volume;

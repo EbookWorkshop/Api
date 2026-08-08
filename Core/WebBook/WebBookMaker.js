@@ -1,23 +1,23 @@
 //爬取、组织、校验等 电子书处理的所有逻辑
-const path = require("node:path");
-const { config } = require("../services/config");
-const Message = require("../../Entity/Message");
-const WebBook = require("../../Entity/WebBook/WebBook");
-// const WebIndex = require("../../Entity/WebBook/WebIndex");
-const WebChapter = require("../../Entity/WebBook/WebChapter");
-const RuleManager = require("./RuleManager");
-const SiteHelper = require("../Utils/SiteHelper");
-const Serialize = require("../Utils/Serialize");
-const EventManager = require("../EventManager");
-const DO = require("../OTO/DO");
-const WorkerPool = require("../Worker/WorkerPool");
-const BookMaker = require("../Book/BookMaker");
+import path from "node:path";
+import { config } from "../services/config.js";
+import Message from "../../Entity/Message.js";
+import WebBook from "../../Entity/WebBook/WebBook.js";
+// import WebIndex from "../../Entity/WebBook/WebIndex.js";
+import WebChapter from "../../Entity/WebBook/WebChapter.js";
+import RuleManager from "./RuleManager.js";
+import * as SiteHelper from "../Utils/SiteHelper.js";
+import Serialize from "../Utils/Serialize.js";
+import EventManager from "../EventManager.js";
+import DO from "../OTO/DO/index.js";
+import WorkerPool from "../Worker/WorkerPool.js";
+import BookMaker, { SHOW_BOOKNAME } from "../Book/BookMaker.js";
 const wPool = WorkerPool.GetWorkerPool();
 
 /**
  * WebBook - DTO
  */
-class WebBookMaker {
+export default class WebBookMaker {
     /**
      * 创建一个Web电子书操作器
      * @param { WebBook | string | number | undefined} 
@@ -68,7 +68,7 @@ class WebBookMaker {
         option.RuleList = index.GetRuleList();
 
         wPool.RunTask({
-            taskfile: "@/Core/Utils/GetDataFromUrl",
+            taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
             param: {
                 url: curUrl,
                 setting: option
@@ -151,7 +151,7 @@ class WebBookMaker {
 
             if (result.has("BookCover")) {  //保存封面
                 if (isEmbedBookName === null) {
-                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(BookMaker.SHOW_BOOKNAME);
+                    isEmbedBookName = this.myWebBook.CoverImg?.endsWith(SHOW_BOOKNAME);
                 }
 
                 let cv = result.get("BookCover")[0];
@@ -162,7 +162,7 @@ class WebBookMaker {
                 const saveImageFilePath = path.join(config.dataPath, coverImgPath);
                 new EventManager().emit("Debug.Log", `尝试获取封面图片：${imgPath}\n存储目录：${saveImageFilePath}`, "WEBBOOKCOVER");
                 wPool.RunTaskAsync({
-                    taskfile: "@/Core/Utils/CacheFile",
+                    taskfile: "@/Core/Utils/CacheFile.js",
                     param: {
                         url: imgPath,
                         savePath: saveImageFilePath
@@ -170,7 +170,7 @@ class WebBookMaker {
                     highPriority: true
                 }).then((result) => {
                     new EventManager().emit("Debug.Log", `封面图片缓存成功：\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", result);
-                    if (isEmbedBookName && !coverImgPath.endsWith(BookMaker.SHOW_BOOKNAME)) coverImgPath += BookMaker.SHOW_BOOKNAME;
+                    if (isEmbedBookName && !coverImgPath.endsWith(SHOW_BOOKNAME)) coverImgPath += SHOW_BOOKNAME;
                     this.myWebBook.SetCoverImg(coverImgPath);
                 }).catch(err => {
                     new EventManager().emit("Debug.Log", `封面图片缓存失败：\n${imgPath}\n${coverImgPath}\n${saveImageFilePath}\n`, "WEBBOOKCOVER", Serialize.Error(err));
@@ -262,7 +262,7 @@ class WebBookMaker {
         option.RuleList = chapter.GetRuleList();
 
         wPool.RunTask({
-            taskfile: "@/Core/Utils/GetDataFromUrl",
+            taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
             param: {
                 url: url,
                 setting: option
@@ -316,7 +316,7 @@ class WebBookMaker {
                     if (!nextPageUrl) break;
 
                     let tempResult = await wPool.RunTaskAsync({
-                        taskfile: "@/Core/Utils/GetDataFromUrl",
+                        taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
                         param: {
                             url: nextPageUrl,
                             setting: option
@@ -459,6 +459,3 @@ class WebBookMaker {
     }
 
 }
-
-
-module.exports = WebBookMaker;

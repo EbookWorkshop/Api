@@ -1,14 +1,14 @@
 //发邮件 邮箱管理
-const nodemailer = require('nodemailer');
-const smtpTransport = require('nodemailer-smtp-transport');
-const EventManager = require("../EventManager");
-const path = require('path')
-const { version } = require("../../package.json");
+import nodemailer from 'nodemailer';
+import smtpTransport from 'nodemailer-smtp-transport';
+import EventManager from "../EventManager.js";
+import path from 'node:path'
+import packageJson from "../../package.json" with { type: 'json' };
 
-const { EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("../../Entity/SystemConfigGroup");
-const SystemConfigService = require("./SystemConfig");
+export { EMAIL_SETTING_GROUP, KINDLE_INBOX } from "../../Entity/SystemConfigGroup.js";
+import SystemConfigService from "./SystemConfig.js";
 
-
+const { version } = packageJson;
 /**
  * 通过发件地址推测出邮箱服务器地址
  * @param {*} user 发件人邮箱 如：mailuser@163.com
@@ -40,14 +40,14 @@ function CreateTransport(user, pass) {
  * @param {{ title, content, files, mailto, sender, pass }} 邮件属性
  * @param {Array} files 文件要求相对地址数组，会自动拆分成系统接口所需格式:`{filename,path}` 或者 `{filename,content,contentType:'text/plain'}`指定文件格式
  */
-async function SendAMail({ title, content, files, mailto = "", sender = "", pass = "" }) {
+export async function SendAMail({ title, content, files, mailto = "", sender = "", pass = "" }) {
     return new Promise(async (resolve, reject) => {
         try {
             // console.log("准备发送邮件：", title, content, files)
             // const mySystemConfig = new SystemConfigService();
 
             if (mailto === "") {
-                mailto =await SystemConfigService.getConfig(KINDLE_INBOX, "address");
+                mailto = await SystemConfigService.getConfig(KINDLE_INBOX, "address");
             }
             if (sender === "") {
                 sender = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "address");
@@ -55,7 +55,7 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
             if (pass === "") {
                 pass = await SystemConfigService.getConfig(EMAIL_SETTING_GROUP, "password");
             }
-            
+
             if (sender === "" || mailto === "" || pass === "") {
                 let showMsg = "";
                 if (sender === "") {
@@ -121,8 +121,3 @@ async function SendAMail({ title, content, files, mailto = "", sender = "", pass
     });
 }
 
-module.exports = {
-    SendAMail,
-    EMAIL_SETTING_GROUP,
-    KINDLE_INBOX,
-}

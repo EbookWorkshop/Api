@@ -3,7 +3,7 @@
  * 定义作用域
  * @param {*} models 
  */
-module.exports = function (models) {
+export default function (models) {
     models.EbookIndex.addScope('withHasContent', {
         attributes: {
             include: [

@@ -1,10 +1,10 @@
-const Models = require("../OTO/Models");
+import Models from "../OTO/Models/index.js";
 
 
 /**
  * @returns 已登记所有网站主机名
  */
-async function ListRegisteredWebsitesHost() {
+export async function ListRegisteredWebsitesHost() {
     const myModels = new Models();
     const hosts = await myModels.RuleForWeb.findAll({
         attributes: [[myModels.sequelize.fn('DISTINCT', myModels.sequelize.col('Host')), 'Host']],//使用attributes参数只查询Host字段
@@ -16,7 +16,7 @@ async function ListRegisteredWebsitesHost() {
 /**
  * @returns 已登记的所有站点的统计信息
  */
-async function ListRegisteredWebsitesInfo() {
+export async function ListRegisteredWebsitesInfo() {
     const myModels = new Models();
     //已登记的站点
     const hosts = await myModels.RuleForWeb.findAll({
@@ -87,9 +87,4 @@ async function ListRegisteredWebsitesInfo() {
         });
     }
     return result;
-}
-
-module.exports = {
-    ListRegisteredWebsitesHost,
-    ListRegisteredWebsitesInfo,
 }

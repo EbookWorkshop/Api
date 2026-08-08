@@ -1,4 +1,4 @@
-const { isNativeError } = require('node:util/types');
+import { isNativeError } from 'node:util/types';
 
 /**
  * 将 Error 对象序列化为可安全传输的普通对象
@@ -6,7 +6,7 @@ const { isNativeError } = require('node:util/types');
  * @param {Error} err - 可能是 Error 实例、字符串或其他值
  * @returns {object} 可序列化的普通对象
  */
-function Error(err) {
+export function Error(err) {
     if (!isNativeError(err)) {//node 方法，判断是否原生错误类型
         return err;
     }
@@ -41,7 +41,7 @@ function Error(err) {
  * @param {*} data 
  * @returns {object} 可序列化的普通对象
  */
-function Result(data) {
+export function Result(data) {
     try {
         return structuredClone(data);
     } catch {
@@ -51,4 +51,4 @@ function Result(data) {
 }
 
 
-module.exports = { Error, Result };
+export default { Error, Result };

@@ -1,7 +1,7 @@
-const Models = require("../Models");
+import Models from "../Models/index.js";
 
 
-class OTO_BOOKMARK {
+export default class OTO_BOOKMARK {
 
     /**
      * 取得书签列表
@@ -38,7 +38,7 @@ class OTO_BOOKMARK {
                 BookName: b.EbookChapter?.Ebook?.BookName,
                 Title: b.EbookChapter?.Title,
                 ChapterId: b.IndexId,
-                VolumeName:b.EbookChapter.Volume?.Title,
+                VolumeName: b.EbookChapter.Volume?.Title,
             };
         });
     }
@@ -75,6 +75,3 @@ class OTO_BOOKMARK {
         return rsl;
     }
 }
-
-
-module.exports = OTO_BOOKMARK;

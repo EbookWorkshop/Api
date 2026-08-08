@@ -1,24 +1,27 @@
 /**
  * 负责制作书，将书入库
  */
-const Ebook = require("../../Entity/Ebook/Ebook");
-const Index = require("../../Entity/Ebook/Index");
-const Chapter = require("../../Entity/Ebook/Chapter");
-const Volume = require("../../Entity/Ebook/Volume");
-const path = require("node:path");
-const fs = require('node:fs');
-const { finished } = require('stream/promises');
-const { config: { dataPath, FOLDER } } = require("../services/config");
-const Do2Po = require("../OTO/DO");
-const Models = require("../OTO/Models");
-const { CheckAndMakeDir } = require("../Server")
-const similarity = require('string-similarity'); // 新增相似度计算库
-const SystemConfigService = require("../services/SystemConfig");
-const FindMyChapters = require("./FindMyChapters");
+import fs from "node:fs";
+import path from "node:path";
+import { finished } from 'stream/promises';
+import similarity from 'string-similarity'; // 新增相似度计算库
 
-const SHOW_BOOKNAME = "#showname";
+import Ebook from "../../Entity/Ebook/Ebook.js";
+import Index from "../../Entity/Ebook/Index.js";
+import Chapter from "../../Entity/Ebook/Chapter.js";
+import Volume from "../../Entity/Ebook/Volume.js";
 
-class BookMaker {
+import { config } from "../services/config.js";
+import Do2Po from "../OTO/DO/index.js";
+import Models from "../OTO/Models/index.js";
+import { CheckAndMakeDir } from "../Server.js"
+import SystemConfigService from "../services/SystemConfig.js";
+import { FindMyChapters } from "./FindMyChapters.js";
+
+const { dataPath, FOLDER } = config;
+export const SHOW_BOOKNAME = "#showname";
+
+export default class BookMaker {
     /**
      * 添加一本`TXT`书
      * @param {{
@@ -717,5 +720,4 @@ class BookMaker {
         }
     }
 }
-BookMaker.SHOW_BOOKNAME = SHOW_BOOKNAME;
-module.exports = BookMaker;
+

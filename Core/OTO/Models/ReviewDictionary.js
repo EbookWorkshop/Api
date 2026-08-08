@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * 记录具体网站应用的替换字典
@@ -6,7 +6,7 @@ const { DataTypes } = require("sequelize");
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("ReviewDictionary", {
         Host: { type: DataTypes.STRING(100), allowNull: false },            //应用的站点
         ExecuteType: { type: DataTypes.STRING(50), allowNull: true },        //分类执行条件

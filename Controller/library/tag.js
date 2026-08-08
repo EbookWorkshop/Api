@@ -1,9 +1,8 @@
-const DO = require("../../Core/OTO/DO");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require('../../Entity/ApiResponse');
-
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /library/ebooktag:
@@ -223,4 +222,4 @@ module.exports = () => ({
 
 
 
-});
+};

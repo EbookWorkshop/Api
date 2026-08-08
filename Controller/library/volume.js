@@ -1,8 +1,9 @@
-const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
 
-module.exports = () => ({
+
+export default {
     prefix: '/library/book',
     /**
      * @swagger
@@ -353,4 +354,4 @@ module.exports = () => ({
         }
     }
 
-});
+};

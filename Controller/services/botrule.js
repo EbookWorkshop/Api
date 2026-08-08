@@ -1,16 +1,17 @@
 //爬站规则
+import fs from 'node:fs/promises';
+import DO from "../../Core/OTO/DO/index.js";
+import RuleManager from "../../Core/WebBook/RuleManager.js";
+import Rule from "../../Entity/WebBook/Rule.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import { ApiResponse } from "../../Entity/ApiResponse.js";
+import Models from "../../Core/OTO/Models/index.js";
+import { VisualizationOfRule } from "../../Core/WebBook/RuleVis.js";
 
-const RuleManager = require("../../Core/WebBook/RuleManager");
-const Models = require("../../Core/OTO/Models");
-const Rule = require("../../Entity/WebBook/Rule");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
-const { VisualizationOfRule } = require("../../Core/WebBook/RuleVis")
-const { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } = require("../../Core/WebBook/RegisteredWebsites");
-const fs = require('node:fs/promises');
+import { ListRegisteredWebsitesHost, ListRegisteredWebsitesInfo } from "../../Core/WebBook/RegisteredWebsites.js";
 
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /services/botrule:
@@ -400,7 +401,6 @@ module.exports = () => ({
      */
     "get /dictionaries": async (ctx) => {
         let host = ctx.query.host;
-        const DO = require("../../Core/OTO/DO");
         new ApiResponse(await DO.GetDictionaryByURL(host)).toCTX(ctx);
     },
 
@@ -457,7 +457,6 @@ module.exports = () => ({
         let param = await parseJsonFromBodyData(ctx, ["host", "data"]);
         if (param == null) return;
 
-        const DO = require("../../Core/OTO/DO");
         let { host, data } = param;
         const myModels = new Models();
         const trans = await myModels.BeginTrans();
@@ -467,4 +466,4 @@ module.exports = () => ({
 
         new ApiResponse(result, null, result ? 20000 : 50000).toCTX(ctx);
     },
-});
+};

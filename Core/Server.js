@@ -1,14 +1,15 @@
 //与服务器相关的通用方法都放这
-const fs = require("fs");
-const ApiResponse = require('../Entity/ApiResponse');
-const path = require("path");
+
+import fs from "node:fs";
+import path from "node:path";
+import ApiResponse from "../Entity/ApiResponse.js";
 
 /**
  * 处理通过body传递的参数
  * @param {*} ctx 
  * @returns {any}
  */
-function parseBodyData(ctx) {
+export function parseBodyData(ctx) {
     return new Promise((resolve, reject) => {
         function resolveFile(postData) {
             if (ctx.request.files) {
@@ -44,7 +45,7 @@ function parseBodyData(ctx) {
  * @param {Array} requireCheck 必填检查
  * @returns 解释后的参数 null为参数校验不通过，需要停止响应
  */
-async function parseJsonFromBodyData(ctx, requireCheck = []) {
+export async function parseJsonFromBodyData(ctx, requireCheck = []) {
     let param = await parseBodyData(ctx);
     try {
         if (typeof (param) === "string") param = JSON.parse(param);
@@ -78,7 +79,7 @@ async function parseJsonFromBodyData(ctx, requireCheck = []) {
  * @param {*} dir 多层目录
  * @returns 
  */
-function MkPath(dir) {
+export function MkPath(dir) {
     if (fs.existsSync(dir)) {
         return true;
     } else {
@@ -94,16 +95,9 @@ function MkPath(dir) {
  * 检查目录是否存在，不存在则创建
  * @param {*} path 
  */
-function CheckAndMakeDir(filePath) {
+export function CheckAndMakeDir(filePath) {
     let directory = path.dirname(filePath);
     if (!fs.existsSync(directory)) {
         fs.mkdirSync(directory, { recursive: true });
     }
-}
-
-module.exports = {
-    MkPath: MkPath,
-    CheckAndMakeDir: CheckAndMakeDir,
-    parseBodyData: parseBodyData,
-    parseJsonFromBodyData: parseJsonFromBodyData
 }

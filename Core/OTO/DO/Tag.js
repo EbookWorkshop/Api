@@ -1,9 +1,7 @@
-const Models = require("../Models");
-// const DO = require("./index");
-// const PDFBook = require("../../../Entity/PDFBook/PDFBook");
+import Models from "../Models/index.js";
 
 
-class OTO_TAG {
+export default class OTO_TAG {
 
     /**
      * 根据书的ID获取所有标签
@@ -153,6 +151,3 @@ class OTO_TAG {
         return result;
     }
 }
-
-
-module.exports = OTO_TAG;

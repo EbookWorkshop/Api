@@ -1,15 +1,17 @@
-const EventManager = require("./EventManager");
-const db = require("./OTO/DatabaseHelper");
-const WP = require("./Worker/WorkerPool");
-const IO = require("./Socket");
-const MemoryCache = require("./MemoryCache"); // 引入内存缓存服务
-const SystemConfigService = require("./services/SystemConfig"); // 假设服务类位于 Services 目录
-const packageJson = require("../package.json"); // 指向项目根目录的 package.json
+import EventManager from "./EventManager.js"
 
-const { config: { debug: isDebug } } = require("./services/config");
-if (isDebug) require("./debug");//载入Debug模块要尽可能早，便于尽早监听错误信息
+import IO from "./Socket.js"
+import db from "./OTO/DatabaseHelper.js";
+import WP from "./Worker/WorkerPool.js";
+import * as MemoryCache from "./MemoryCache.js"; // 引入内存缓存服务
+import SystemConfigService from "./services/SystemConfig.js"; // 假设服务类位于 Services 目录
+import packageJson from "../package.json" with {type: "json"}; // 指向项目根目录的 package.json
+import { config } from "./services/config.js";
 
-module.exports = new Promise((resolve, reject) => {
+const { debug: isDebug } = config;
+if (isDebug) import("./debug.js");//载入Debug模块要尽可能早，便于尽早监听错误信息
+
+export default new Promise((resolve, reject) => {
     try {
 
         const em = new EventManager();    //启用消息管理

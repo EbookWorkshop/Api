@@ -1,9 +1,10 @@
-const DO = require("../../Core/OTO/DO");
-const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
+import SystemConfigService from "../../Core/services/SystemConfig.js";
 
-module.exports = () => ({
+export default {
     prefix: '/library/book',
     /**
      * @swagger
@@ -36,7 +37,6 @@ module.exports = () => ({
             return;
         }
         let chp = await DO.GetEBookChapterById(chapterId * 1);
-        const SystemConfigService = require("../../Core/services/SystemConfig");
         chp.Book.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
         new ApiResponse(chp).toCTX(ctx);
     },
@@ -370,4 +370,4 @@ module.exports = () => ({
             new ApiResponse(null, `转化章节为书籍简介失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
-});
+};

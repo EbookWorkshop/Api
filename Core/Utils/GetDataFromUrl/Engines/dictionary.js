@@ -5,7 +5,7 @@
  * @param {string} text 原始正文
  * @returns {string} 解释后结果
  */
-async function ExecDict(page, dict, text) {
+export async function ExecDict(page, dict, text) {
     if (!dict) return text;
 
     //判断执行条件是否命中
@@ -18,7 +18,7 @@ async function ExecDict(page, dict, text) {
  * @param {*} page 当前网页
  * @param {ReviewDictionary} dict 字典
  */
-async function isExec(page, dict) {
+export async function isExec(page, dict) {
     try {
         switch (dict.ExecuteType) {
             case "Selector":        //当页面存在某些指定的元素时，才启用转换
@@ -39,7 +39,7 @@ async function isExec(page, dict) {
  * @param {string} dictData 字典
  * @param {string} text 待替换原文本
  */
-function UseDictReplace(dictData, text) {
+export function UseDictReplace(dictData, text) {
     if (!text) { return text; }//throw new Error("UseDictReplace：：转换失败，待转换文本为空！");
     let ddMap = new Map();
     let rows = dictData.split("\n");
@@ -67,7 +67,4 @@ function parseBoolean(value, defaultValue = false) {
     if (str === 'true' || str === '1') return true;
     if (str === 'false' || str === '0') return false;
     return defaultValue; // 默认返回 false
-}
-module.exports = {
-    ExecDict, isExec, UseDictReplace
 }

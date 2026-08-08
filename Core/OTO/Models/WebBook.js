@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * Webbook
@@ -7,7 +7,7 @@ const { DataTypes } = require("sequelize");
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("WebBook", {
         //默认用哪个网址——用于多来源的情景//需要改造
         defaultIndex: { type: DataTypes.INTEGER, defaultValue: 0 },

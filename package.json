@@ -3,6 +3,7 @@
   "version": "3.12.1",
   "description": "电子书工具",
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "node --inspect app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,7 +27,7 @@
     "koa-send": "^5.0.1",
     "koa-static": "^5.0.0",
     "koa2-swagger-ui": "^5.12.0",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^9.0.4",
     "nodemailer-smtp-transport": "^2.7.4",
     "pdfkit": "^0.19.1",
     "puppeteer": "^25.3.0",

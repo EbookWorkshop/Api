@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 
 /**
@@ -7,7 +7,7 @@ const { DataTypes } = require("sequelize");
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("ReviewRule", {
         Name: { type: DataTypes.STRING(20), allowNull: false },      //配置名称
         Rule: { type: DataTypes.STRING(100), allowNull: true },      //查找规则、查找串

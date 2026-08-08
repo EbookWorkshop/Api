@@ -1,5 +1,5 @@
-const Models = require("../../OTO/Models");
-const WebBookMaker = require("../../WebBook/WebBookMaker")
+import Models from "../../OTO/Models/index.js";
+import WebBookMaker from "../../WebBook/WebBookMaker.js";
 
 
 /**
@@ -19,7 +19,7 @@ async function Main() {
  * 获取下一个将执行的章节
  * @returns 
  */
-async function GetNextWorkInfo() {
+export async function GetNextWorkInfo() {
     const myModels = await new Models();
     const chapter = await myModels.EbookIndex.findOne({
         include: [{
@@ -65,7 +65,7 @@ async function GetNextWorkInfo() {
  * @param {object} param 参数
  * @returns {Promise<bool>}
  */
-async function Run(param) {
+export async function Run(param) {
     try {
         return await Main();
     } catch (error) {
@@ -73,7 +73,3 @@ async function Run(param) {
     }
 }
 
-module.exports = {
-    Run,
-    GetNextWorkInfo,
-}

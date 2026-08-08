@@ -1,11 +1,11 @@
 //爬站规则
 
-const Models = require("../../Core/OTO/Models");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
+import Models from "../../Core/OTO/Models/index.js";
 
-module.exports = () => ({
+export default {
     /**
     * @swagger
     * /review/bookwithrule/list:
@@ -188,4 +188,4 @@ module.exports = () => ({
 
         new ApiResponse(rules).toCTX(ctx);
     },
-});
+};

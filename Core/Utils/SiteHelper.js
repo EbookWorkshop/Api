@@ -1,11 +1,12 @@
-const { URL } = require("node:url");
+import { URL } from "node:url";
+
 
 /**
  * 根据网址返回对应的站点
  * @param {string} urlString 需要分析的网址
  * @returns 返回纯粹的域名如 www.abc.com
  */
-function GetHost(urlString) {
+export function GetHost(urlString) {
     try {
         if (!/^https?:\/\//i.test(urlString)) {
             urlString = 'http://' + urlString;
@@ -16,8 +17,4 @@ function GetHost(urlString) {
     } catch (err) {
         console.error(err);
     }
-}
-
-module.exports = {
-    GetHost
 }

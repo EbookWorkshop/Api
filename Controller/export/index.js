@@ -1,15 +1,17 @@
-const path = require("path");
-const fsPromises = require("fs").promises;
+import path from "node:path";
+import fsPromises from "node:fs/promises";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { SendAMail } from "../../Core/services/email.js";
+import { config } from "../../Core/services/config.js";
+import BookMaker from "../../Core/Book/BookMaker.js";
+import EPUBMaker from "../../Core/EPUB/EPUBMaker.js";
+import PDFMaker from "../../Core/PDF/PDFMaker.js";
+import Serialize from "../../Core/Utils/Serialize.js";
 
-const BookMaker = require("../../Core/Book/BookMaker");
-const PDFMaker = require("../../Core/PDF/PDFMaker");
-const EPUBMaker = require("../../Core/EPUB/EPUBMaker");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
-const { SendAMail } = require("../../Core/services/email");
-const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
+const { dataPath, FOLDER } = config;
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /export/pdf:
@@ -153,7 +155,7 @@ module.exports = () => ({
             const relativePath = path.relative(dataPath, rsl.path);
             new ApiResponse({ book: rsl, chapterIds: rsl.chapterIds, download: relativePath }).toCTX(ctx);
         }).catch((err) => {
-            new ApiResponse(err, `生成Txt${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
+            new ApiResponse(Serialize.Error(err), `生成Txt${sendByEmail ? "并发送邮件" : ""}出错：` + err.message, 50000).toCTX(ctx);
         });
 
     },
@@ -231,4 +233,4 @@ module.exports = () => ({
             new ApiResponse(err, `生成EPUB${sendByEmail ? "并发送邮件" : ""}出错：` + (err.message || err), 50000).toCTX(ctx);
         });
     },
-});
+};

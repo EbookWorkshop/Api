@@ -1,5 +1,5 @@
-const { FetchTextByHttp } = require("./Fetchers/http")
-const { FetchTextByPuppeteer } = require("./Fetchers/puppeteer")
+import { FetchTextByHttp } from "./Fetchers/http.js"
+import { FetchTextByPuppeteer } from "./Fetchers/puppeteer.js"
 
 
 
@@ -9,7 +9,7 @@ const { FetchTextByPuppeteer } = require("./Fetchers/puppeteer")
  * @param {{url:string, setting:object}} param 参数
  * @returns {Promise<Map<string,any>>}
  */
-async function RunTask(param) {
+export async function RunTask(param) {
     let result = null;
     const { setting, url } = param;
     if (setting.scraping === "http") {
@@ -22,8 +22,7 @@ async function RunTask(param) {
 
 
 
-module.exports = {
-    RunTask,
+export {
     FetchTextByHttp,
     FetchTextByPuppeteer,
 }

@@ -2,7 +2,7 @@
  * 标准接口结果返回
  * TO (Transfer 0bject)，数据传输对象、传输数据的对象
  */
-class ApiResponse {
+export default class ApiResponse {
     /**
      * 标准接口结果返回结构
      * @param {*} data 实际数据载荷
@@ -67,5 +67,4 @@ class ApiResponse {
         return new ApiResponse(result, msg, result ? 20000 : 50000);
     }
 }
-
-module.exports = ApiResponse;
+export { ApiResponse }

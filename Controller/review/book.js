@@ -1,12 +1,12 @@
 //全书校阅
 
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
 
-const ReviewBook = require("../../Core/Review/Book");
+import ReviewBook from "../../Core/Review/Book.js";
 
 
-module.exports = () => ({
+export default {
     /**
     * @swagger
     * /review/book/try:
@@ -117,4 +117,4 @@ module.exports = () => ({
         const suspiciousChars = await ReviewBook.SuspiciousChar(param);
         new ApiResponse(suspiciousChars).toCTX(ctx);
     },
-});
+};

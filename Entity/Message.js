@@ -1,7 +1,7 @@
 /**
  * 发给前端的消息
  */
-class Message {
+export default class Message {
     constructor(content, type = "message", { title, subTitle, avatar, time, status, id } = {}) {
         this.id = id || Math.floor(Math.random() * 1000000);
 
@@ -55,5 +55,3 @@ class Message {
         this.messageType;
     }
 }
-
-module.exports = Message;

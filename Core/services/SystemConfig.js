@@ -1,10 +1,10 @@
-const SYSTEM_CONFIG = require("../../Entity/SystemConfigGroup");
-const Models = require("../OTO/Models");
+import * as SYSTEM_CONFIG from "../../Entity/SystemConfigGroup.js";
+import Models from "../OTO/Models/index.js";
 
 /**
  * 从数据库读写配置
  */
-class SystemConfigService {
+export default class SystemConfigService {
     /**
      * 获取系统配置
      * @param {SYSTEM_CONFIG} Group 功能分组
@@ -83,5 +83,3 @@ class SystemConfigService {
 
     static Group = SYSTEM_CONFIG;
 }
-
-module.exports = SystemConfigService;

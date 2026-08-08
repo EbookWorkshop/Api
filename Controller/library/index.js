@@ -1,9 +1,10 @@
-const DO = require("../../Core/OTO/DO");
-const BookMaker = require('../../Core/Book/BookMaker');
-const ApiResponse = require("../../Entity/ApiResponse");
-const { parseJsonFromBodyData } = require("../../Core/Server");
+import DO from "../../Core/OTO/DO/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import BookMaker from '../../Core/Book/BookMaker.js';
+import SystemConfigService from "../../Core/services/SystemConfig.js";
 
-module.exports = () => ({
+export default {
     /**
      * @swagger
      * /library/booklist:
@@ -215,7 +216,6 @@ module.exports = () => ({
             new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
             return;
         }
-        const SystemConfigService = require("../../Core/services/SystemConfig");
         let bookMeta = await DO.GetEBookInfoById(bookId * 1);
         bookMeta.FontFamily = await SystemConfigService.getConfig(SystemConfigService.Group.SYSTEM_DEFAULT_FONT, "defaultReadingFont");
         new ApiResponse(bookMeta).toCTX(ctx);
@@ -431,7 +431,7 @@ module.exports = () => ({
         try {
             const bookId = ctx.query.bookid * 1;
             const chapterids = ctx.query.chapterids;
-            const { checkPairedPunctuation } = require("../../Core/Book/CheckPairedPunctuation");
+            const { checkPairedPunctuation } = await import("../../Core/Book/CheckPairedPunctuation.js");
 
             let cpIds = null;
             try {
@@ -473,7 +473,7 @@ module.exports = () => ({
                 new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
                 return;
             }
-            const { AnalyzeBookText } = require("../../Core/Book/Analyze");
+            const { AnalyzeBookText } = await import("../../Core/Book/Analyze.js");
 
             const results = await AnalyzeBookText(bookId * 1);
             new ApiResponse(results).toCTX(ctx);
@@ -481,4 +481,4 @@ module.exports = () => ({
             new ApiResponse(null, `文本分析失败: ${error.message}`, 50000).toCTX(ctx);
         }
     },
-});
+};

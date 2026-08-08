@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * Ebook目录    
@@ -7,7 +7,7 @@ const { DataTypes } = require("sequelize");
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("EbookChapter", {
         //章节标题
         Title: { type: DataTypes.STRING(50), allowNull: false },

@@ -1,17 +1,20 @@
 //发邮件 邮箱管理
-const BookMaker = require("../../Core/Book/BookMaker");
-const PDFMaker = require("../../Core/PDF/PDFMaker.js");
-const EPUBMaker = require("../../Core/EPUB/EPUBMaker.js");
-const { parseJsonFromBodyData } = require("../../Core/Server");
-const ApiResponse = require("../../Entity/ApiResponse");
-const Models = require("../../Core/OTO/Models");
-const { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } = require("../../Core/services/email");
-const path = require("node:path");
-const { config: { dataPath, FOLDER } } = require("../../Core/services/config");
+import path from "node:path";
+import BookMaker from '../../Core/Book/BookMaker.js';
+import PDFMaker from '../../Core/PDF/PDFMaker.js';
+import EPUBMaker from '../../Core/EPUB/EPUBMaker.js';
+import Models from "../../Core/OTO/Models/index.js";
+import ApiResponse from "../../Entity/ApiResponse.js";
+import { parseJsonFromBodyData } from "../../Core/Server.js";
+import { config } from "../../Core/services/config.js";
+import { SendAMail, EMAIL_SETTING_GROUP, KINDLE_INBOX } from "../../Core/services/email.js";
 
 
 
-module.exports = () => ({
+const { dataPath, FOLDER } = config;
+
+
+export default {
     /**
      * @swagger
      * /services/email/send:
@@ -90,7 +93,7 @@ module.exports = () => ({
             }
 
             //发送已存在的文件
-            if(filePath) email.files.push(...JSON.parse(filePath).map(f=>path.join(dataPath, f)));
+            if (filePath) email.files.push(...JSON.parse(filePath).map(f => path.join(dataPath, f)));
 
             if (email.files.length == 0) {
                 new ApiResponse(null, "发送邮件取消：没有可用于发送的书籍/附件，取消发邮件。", 50000).toCTX(ctx);
@@ -293,4 +296,4 @@ module.exports = () => ({
         });
     },
 
-})
+};

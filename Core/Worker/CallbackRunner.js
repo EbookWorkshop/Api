@@ -1,12 +1,12 @@
-const { AsyncResource } = require('async_hooks');
-const Serialize = require("../Utils/Serialize")
-const EventManager = require("../EventManager");
+import { AsyncResource } from 'async_hooks';
+import Serialize from "../Utils/Serialize.js";
+import EventManager from "../EventManager.js";
 const em = new EventManager();
 
 /**
  * 线程的回调函数执行器
  */
-class CallbackRunner extends AsyncResource {
+export default class CallbackRunner extends AsyncResource {
     constructor(callback) {
         super('CallbackRunner');
         this.callback = callback;
@@ -28,5 +28,3 @@ class CallbackRunner extends AsyncResource {
         }
     }
 }
-
-module.exports = CallbackRunner;

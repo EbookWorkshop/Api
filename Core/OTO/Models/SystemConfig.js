@@ -1,11 +1,11 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * 系统配置项表
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("SystemConfig", {
         Group: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "default" },     //配置分组
         Name: { type: DataTypes.STRING(20), allowNull: false },      //配置名称

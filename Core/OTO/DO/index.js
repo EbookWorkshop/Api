@@ -1,13 +1,17 @@
-const { readdir } = require('node:fs/promises');
-const path = require("node:path");
-const EventManager = require("../../EventManager");
-const Models = require("../Models");
-const Index = require("../../../Entity/Ebook/Index");
-const Volume = require("../../../Entity/Ebook/Volume");
-const Chapter = require("../../../Entity/Ebook/Chapter");
-const { Run: Reviewer } = require("../../Utils/ReviewString");
-const Serialize = require("../../Utils/Serialize");
-const { config: { dataPath } } = require("../../services/config");
+import path from "node:path";
+import fs, { readdir } from 'node:fs/promises';
+import EventManager from "../../EventManager.js";
+import Serialize from "../../Utils/Serialize.js";
+import { config } from "../../services/config.js";
+import Models from "../Models/index.js";
+
+import Index from "../../../Entity/Ebook/Index.js";
+import Volume from "../../../Entity/Ebook/Volume.js";
+import Chapter from "../../../Entity/Ebook/Chapter.js";
+import { Run as Reviewer } from "../../Utils/ReviewString.js";
+
+const __dirname = import.meta.dirname;
+const { dataPath } = config;
 
 /**
  * # 初始化
@@ -19,7 +23,7 @@ const { config: { dataPath } } = require("../../services/config");
  * # PoToDo、DoToPo
  * 将实体类和数据库类互转
  */
-class DO {
+export default class DO {
 
     /**
      * # Po to Do
@@ -187,7 +191,6 @@ class DO {
         try {
             let CoverImg = ebook.CoverImg;
             if (deleteCover && CoverImg != null && !CoverImg.startsWith("#")) {
-                const fs = require("fs/promises");
                 let thisCoverImg = path.join(dataPath, CoverImg);
                 if (thisCoverImg.endsWith("#showname")) thisCoverImg = thisCoverImg.replace("#showname", "");
 
@@ -228,11 +231,15 @@ function AutoInit() {
         for (let file of fileList) {
             if (file === "index.js" || !file.endsWith(".js")) continue;
             // const FILE_NAME = file.replace(".js", "");
-            const CLASS = require(path.join(__dirname, file));        //按文件装模型
-
-            Object.getOwnPropertyNames(CLASS).forEach(methodName => {
-                if (notIncludeMethod.includes(methodName)) return;
-                DO[methodName] = CLASS[methodName];
+            const fullPath = path.join(__dirname, file);
+            import(fullPath).then(modules => {
+                const CLASS = modules?.default || modules;
+                Object.getOwnPropertyNames(CLASS).forEach(methodName => {
+                    if (notIncludeMethod.includes(methodName)) return;
+                    DO[methodName] = CLASS[methodName];
+                });
+            }).catch(error => {
+                console.log("自动装载DO对象失败：", fullPath, error)
             });
         }
 
@@ -259,4 +266,4 @@ function AutoInit() {
 //     }
 // };
 // const DOProxy = new Proxy(DO, handler);
-module.exports = DO;//如果需要监控调用情况，就导出DOProxy代替
+//如果需要监控调用情况，就导出DOProxy代替

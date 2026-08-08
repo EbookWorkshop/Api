@@ -1,8 +1,8 @@
 //检查网站是否可以访问的工具
-const https = require('https');
+import https from 'https';
 
 
-function isSiteAccessible(hostname) {
+export function isSiteAccessible(hostname) {
     return new Promise((resolve, reject) => {
         hostname = hostname.replace(/https?:\/\//, ''); // 去掉http://或https://
         // 发送HTTPs请求
@@ -41,6 +41,3 @@ function isSiteAccessible(hostname) {
         });
     });
 }
-
-
-exports.isSiteAccessible = isSiteAccessible;

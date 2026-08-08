@@ -1,14 +1,15 @@
-const DO = require("../OTO/DO");
+import path from "node:path";
 
-const EventManager = require("../EventManager");
-const path = require("node:path");
-const { config: { dataPath, FOLDER } } = require("../services/config");
-const { GetDefaultReadingFont } = require("../services/font")
-const WorkerPool = require("../Worker/WorkerPool");
+import DO from "../OTO/DO/index.js";
+import { EventManager } from "../EventManager.js";
+import { config } from "../services/config.js";
+import { GetDefaultReadingFont } from "../services/font.js"
+import WorkerPool from "../Worker/WorkerPool.js";
+import { FindMyChapters } from "../Book/FindMyChapters.js";
+
 const wPool = WorkerPool.GetWorkerPool();
-const FindMyChapters = require("../Book/FindMyChapters");
-
-class PDFMaker {
+const { dataPath, FOLDER } = config;
+export default class PDFMaker {
     /**
      * 按当前内容制作Pdf的文件
      * 先判断volumes，不为空则按卷生成书；若空则按showChapters生成指定章节；若showChapters为空则按生成全书
@@ -47,7 +48,7 @@ class PDFMaker {
 
         return new Promise(async (resolve, reject) => {
             wPool.RunTask({
-                taskfile: "@/Core/PDF/MakePdfFile",
+                taskfile: "@/Core/PDF/MakePdfFile.js",
                 param: { fileInfo },
                 taskType: "MakePdfFile",
             }, async (result, err) => {
@@ -64,5 +65,3 @@ class PDFMaker {
     }
 
 }
-
-module.exports = PDFMaker;

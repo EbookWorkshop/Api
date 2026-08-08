@@ -1,14 +1,17 @@
 //校阅-书本
-const Ebook = require("../../Entity/Ebook/Ebook");
-const Index = require("../../Entity/Ebook/Index");
-const Chapter = require("../../Entity/Ebook/Chapter");
-const ReviewRule = require("../../Entity/ReviewRule");
-// const Do2Po = require("../OTO/DO");
-const Models = require("../OTO/Models");
-const { Test: ExecReview } = require("../Utils/ReviewString");
-const SmartCharacterAnalyzer = require("./SmartCharacterAnalyzer");
+import ReviewRule from "../../Entity/ReviewRule.js";
 
-class ReviewBook {
+
+import Ebook from "../../Entity/Ebook/Ebook.js";
+import Index from "../../Entity/Ebook/Index.js";
+import Chapter from "../../Entity/Ebook/Chapter.js";
+
+import Models from "../OTO/Models/index.js";
+
+import { Test as ExecReview } from "../Utils/ReviewString.js";
+import { SmartCharacterAnalyzer } from "./SmartCharacterAnalyzer.js";
+
+export default class ReviewBook {
     constructor() { }
 
     /**
@@ -103,5 +106,3 @@ class ReviewBook {
         return result;
     }
 }
-
-module.exports = ReviewBook;

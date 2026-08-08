@@ -1,11 +1,11 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
 /**
  * 网站规则部分
  * @param {*} sqlConnect 
  * @returns 
  */
-module.exports = function (sqlConnect) {
+export default function (sqlConnect) {
     return sqlConnect.define("RuleForWeb", {   //每一章的地址
         Host: { type: DataTypes.STRING(100), allowNull: false },
         RuleName: { type: DataTypes.STRING(20), allowNull: false },

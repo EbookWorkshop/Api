@@ -1,8 +1,7 @@
 //规则可视化
-const puppeteer = require('puppeteer');
-const Rule = require("../../Entity/WebBook/Rule");
-
-const { ExecRule } = require("../Utils/GetDataFromUrl/Engines/rule");
+import puppeteer from 'puppeteer';
+import Rule from "../../Entity/WebBook/Rule.js";
+import { ExecRule } from "../Utils/GetDataFromUrl/Engines/rule.js";
 
 //浏览器
 let curBrowser = null;
@@ -13,7 +12,7 @@ let lastPage = null;
  * @param {string} url 
  * @param {Rule} rule 
  */
-async function VisualizationOfRule(url, rule) {
+export async function VisualizationOfRule(url, rule) {
     let browser = await GetBrowser();
     let page = lastPage;
     let curTime = new Date().getTime()
@@ -43,9 +42,6 @@ async function GetBrowser() {
     return curBrowser;
 }
 
-module.exports = {
-    VisualizationOfRule
-};
 
 
 // let testRule = new Rule("test");

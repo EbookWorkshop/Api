@@ -1,12 +1,10 @@
-const puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer';
 
-const { config: { dataPath, debugSwitcher } } = require("../../../services/config");
-//const EventManager = require("../../../EventManager");        //单例模块，在子线程使用时会新开实例导致消息丢失，不应使用
-const { GetDataUseRuleFromPage } = require("../Engines/rule")
+import { config } from "../../../services/config.js";
+//import EventManager from"../../../EventManager.js";        //单例模块，在子线程使用时会新开实例导致消息丢失，不应使用
+import { GetDataUseRuleFromPage } from "../Engines/rule.js"
 
-
-const { puppeteer: isDEBUG } = debugSwitcher;
-
+const { debugSwitcher: { puppeteer: isDEBUG } } = config;
 
 /**
  * 按照【规则集】提取【目标地址】中所需的内容
@@ -14,7 +12,7 @@ const { puppeteer: isDEBUG } = debugSwitcher;
  * @param {{RuleList:Rule[],timeout:Number?}} setting 爬取的站点配置
  * @returns result<Map>
  */
-async function FetchTextByPuppeteer(url, setting) {
+export async function FetchTextByPuppeteer(url, setting) {
     const startTime = new Date();
     //无界面浏览器性能更高更快，有界面一般用于调试开发
     let options = {
@@ -63,10 +61,4 @@ async function FetchTextByPuppeteer(url, setting) {
 
     // 结束关闭
     return result;
-}
-
-
-
-module.exports = {
-    FetchTextByPuppeteer
 }

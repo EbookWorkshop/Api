@@ -1,59 +1,60 @@
-const { version } = require("../package.json");
-const jsdoc = require('swagger-jsdoc')
+import packJson from "../package.json" with {type: "json"};
+import jsdoc from 'swagger-jsdoc';
 
+const { version } = packJson;
 const swaggerDefinition = {
-    info: {
-        title: 'EBook Workshop API',
-        version: version.split('.').slice(0, 2).join('.'),
-        description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，<br/>`{"code":20000}`用于代表成功，`{"code":50000}`代表服务器执行失败，`{"code":60000}`代表用户引起的失败（如输入错误类型等）。',
-    },
-    host: 'localhost:8777',//http://localhost:8777/swagger
-    basePath: '/',
-    tags: [  // 排序控制
-      { name: 'Library —— 图书馆' },
-      { name: 'Library - WebBook —— 网文图书馆' },
-      { name: 'Library - Tag —— 图书馆管理' },
-      { name: 'Library - Bookmark —— 图书馆书签' },
-    ]
+  info: {
+    title: 'EBook Workshop API',
+    version: version.split('.').slice(0, 2).join('.'),
+    description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，<br/>`{"code":20000}`用于代表成功，`{"code":50000}`代表服务器执行失败，`{"code":60000}`代表用户引起的失败（如输入错误类型等）。',
+  },
+  host: 'localhost:8777',//http://localhost:8777/swagger
+  basePath: '/',
+  tags: [  // 排序控制
+    { name: 'Library —— 图书馆' },
+    { name: 'Library - WebBook —— 网文图书馆' },
+    { name: 'Library - Tag —— 图书馆管理' },
+    { name: 'Library - Bookmark —— 图书馆书签' },
+  ]
 };
 const options = {
-    swaggerDefinition,
-    apis: ['./Controller/**/*.?(m)js'],     // micromatch 规则
+  swaggerDefinition,
+  apis: ['./Controller/**/*.?(m)js'],     // micromatch 规则
 };
 const swaggerSpec = jsdoc(options)
 
 const CDN = "https://cdn.jsdelivr.net/npm";
 // const CDN = "https://unpkg.com";
 
-module.exports = () => ({
-    /**
-     * @swagger
-     * /swagger.json:
-     *   get:
-     *     tags:
-     *       - Swagger
-     *     summary: 通过路由获取生成的注解文件
-     *     description: 通过路由获取生成的注解文件
-     *     consumes:
-     *       - application/json
-     *     responses:
-     *       200:
-     *         description: 成功
-    */
-    "get ../swagger.json": async (ctx) => {
-        ctx.body = swaggerSpec;
-    },
+export default {
+  /**
+   * @swagger
+   * /swagger.json:
+   *   get:
+   *     tags:
+   *       - Swagger
+   *     summary: 通过路由获取生成的注解文件
+   *     description: 通过路由获取生成的注解文件
+   *     consumes:
+   *       - application/json
+   *     responses:
+   *       200:
+   *         description: 成功
+  */
+  "get ../swagger.json": async (ctx) => {
+    ctx.body = swaggerSpec;
+  },
 
-    //等同于：
-    // router.get('/swagger.json', async function (ctx) {
-    //     ctx.set('Content-Type', 'application/json');
-    //     ctx.body = swaggerSpec;
-    // })
+  //等同于：
+  // router.get('/swagger.json', async function (ctx) {
+  //     ctx.set('Content-Type', 'application/json');
+  //     ctx.body = swaggerSpec;
+  // })
 
-    "get /scalar":async (ctx)=>{
-        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
-        ctx.set('Content-Type', 'text/html');
-        ctx.body = `
+  "get /scalar": async (ctx) => {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    ctx.set('Content-Type', 'text/html');
+    ctx.body = `
 <!doctype html>
 <html>
   <head>
@@ -66,12 +67,12 @@ module.exports = () => ({
     <script src="${myCDN}/@scalar/api-reference@latest/dist/browser/standalone.js">/*${myCDN}/@scalar/api-reference*/</script>
   </body>
 </html>`;
-    },
+  },
 
-    "get /stoplight":async (ctx)=>{//
-        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
-        ctx.set('Content-Type', 'text/html');
-        ctx.body = `
+  "get /stoplight": async (ctx) => {//
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    ctx.set('Content-Type', 'text/html');
+    ctx.body = `
 <!doctype html>
 <html lang="en">
   <head>
@@ -92,12 +93,12 @@ module.exports = () => ({
 
   </body>
 </html>`;
-    },
+  },
 
-    "get ../swagger-ui-dist":async (ctx)=>{
-        const myCDN = ctx.query.cdn?decodeURIComponent(ctx.query.cdn) : CDN;
-        ctx.set('Content-Type', 'text/html');
-        ctx.body = `
+  "get ../swagger-ui-dist": async (ctx) => {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    ctx.set('Content-Type', 'text/html');
+    ctx.body = `
 <!doctype html>
 <html lang="en">
   <head>
@@ -110,62 +111,5 @@ module.exports = () => ({
 <script src="${myCDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
   </body>
 </html>`;
-    },
-});
-
-
-/** DEMO
- * @ swagger
- * /system_manager/add:
- *    post:
- *      tags:
- *      - system_manager
- *      summary: 新增管理员信息
- *      consumes:
- *        - application/json
- *      parameters:
- *      - name: system_manager
- *        in: body
- *        description: 新增管理员信息
- *        schema:
- *          type: object
- *          required:
- *            - id
- *            - account
- *            - token
- *          properties:
- *            obj:
- *              type: object
- *              required:
- *                - account
- *                - name
- *                - phone
- *                - roleId
- *                - state
- *              description: 新增数据对象
- *              properties:
- *                name:
- *                  type: string
- *                  description: 管理员姓名  
- *                account:
- *                  type: string
- *                  description: 管理员账号
- *                state:
- *                  type: integer
- *                  description: 账号状态    
- *                phone:
- *                  type: string
- *                  description: 管理员联系方式   
- *                roleId:
- *                  type: integer
- *                  description: 管理员角色编码      
- *            account:
- *              type: string
- *              description: 当前登录用户账号
- *            token:
- *              type: string
- *              description: 当前登录用户Token
- *      responses:
- *        200:
- *          description: successful operation
- * */
+  },
+};

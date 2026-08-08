@@ -1,15 +1,15 @@
 
-const path = require("node:path");
-const Message = require("../../Entity/Message");
-const DO = require("../OTO/DO");
-const RuleManager = require("./RuleManager");
-const EventManager = require("../EventManager");
-const WorkerPool = require("../Worker/WorkerPool");
-const { config } = require("../services/config");
+import path from "node:path";
+import { config } from "../services/config.js";
+import Message from "../../Entity/Message.js";
+import DO from "../OTO/DO/index.js";
+import EventManager from "../EventManager.js";
+import RuleManager from "./RuleManager.js";
+import WorkerPool from "../Worker/WorkerPool.js";
 const wPool = WorkerPool.GetWorkerPool();
 
 
-class WebChapterMaker {
+export default class WebChapterMaker {
     /**
      * 从网址抓取整篇文章
      * @param {*} url 文章地址
@@ -167,7 +167,7 @@ async function ScrapingFromUrlOnWatch(url, maxRetry = -1, setting = null) {
 async function ScrapingOnePage(url, setting) {
     console.assert(setting !== null)
     return await wPool.RunTaskAsync({
-        taskfile: "@/Core/Utils/GetDataFromUrl",
+        taskfile: "@/Core/Utils/GetDataFromUrl/index.js",
         param: {
             url,
             setting: setting,
@@ -185,4 +185,3 @@ async function ScrapingOnePage(url, setting) {
  * @returns 
  */
 async function _sleep(time) { return new Promise((a, b) => setTimeout(a, time)); }
-module.exports = WebChapterMaker;

@@ -1,4 +1,4 @@
-class Index {
+export default class Index {
     constructor({ Title, OrderNum, IndexId = 0, id, HasContent, VolumeId = null }) {
         /**
          * 章节标题
@@ -20,5 +20,3 @@ class Index {
         this.VolumeId = VolumeId || null;
     }
 }
-
-module.exports = Index;

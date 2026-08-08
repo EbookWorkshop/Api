@@ -1,10 +1,7 @@
-// const DO = require("./index");
-// const Rule = require("../../../Entity/WebBook/Rule");
-const Models = require("../Models");
+import Models from "../Models/index.js";
 
 
-class OTO_ReviewRule {
-
+export default class OTO_ReviewRule {
     static async GetReviewRules(bookid) {
         const myModels = new Models();
 
@@ -23,8 +20,4 @@ class OTO_ReviewRule {
             Replace: item.ReviewRule?.Replace
         }));
     }
-
 }
-
-
-module.exports = OTO_ReviewRule;

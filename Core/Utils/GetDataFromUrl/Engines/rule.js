@@ -1,6 +1,7 @@
-const { isExec, UseDictReplace } = require("./dictionary")
-const { config: { dataPath, debugSwitcher } } = require("../../../services/config");
-const { puppeteer: isDEBUG } = debugSwitcher;
+import { isExec, UseDictReplace } from "./dictionary.js";
+import { config } from "../../../services/config.js";
+
+const { debugSwitcher: { puppeteer: isDEBUG } } = config;
 
 /**
  * 从页面对象中，通过规则抓取实际数据
@@ -8,7 +9,7 @@ const { puppeteer: isDEBUG } = debugSwitcher;
  * @param {*} Rules 
  * @returns 
  */
-async function GetDataUseRuleFromPage(page, Rules) {
+export async function GetDataUseRuleFromPage(page, Rules) {
     let result = new Map();
 
     if (isDEBUG) {
@@ -46,7 +47,7 @@ async function GetDataUseRuleFromPage(page, Rules) {
  * @param {boolean} isVis 是否可视化展示
  * @returns {string} 提取的结果
  */
-async function ExecRule(page, rule, isVis = false) {
+export async function ExecRule(page, rule, isVis = false) {
     //先尝试删除干扰元素
     if (typeof (rule.RemoveSelector) === "string") rule.RemoveSelector = [rule.RemoveSelector];
     for (let sR of rule.RemoveSelector)
@@ -125,9 +126,4 @@ async function ExecRule(page, rule, isVis = false) {
         //没抓到数据
         return [err.message, err, await page.content()];
     }
-}
-
-module.exports = {
-    GetDataUseRuleFromPage,
-    ExecRule
 }

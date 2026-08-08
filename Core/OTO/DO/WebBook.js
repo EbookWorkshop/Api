@@ -1,17 +1,15 @@
-const DO = require("./index");
-const Models = require("../Models");
-const Ebook = require("../../../Entity/Ebook/Ebook");
-const Volume = require("../../../Entity/Ebook/Volume");
-const WebBook = require("../../../Entity/WebBook/WebBook");
-const WebIndex = require("../../../Entity/WebBook/WebIndex");
-const WebChapter = require("../../../Entity/WebBook/WebChapter");
-const SystemConfigService = require("../../services/SystemConfig");
-const { Run: Reviewer } = require("../../Utils/ReviewString");
-// const ChapterOptions = require("../../../Entity/WebBook/ChapterOptions");
-// const IndexOptions = require("../../../Entity/WebBook/IndexOptions");
+import DO from "./index.js";
+import Models from "../Models/index.js";
+import Ebook from "../../../Entity/Ebook/Ebook.js";
+import Volume from "../../../Entity/Ebook/Volume.js";
+import WebBook from "../../../Entity/WebBook/WebBook.js";
+import WebIndex from "../../../Entity/WebBook/WebIndex.js";
+import WebChapter from "../../../Entity/WebBook/WebChapter.js";
+import SystemConfigService from "../../services/SystemConfig.js";
+import { Run as Reviewer } from "../../Utils/ReviewString.js";
 
 
-class OTO_WebBook {
+export default class OTO_WebBook {
 
     /**
      * 取得网文列表
@@ -383,4 +381,4 @@ class OTO_WebBook {
 
 }
 
-module.exports = OTO_WebBook;
+

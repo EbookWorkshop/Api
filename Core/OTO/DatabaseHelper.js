@@ -1,8 +1,9 @@
-const Sequelize = require("sequelize");
-const Models = require("./Models");
-const { config: { databasePath, debugSwitcher } } = require("../services/config");
-// const EventManager = require("../EventManager");
-// const em = new EventManager();
+import fs from "node:fs";
+import Sequelize from "sequelize";
+import Models from "./Models/index.js";
+import { config } from "../services/config.js";
+
+const { databasePath, debugSwitcher } = config;
 
 class DB {
     constructor() {
@@ -39,7 +40,6 @@ class DB {
      * 压缩数据库
      */
     async Compress() {
-        const fs = require("fs");
         let OldSize = fs.statSync(DB.myDbPath).size;
         let result = await this.myDBConnnect.query('VACUUM;');
         let NewSize = fs.statSync(DB.myDbPath).size;
@@ -53,5 +53,4 @@ class DB {
 
 const instance = new DB();
 Object.freeze(instance);
-
-module.exports = instance;
+export default instance;
