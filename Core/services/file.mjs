@@ -37,15 +37,16 @@ export async function ListFile(sourcePath, options = { filetype: null, detail: f
 
         if (!options?.detail) return result.map(item => item.name);
 
-        for (let item of result) {
-            const fileStat = await fsPromises.stat(path.join(item.path, item.file));
-            item.size = fileStat.size;
-            item.createTime = fileStat.birthtime.toLocaleString();
-            item.path = path.relative(config.dataPath, item.path);
-            item.filePath = path.join(item.path, item.file);
-        }
-
-        return result;
+        return await Promise.all( //注意：如果单文件读取错误将导致整个Promise.alls失败
+            result.map(async (item) => {
+                const fileStat = await fsPromises.stat(path.join(item.path, item.file));
+                item.size = fileStat.size;
+                item.createTime = fileStat.birthtime.toLocaleString();
+                item.path = path.relative(config.dataPath, item.path);//计算与根目录的相对路径。注意这里使用了配置文件，破坏了方法的独立性。
+                item.filePath = path.join(item.path, item.file);
+                return item;
+            })
+        );
     } catch (err) {
         return null;
     }
