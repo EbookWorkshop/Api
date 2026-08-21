@@ -118,6 +118,90 @@ export default {
         new ApiResponse(null, "请求参数错误", 60000).toCTX(ctx);
     },
 
+
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 【章】在原有书中批量追加章节
+     *     description: 在原有书中批量追加章节
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BatchInsertChaptersRequest'
+     *           examples:
+     *             BatchInsertChaptersRequestExample:
+     *               summary: 批量插入章节请求示例
+     *               value:
+     *                 bookId: 209
+     *                 volumeId: 53
+     *                 chapterList:
+     *                   - Title: "新章节1"
+     *                     Content: "<p>这是新章节1的内容...</p>"
+     *                   - Title: "新章节2"
+     *                     Content: "<p>这是新章节2的内容...</p>"
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     *
+     * components:
+     *   schemas:
+     *     BatchChapterItem:
+     *       type: object
+     *       description: 批量插入的单个章节数据
+     *       properties:
+     *         Title:
+     *           type: string
+     *           description: 章节标题（与 Content 至少提供一个）
+     *           example: "新章节1"
+     *         Content:
+     *           type: string
+     *           description: 章节正文内容（与 Title 至少提供一个）
+     *           example: "<p>这是新章节的内容...</p>"
+     *         OrderNum:
+     *           type: integer
+     *           description: 排序序号（可选，服务端会自动计算偏移）
+     *           example: 0
+     *         VolumeId:
+     *           type: integer
+     *           description: 所属分卷 ID（可选，若外层 volumeId 为 -1 则使用此值，否则被覆盖）
+     *           example: 53
+     *     BatchInsertChaptersRequest:
+     *       type: object
+     *       description: 批量插入章节的请求体
+     *       properties:
+     *         bookId:
+     *           type: integer
+     *           description: 所属图书 ID（必填）
+     *           example: 209
+     *         volumeId:
+     *           type: integer
+     *           description: 所属分卷 ID（传 -1 表示不设置分卷，可选）
+     *           example: 53
+     *         chapterList:
+     *           type: array
+     *           items:
+     *             $ref: '#/components/schemas/BatchChapterItem'
+     *           description: 章节数据列表，至少包含一个
+     *       required:
+     *         - bookId
+     *         - chapterList
+     */
+    "patch /": async (ctx) => {
+        let bookInfo = ctx.request.body;
+
+        let rsl = false;
+        rsl = await BookMaker.BatchInsertChapters(bookInfo.bookId, bookInfo.volumeId, bookInfo.chapterList);
+        if (typeof (rsl) === 'object') return ApiResponse.GetResult(false, `${rsl.name} § ${rsl.message}`).toCTX(ctx);
+        ApiResponse.GetResult(true).toCTX(ctx);
+    },
+
     /**
      * @swagger
      * /library/book/chapter/order:
