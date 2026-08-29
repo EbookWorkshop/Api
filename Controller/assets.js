@@ -4,75 +4,11 @@ import send from "koa-send";//下载文件
 import ApiResponse from "../Entity/ApiResponse.js";
 import { parseJsonFromBodyData } from "../Core/Server.js";
 import { config } from "../Core/services/config.js";
-import { ListFile,DeleteFile,RenameFile } from "../Core/services/file.mjs";
+import { ListFile, DeleteFile, RenameFile } from "../Core/services/file.mjs";
 
 
 //获取静态资源文件
 export default {
-    /**
-     * @swagger
-     * @deprecated 此接口功能重复，可直接请求path实现。
-     * /assets/download/{path}:
-     *   get:
-     *     tags:
-     *       - Assets —— 资源管理
-     *     summary: 下载文件
-     *     description: 下载静态资源
-     *     parameters:
-     *     - name: path
-     *       in: path
-     *       required: true
-     *       description: 资源路径
-     *       schema:
-     *         type: string
-     *     consumes:
-     *       - application/octet-stream
-     *     responses:
-     *       200:
-     *         description: 请求成功
-     *       500:
-     *         description: 请求失败
-     */
-    "get /download/:path": async (ctx) => {
-        //传入的相对路径
-        let resPath = path.join(config.dataPath, ctx.params.path);
-        // console.debug("获取文件：", resPath);
-        ctx.attachment(resPath);
-        await send(ctx, ctx.params.path, { root: config.dataPath });
-    },
-
-
-    /**
-     * @swagger
-     * @deprecated 此接口功能重复，可直接请求path实现。
-     * /assets/view/{path}:
-     *   get:
-     *     tags:
-     *       - Assets —— 资源管理
-     *     summary: 查看文件
-     *     description: 查看静态资源
-     *     parameters:
-     *     - name: path
-     *       in: path
-     *       required: true
-     *       description: 资源路径
-     *       schema:
-     *         type: string
-     *     responses:
-     *       200:
-     *         description: 请求成功
-     *       500:
-     *         description: 请求失败
-     */
-    "get /view/:path": async (ctx) => {
-        //传入的相对路径
-        let resPath = path.join(config.dataPath, ctx.params.path);
-        // console.debug("查看文件：", resPath);
-        const type = path.extname(resPath).toLowerCase();
-        ctx.type = type;//可以直接设置文件类型，并自动推测mimetype。或者直接设置mimetype
-        ctx.body = fs.createReadStream(resPath);
-    },
-
     /**
      * @swagger
      * /assets/archive/book:
@@ -159,5 +95,68 @@ export default {
         const result = await DeleteFile(bookPath);
 
         new ApiResponse(result).toCTX(ctx);
-    }
+    },
+
+    /**
+       * @swagger
+       * @deprecated 此接口功能重复，可直接请求path实现。
+       * /assets/download/{path}:
+       *   get:
+       *     tags:
+       *       - Assets —— 资源管理
+       *     summary: 下载文件
+       *     description: 下载静态资源
+       *     parameters:
+       *     - name: path
+       *       in: path
+       *       required: true
+       *       description: 资源路径
+       *       schema:
+       *         type: string
+       *     consumes:
+       *       - application/octet-stream
+       *     responses:
+       *       200:
+       *         description: 请求成功
+       *       500:
+       *         description: 请求失败
+       */
+    "get /download/:path": async (ctx) => {
+        //传入的相对路径
+        let resPath = path.join(config.dataPath, ctx.params.path);
+        // console.debug("获取文件：", resPath);
+        ctx.attachment(resPath);
+        await send(ctx, ctx.params.path, { root: config.dataPath });
+    },
+
+    /**
+     * @swagger
+     * @deprecated 此接口功能重复，可直接请求path实现。
+     * /assets/view/{path}:
+     *   get:
+     *     tags:
+     *       - Assets —— 资源管理
+     *     summary: 查看文件
+     *     description: 查看静态资源
+     *     parameters:
+     *     - name: path
+     *       in: path
+     *       required: true
+     *       description: 资源路径
+     *       schema:
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       500:
+     *         description: 请求失败
+     */
+    "get /view/:path": async (ctx) => {
+        //传入的相对路径
+        let resPath = path.join(config.dataPath, ctx.params.path);
+        // console.debug("查看文件：", resPath);
+        const type = path.extname(resPath).toLowerCase();
+        ctx.type = type;//可以直接设置文件类型，并自动推测mimetype。或者直接设置mimetype
+        ctx.body = fs.createReadStream(resPath);
+    },
 };
