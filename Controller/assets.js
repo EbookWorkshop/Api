@@ -11,6 +11,7 @@ import { ListFile,DeleteFile,RenameFile } from "../Core/services/file.mjs";
 export default {
     /**
      * @swagger
+     * @deprecated 此接口功能重复，可直接请求path实现。
      * /assets/download/{path}:
      *   get:
      *     tags:
@@ -43,6 +44,7 @@ export default {
 
     /**
      * @swagger
+     * @deprecated 此接口功能重复，可直接请求path实现。
      * /assets/view/{path}:
      *   get:
      *     tags:

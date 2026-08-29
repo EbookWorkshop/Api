@@ -39,7 +39,7 @@ export default {
                 packageVersion: version,
                 dataPath: path.resolve(dataPath),
                 databaseSize: fs.statSync(databasePath).size,
-                appMem: toMB_Unit(process.memoryUsage().rss),
+                appMem: (process.memoryUsage().rss/ 1024 / 1024).toFixed(2)+" MB",
                 nodeVersion: process.version, //Node.js版本
                 runTime: performance.now(),
                 osType: os.type(),

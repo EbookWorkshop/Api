@@ -180,6 +180,7 @@ export default {
 
     /**
      * @swagger
+     * @deprecated 此接口没被使用，废弃。
      * /library/book/volume/chapters: 
      *   get:
      *     tags:
