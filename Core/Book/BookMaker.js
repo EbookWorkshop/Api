@@ -304,9 +304,8 @@ export default class BookMaker {
             });
             if (!maxOrderNum) maxOrderNum = 1;
             //序号从最大序号+1开始
-            maxOrderNum++;
             for (let cp of chapters) {
-                cp.OrderNum += maxOrderNum;
+                cp.OrderNum = cp.OrderNum ? (cp.OrderNum + maxOrderNum++) : maxOrderNum++;
                 cp.BookId = bookId;
                 if (volumeId >= 0) cp.VolumeId = volumeId;
             }

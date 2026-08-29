@@ -1,13 +1,11 @@
-import { isNativeError } from 'node:util/types';
-
 /**
  * 将 Error 对象序列化为可安全传输的普通对象
  * Error 对象的 name、message、stack 等属性是不可枚举的，统一处理
  * @param {Error} err - 可能是 Error 实例、字符串或其他值
  * @returns {object} 可序列化的普通对象
  */
-export function Error(err) {
-    if (!isNativeError(err)) {//node 方法，判断是否原生错误类型
+export function CheckError(err) {
+    if (!Error.isError(err)) {//node 方法，判断是否原生错误类型
         return err;
     }
 
@@ -51,4 +49,4 @@ export function Result(data) {
 }
 
 
-export default { Error, Result };
+export default { Error: CheckError, Result };

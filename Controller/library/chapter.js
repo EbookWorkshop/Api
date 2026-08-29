@@ -193,11 +193,11 @@ export default {
      *         - bookId
      *         - chapterList
      */
-    "patch /": async (ctx) => {
-        let bookInfo = ctx.request.body;
+    "patch ": async (ctx) => {
+        let { bookId, volumeId, chapterList: chapters } = ctx.request.body;
 
         let rsl = false;
-        rsl = await BookMaker.BatchInsertChapters(bookInfo.bookId, bookInfo.volumeId, bookInfo.chapterList);
+        rsl = await BookMaker.BatchInsertChapters(bookId, volumeId, chapters);
         if (typeof (rsl) === 'object') return ApiResponse.GetResult(false, `${rsl.name} § ${rsl.message}`).toCTX(ctx);
         ApiResponse.GetResult(true).toCTX(ctx);
     },

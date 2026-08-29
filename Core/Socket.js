@@ -1,6 +1,7 @@
 import { isMainThread } from'node:worker_threads';
 if (!isMainThread) console.warn("!!!注意!!!尝试在子线程中使用单例模块[SocketIO]！子线程拥有独立的实例，共享数据、通讯等功能将失效。");
 
+import Serialize from "./Utils/Serialize.js"
 import { Server as socketIO } from "socket.io";
 import EventManager from "./EventManager.js";
 import Message from "../Entity/Message.js"
