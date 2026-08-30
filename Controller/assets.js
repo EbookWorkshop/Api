@@ -99,12 +99,12 @@ export default {
 
     /**
        * @swagger
-       * @deprecated 此接口功能重复，可直接请求path实现。
        * /assets/download/{path}:
        *   get:
        *     tags:
        *       - Assets —— 资源管理
        *     summary: 下载文件
+       *     deprecated: true # 此接口功能重复，可直接请求path实现。
        *     description: 下载静态资源
        *     parameters:
        *     - name: path
@@ -131,12 +131,12 @@ export default {
 
     /**
      * @swagger
-     * @deprecated 此接口功能重复，可直接请求path实现。
      * /assets/view/{path}:
      *   get:
      *     tags:
      *       - Assets —— 资源管理
      *     summary: 查看文件
+     *     deprecated: true # 此接口功能重复，可直接请求path实现。
      *     description: 查看静态资源
      *     parameters:
      *     - name: path

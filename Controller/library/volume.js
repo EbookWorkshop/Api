@@ -180,12 +180,12 @@ export default {
 
     /**
      * @swagger
-     * @deprecated 此接口没被使用，废弃。
      * /library/book/volume/chapters: 
      *   get:
      *     tags:
      *       - Library —— 图书馆
      *     summary: 【卷】获取卷下的所有章节
+     *     deprecated: true #此接口没被使用，废弃。
      *     description: 获取指定卷下的所有章节
      *     parameters:
      *     - name: volumeId
