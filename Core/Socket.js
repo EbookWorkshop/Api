@@ -71,11 +71,11 @@ export default class SocketIO {
    */
   initEM_WebBook() {
     if (this.myEM == null) return;
-    this.myEM.on("WebBook.Create.Finish", (bookid, bookName) => {
-      myIO.emit(`WebBook.Create.Finish`, { bookid, bookName });
+    this.myEM.on("WebBook.Create.Finish", (bookId, bookName) => {
+      myIO.emit(`WebBook.Create.Finish`, { bookId, bookName });
     });
 
-    this.myEM.on("WebBook.UpdateIndex.Finish", (bookid, bookName, data) => {
+    this.myEM.on("WebBook.UpdateIndex.Finish", (bookId, bookName, data) => {
       myIO.emit(`Message.Box.Send`, new Message(`更新《${bookName}》目录完成，共新增${data.addChapterNum}章。`, "message", {
         id: -1 * Math.floor(Math.random() * 1000000),
         title: "更新目录完成",
@@ -83,16 +83,16 @@ export default class SocketIO {
       }));
     });
 
-    this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookid, cId, title) => {
-      myIO.emit(`WebBook.Chapter.Update.${bookid}`, {
+    this.myEM.on("WebBook.UpdateOneChapter.Finish", (bookId, cId, title) => {
+      myIO.emit(`WebBook.Chapter.Update`, {
         status: true,
         title,
         chapterId: cId,
-        bookid
+        bookId
       });
     });
 
-    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookid, chapterId, err, jobId, errObj) => {
+    this.myEM.on("WebBook.UpdateOneChapter.Error", (bookId, chapterId, err, jobId, errObj) => {
       let msgId = -1;
       if (errObj) {
         const msg = new Message(err?.name || err, "message", { title: "更新章节失败" });
@@ -106,17 +106,17 @@ export default class SocketIO {
       }
       if (typeof (err) === "string") err = { name: err, message: err };
 
-      myIO.emit(`WebBook.UpdateOneChapter.Error.${bookid}`, { bookid, chapterId, err: { ...err, ...errObj }, msgId });
-      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error_${jobId}`, bookid, chapterId, { ...err, ...errObj }, msgId);//分发给当前任务线程
+      myIO.emit(`WebBook.UpdateOneChapter.Error`, { bookId, chapterId, err: { ...err, ...errObj }, msgId });
+      if (jobId) this.myEM.emit(`WebBook.UpdateOneChapter.Error`, bookId, chapterId, { ...err, ...errObj }, msgId);//分发给当前任务线程
 
     })
 
-    this.myEM.on("WebBook.UpdateChapter.Process", (bookid, chapterId, rate, ok, fail, all) => {
-      myIO.emit(`WebBook.UpdateChapter.Process.${bookid}`, { bookid, chapterId, rate, ok, fail, all })
+    this.myEM.on("WebBook.UpdateChapter.Process", (bookId, chapterId, rate, ok, fail, all) => {
+      myIO.emit(`WebBook.UpdateChapter.Process`, { bookId, chapterId, rate, ok, fail, all })
     });
 
-    this.myEM.on("WebBook.UpdateChapter.Finish", (bookid, bookName, chapterIndexArray, doneNum, failNum) => {
-      myIO.emit(`WebBook.UpdateChapter.Finish.${bookid}`, { bookid, bookName, chapterIndexArray, doneNum, failNum });
+    this.myEM.on("WebBook.UpdateChapter.Finish", (bookId, bookName, chapterIndexArray, doneNum, failNum) => {
+      myIO.emit(`WebBook.UpdateChapter.Finish`, { bookId, bookName, chapterIndexArray, doneNum, failNum });
     });
 
     this.myEM.on("WebBook.UpdateIndex.Error", (err, url, result) => {

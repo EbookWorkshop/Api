@@ -168,6 +168,11 @@ export default class OTO_WebBook {
 
         webBook.SetCoverImg = async (path) => { return await ebookObj.SetCoverImg(path); }
         webBook.LoadIntroduction = async () => { return await ebookObj.LoadIntroduction(); }
+        Object.defineProperty(webBook, 'Introduction', {
+            get() { return ebookObj.Introduction; },
+            enumerable: true,   // 是否可被 Object.keys / for...in 枚举
+            configurable: true  // 是否可删除或重新定义
+        });
 
         /**
          * 添加来源地址

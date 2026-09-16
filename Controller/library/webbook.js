@@ -68,6 +68,7 @@ export default {
             new ApiResponse(null, "未找到此书", 50000).toCTX(ctx);
             return;
         }
+        await bookInfo.LoadIntroduction();
         new ApiResponse(bookInfo).toCTX(ctx);
     },
 
