@@ -28,12 +28,6 @@ export async function ListRegisteredWebsitesInfo() {
     const result = [];
     for (const item of hosts) {
         const host = item.Host;
-
-        const tableName = typeof myModels.WebBookIndexSourceURL.getTableName === 'function'
-            ? myModels.WebBookIndexSourceURL.getTableName()
-            : (myModels.WebBookIndexSourceURL.tableName || 'WebBookIndexSourceURLs');
-        const escapedHost = host.replace(/'/g, "''");
-
         /*
         DECLARE @host NVARCHAR(256) = N'example.com';
         SELECT
@@ -61,7 +55,7 @@ export async function ListRegisteredWebsitesInfo() {
             attributes: [
                 'WebBookId',
                 [myModels.sequelize.literal(
-                    `(SELECT MAX("createdAt") FROM "${tableName}" s WHERE s."Path" LIKE '%${escapedHost}%')`
+                    `(SELECT MAX("createdAt") FROM [WebBookIndexSourceURLs] s WHERE s."Path" LIKE '%${host}%')`
                 ), 'MaxCreatedAt']
             ],
             raw: true

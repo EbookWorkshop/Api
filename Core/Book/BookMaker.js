@@ -174,7 +174,7 @@ export default class BookMaker {
                 duplicates: []
             }
             for (let j = i + 1; j < chapters.length; j++) {
-                const ratio = chapterInfos[i].length / (chapterInfos[j].length || 1);
+                const ratio = chapters[i].length / (chapters[j].length || 1);
                 if (ratio < 0.7 || ratio > 1.3) continue;// 长度相差太大，跳过
 
                 const sim = similarity.compareTwoStrings(
@@ -304,9 +304,8 @@ export default class BookMaker {
             });
             if (!maxOrderNum) maxOrderNum = 1;
             //序号从最大序号+1开始
-            maxOrderNum++;
             for (let cp of chapters) {
-                cp.OrderNum += maxOrderNum;
+                cp.OrderNum = cp.OrderNum ? (cp.OrderNum + maxOrderNum++) : maxOrderNum++;
                 cp.BookId = bookId;
                 if (volumeId >= 0) cp.VolumeId = volumeId;
             }

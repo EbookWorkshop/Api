@@ -39,7 +39,9 @@ export default {
                 packageVersion: version,
                 dataPath: path.resolve(dataPath),
                 databaseSize: fs.statSync(databasePath).size,
-                nodeVersion: process.version, // 添加这一行来获取Node.js版本
+                appMem: (process.memoryUsage().rss/ 1024 / 1024).toFixed(2)+" MB",
+                nodeVersion: process.version, //Node.js版本
+                runTime: performance.now(),
                 osType: os.type(),
                 osRelease: os.release(),
                 cpu: os.cpus(),

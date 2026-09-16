@@ -3,12 +3,13 @@ import jsdoc from 'swagger-jsdoc';
 
 const { version } = packJson;
 const swaggerDefinition = {
+  openapi: "3.0.0",
   info: {
     title: 'EBook Workshop API',
     version: version.split('.').slice(0, 2).join('.'),
     description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，<br/>`{"code":20000}`用于代表成功，`{"code":50000}`代表服务器执行失败，`{"code":60000}`代表用户引起的失败（如输入错误类型等）。',
   },
-  host: 'localhost:8777',//http://localhost:8777/swagger
+  servers: [{ "url": `http://localhost:8777`, "description": "稳定版 v3" }, { "url": `http://localhost:8300`, "description": "开发服务器 v4" }],
   basePath: '/',
   tags: [  // 排序控制
     { name: 'Library —— 图书馆' },
@@ -42,7 +43,8 @@ export default {
    *         description: 成功
   */
   "get ../swagger.json": async (ctx) => {
-    ctx.body = swaggerSpec;
+    const isSafeHttpCode = ctx.query.safehttp == "1";//兼容部分不支持600的合同谈判编码的文档工具
+    ctx.body = isSafeHttpCode ? JSON.stringify(swaggerSpec).replaceAll(`"600"`, `"default"`) : swaggerSpec;
   },
 
   //等同于：
@@ -53,6 +55,7 @@ export default {
 
   "get /scalar": async (ctx) => {
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    const darkMode = ctx.query?.theme === "dark" ? "darkMode: true," : "";
     ctx.set('Content-Type', 'text/html');
     ctx.body = `
 <!doctype html>
@@ -95,8 +98,9 @@ export default {
 </html>`;
   },
 
-  "get ../swagger-ui-dist": async (ctx) => {
+  "get /openapi-ui-dist": async (ctx) => {
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    const theme = ctx.query.theme ? ctx.query.theme : "light";
     ctx.set('Content-Type', 'text/html');
     ctx.body = `
 <!doctype html>
@@ -107,8 +111,45 @@ export default {
     <title>Swagger UI Dist</title>
   </head>
   <body>
-<div id="openapi-ui-container" spec-url="/swagger.json" theme="light"></div>
+<div id="openapi-ui-container" spec-url="/swagger.json" theme="${theme}"></div>
 <script src="${myCDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
+  </body>
+</html>`;
+  },
+
+  "get /rapidoc": async (ctx) => {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    const theme = ctx.query.theme === "dark" ? `theme="dark"` : `nav-bg-color="#fefefe"`;
+    ctx.set('Content-Type', 'text/html');
+    ctx.body = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <script src="${myCDN}/rapidoc/dist/rapidoc-min.min.js"></script>
+  </head>
+  <body>
+    <rapi-doc spec-url="/swagger.json" ${theme} show-header="false"> </rapi-doc>
+  </body>
+</html>`;
+  },
+
+  "get /redoc": async (ctx) => {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : CDN;
+    ctx.set('Content-Type', 'text/html');
+    ctx.body = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>ReDoc</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body>
+    <redoc spec-url='/swagger.json?safehttp=1'></redoc>
+    <script src="${myCDN}/redoc/bundles/redoc.standalone.js"> </script>
   </body>
 </html>`;
   },

@@ -46,9 +46,9 @@ export default {
      *         schema:
      *             type: object
      *             required:
-     *               - chapterid
+     *               - chapterId
      *             properties:
-     *               chapterid:
+     *               chapterId:
      *                 type: number
      *     consumes:
      *       - application/json
@@ -57,10 +57,10 @@ export default {
      *         description: 请求成功
      */
     "post ": async (ctx) => {
-        let param = await parseJsonFromBodyData(ctx, ["chapterid"]);
+        let param = await parseJsonFromBodyData(ctx, ["chapterId"]);
         if (!param) return;
 
-        await DO.AddBookmark(param.chapterid * 1).then(bookmark => {
+        await DO.AddBookmark(param.chapterId * 1).then(bookmark => {
             new ApiResponse(bookmark).toCTX(ctx);
         }).catch(err => {
             new ApiResponse(err, "保存书签失败", 50000).toCTX(ctx);
