@@ -221,6 +221,7 @@ export default {
         if (bookInfo.coverFile) { metadata.converFile = bookInfo.coverFile[0]; }
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
         if (bookInfo.coverType === "默认") metadata.CoverImg = null;
+        else metadata.embelBookName = bookInfo.embelBookName==='true';
 
         try {
             let rsl = await BookMaker.EditEBookInfo(bookInfo.id, metadata);
